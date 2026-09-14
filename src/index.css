@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Bodoni Moda', serif;
+  --font-headline: 'Bodoni Moda', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  --color-surface: #fff9ee;
+  --color-surface-dim: #dfd9cf;
+  --color-surface-bright: #fff9ee;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f9f3e9;
+  --color-surface-container: #f3ede3;
+  --color-surface-container-high: #ede7dd;
+  --color-surface-container-highest: #e8e2d8;
+  --color-on-surface: #1d1b15;
+  --color-on-surface-variant: #4b4640;
+  --color-inverse-surface: #33302a;
+  --color-inverse-on-surface: #f6f0e6;
+  --color-outline: #7d766f;
+  --color-outline-variant: #cec5bd;
+  --color-surface-tint: #615e5b;
+  --color-primary: #1d1b19;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1d1b19;
+  --color-on-primary-container: #878380;
+  --color-secondary: #7d5700;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #ffc55f;
+  --color-on-secondary-container: #755100;
+  --color-secondary-fixed: #ffdeaa;
+  --color-secondary-fixed-dim: #f5bd58;
+  --color-tertiary: #1d1b19;
+  --color-on-tertiary: #ffffff;
+  --color-background: #fff9ee;
+  --color-on-background: #1d1b15;
+  --color-surface-variant: #e8e2d8;
+}
+
+@layer base {
+  html, body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #fff9ee;
+    color: #1d1b15;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  .font-display {
+    font-family: 'Bodoni Moda', serif !important;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-fill {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
