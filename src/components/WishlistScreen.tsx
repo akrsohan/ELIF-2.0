@@ -103,11 +103,11 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
 
                 <div className="flex items-center gap-2 pt-2">
                   <button
-                    onClick={() => onQuickAddToCart(product)}
-                    className="flex-1 h-10 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform hover:bg-[#7d5700] cursor-pointer"
+                    onClick={() => onOpenProductDetail(product)}
+                    className="flex-1 h-10 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform hover:bg-[#34302c] cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[15px]">shopping_bag</span>
-                    <span>Add to Bag</span>
+                    <span className="material-symbols-outlined text-[15px]">visibility</span>
+                    <span>View & Buy</span>
                   </button>
                 </div>
               </div>

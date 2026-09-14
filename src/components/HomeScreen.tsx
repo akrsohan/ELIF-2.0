@@ -142,7 +142,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               return (
                 <div
                   key={product.id}
-                  className="group flex flex-col bg-[#f3ede3] rounded-xl overflow-hidden shadow-sm transition-all duration-300 border border-[#e8e2d8] hover:shadow-md"
+                  onClick={() => onOpenProductDetail(product)}
+                  className="group flex flex-col bg-[#f3ede3] rounded-xl overflow-hidden shadow-sm transition-all duration-300 border border-[#e8e2d8] hover:shadow-md cursor-pointer"
                 >
                   {/* Image & Wishlist Container */}
                   <div
@@ -227,12 +228,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                       <button
                         type="button"
-                        onClick={() => onQuickAddToCart(product)}
-                        aria-label={`Add ${product.name} to cart`}
-                        className="h-9 px-3 rounded-lg bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenProductDetail(product);
+                        }}
+                        aria-label={`View details for ${product.name}`}
+                        className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-[#1d1b19] text-white hover:bg-[#34302c] font-semibold text-[10px] sm:text-[11px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-[16px]">shopping_bag</span>
-                        <span>Add</span>
+                        <span className="material-symbols-outlined text-[15px]">visibility</span>
+                        <span>Details</span>
                       </button>
                     </div>
                   </div>

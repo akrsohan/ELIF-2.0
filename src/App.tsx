@@ -107,6 +107,13 @@ export default function App() {
     });
   };
 
+  const handleDirectBuy = (product: Product, size: string, color: string) => {
+    handleAddToCartWithOptions(product, size, color);
+    setSelectedProduct(null);
+    setIsCheckoutOpen(true);
+    showToast(`'${product.name}' নির্বাচন করা হয়েছে। অর্ডার সম্পন্ন করতে ঠিকানা লিখুন।`);
+  };
+
   const handleUpdateCartQuantity = (index: number, newQty: number) => {
     if (newQty <= 0) {
       handleRemoveCartItem(index);
@@ -212,6 +219,7 @@ export default function App() {
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCartWithOptions}
         onToggleWishlist={handleToggleWishlist}
+        onDirectBuy={handleDirectBuy}
         onShowToast={showToast}
       />
 

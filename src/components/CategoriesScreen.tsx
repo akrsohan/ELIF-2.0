@@ -188,11 +188,15 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
                   </span>
 
                   <button
-                    onClick={() => onQuickAddToCart(product)}
-                    className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-[#e8e2d8] text-[#1d1b15] flex items-center justify-center active:bg-[#7d5700] active:text-white transition-all cursor-pointer hover:bg-[#ffc55f] hover:text-[#755100]"
-                    aria-label={`Add ${product.name} to cart`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenProductDetail(product);
+                    }}
+                    className="h-8 px-2.5 rounded-lg bg-[#1d1b19] text-white flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer hover:bg-[#34302c] text-[10px] font-semibold uppercase tracking-wider"
+                    aria-label={`View details for ${product.name}`}
                   >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    <span className="material-symbols-outlined text-[15px]">visibility</span>
+                    <span>Details</span>
                   </button>
                 </div>
               </div>

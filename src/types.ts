@@ -9,12 +9,17 @@ export interface Product {
   currency: string;
   tag?: 'Limited' | 'Best Seller' | 'New' | 'Archive';
   image: string;
+  images: string[];
   alt: string;
   description: string;
   fabric: string;
   origin: string;
   sizes: string[];
   colors: string[];
+  stockCount?: number;
+  modelStats?: string;
+  careInstructions?: string[];
+  features?: string[];
 }
 
 export interface CartItem {
