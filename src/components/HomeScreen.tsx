@@ -17,6 +17,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onToggleWishlist,
   onQuickAddToCart,
   onOpenProductDetail,
+  onOpenStory,
   onNavigateTab,
   onShowToast,
 }) => {
@@ -47,16 +48,90 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="flex flex-col w-full selection:bg-[#ffdeaa] selection:text-[#271900]">
-      {/* 1. TOP ANNOUNCEMENT & TRUST BAR */}
-      <div className="px-4 pt-1 mb-4">
-        <div className="bg-[#f3ede3] rounded-xl p-3 border border-[#e8e2d8] flex items-center justify-between text-[11px] text-[#4b4640]">
-          <div className="flex items-center gap-1.5 font-medium text-[#1d1b15]">
-            <span className="material-symbols-outlined text-[16px] text-[#2e7d32]">verified</span>
-            <span>ক্যাশ অন ডেলিভারি (COD) ও বিকাশ সুবিধা</span>
+      {/* 1. TOP HERO BANNER & TRUST BAR (Visible on Tablet & PC, hidden on mobile) */}
+      <div className="hidden md:block px-3 sm:px-4 mb-6">
+        {/* Luxury Editorial Showcase Banner on Tablet & PC */}
+        <div className="relative w-full rounded-2xl overflow-hidden bg-[#1d1b19] text-white p-5 sm:p-7 lg:p-9 shadow-md border border-[#3e3833] flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="max-w-xl z-10">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#ffc55f]">
+                Dhaka Flagship Atelier
+              </span>
+              <span className="text-[#878380]">•</span>
+              <span className="text-[10px] sm:text-[11px] text-[#cec5bd] uppercase tracking-wider">
+                Autumn Solace ’25
+              </span>
+            </div>
+            <h1 className="font-display text-[24px] sm:text-[32px] lg:text-[38px] leading-tight font-medium text-white mb-2.5">
+              Refined Bangladeshi Craft & Modern Tailoring
+            </h1>
+            <p className="text-[12px] sm:text-[13px] text-[#cec5bd] leading-relaxed mb-4">
+              রাজশাহী সিল্ক, কাশ্মীরি উল ও বেলজিয়ান লিনেনে বোনা প্রিমিয়াম পোশাক। ক্যাশ অন ডেলিভারি (COD) এবং ঢাকা সিটিতে ২৪-৪৮ ঘণ্টায় এক্সপ্রেস হোম ডেলিভারি সুবিধা।
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('All');
+                  const el = document.getElementById('catalog-grid-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="h-9 sm:h-10 px-4 sm:px-5 rounded-xl bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-semibold text-[11px] sm:text-[12px] uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all shadow-md active:scale-95"
+              >
+                <span>Explore Silhouettes</span>
+                <span className="material-symbols-outlined text-[17px]">arrow_downward</span>
+              </button>
+              {onOpenStory && (
+                <button
+                  type="button"
+                  onClick={onOpenStory}
+                  className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-[11px] sm:text-[12px] uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all border border-white/20"
+                >
+                  <span className="material-symbols-outlined text-[16px]">auto_stories</span>
+                  <span>Atelier Dossier</span>
+                </button>
+              )}
+            </div>
           </div>
-          <span className="text-[#7d5700] font-semibold hidden sm:inline">
-            ঢাকায় ২৪-৪৮ ঘণ্টায় হোম ডেলিভারি
-          </span>
+
+          {/* Trust Highlights Grid (2 cols on mobile, 4 cols on PC) */}
+          <div className="w-full lg:w-auto grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2.5 z-10 shrink-0">
+            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
+              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
+                <span className="material-symbols-outlined text-[17px]">local_shipping</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Fast Courier</span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">ঢাকা ২৪-৪৮ ঘণ্টায়</p>
+              <p className="text-[10px] text-[#a8a199]">Pathao / Steadfast</p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
+              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
+                <span className="material-symbols-outlined text-[17px]">payments</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Cash on Delivery</span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">পণ্য দেখে পেমেন্ট</p>
+              <p className="text-[10px] text-[#a8a199]">সারাদেশে হোম ডেলিভারি</p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
+              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
+                <span className="material-symbols-outlined text-[17px]">sync</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">7-Day Return</span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">ফ্রি সাইজ এক্সচেঞ্জ</p>
+              <p className="text-[10px] text-[#a8a199]">সহজ এক্সচেঞ্জ পলিসি</p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
+              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
+                <span className="material-symbols-outlined text-[17px]">verified</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Authentic</span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">খাঁটি ও সার্টিফাইড</p>
+              <p className="text-[10px] text-[#a8a199]">OEKO-TEX স্ট্যান্ডার্ড</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -116,7 +191,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* 3. PRIMARY CLOTHING PRODUCT GRID */}
-      <section className="w-full px-4 mb-10">
+      <section id="catalog-grid-section" className="w-full px-3 sm:px-4 mb-12">
         {filteredProducts.length === 0 ? (
           <div className="py-16 text-center bg-[#f3ede3] rounded-xl border border-[#e8e2d8]">
             <span className="material-symbols-outlined text-[36px] text-[#7d766f] mb-2">
@@ -130,13 +205,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               onClick={() => {
                 setSelectedCategory('All');
               }}
-              className="mt-3 px-4 py-1.5 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider"
+              className="mt-3 px-4 py-1.5 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider cursor-pointer"
             >
               Reset Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
             {filteredProducts.map((product) => {
               const isWishlisted = wishlistIds.includes(product.id);
               return (

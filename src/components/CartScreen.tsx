@@ -64,26 +64,30 @@ export const CartScreen: React.FC<CartScreenProps> = ({
         </p>
       </div>
 
-      {/* Free Shipping Tier Banner */}
-      <div className="bg-[#f9f3e9] border border-[#cec5bd]/60 rounded-xl p-3.5 mb-5">
-        <div className="flex items-center justify-between text-[11px] font-semibold text-[#1d1b15] mb-1.5 uppercase tracking-wider">
-          <span className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[16px] text-[#7d5700]">local_shipping</span>
-            {isFreeShipping ? 'Complimentary Bangladesh Delivery Unlocked' : `Add ৳${(freeShippingThreshold - subtotal).toLocaleString()} for Free Delivery`}
-          </span>
-          <span className="text-[#7d5700]">{progressPercent}%</span>
-        </div>
-        <div className="w-full h-1.5 bg-[#ede7dd] rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#7d5700] transition-all duration-500 rounded-full"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Cart Items */}
+      {/* Cart Items & Order Summary (Desktop Responsive 2-Column Grid) */}
       {cartItems.length > 0 ? (
-        <div className="flex flex-col gap-3 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start mb-10">
+          {/* Left Column: Delivery & Items List */}
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4">
+            {/* Free Shipping Tier Banner */}
+            <div className="bg-[#f9f3e9] border border-[#cec5bd]/60 rounded-xl p-3.5">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-[#1d1b15] mb-1.5 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-[#7d5700]">local_shipping</span>
+                  {isFreeShipping ? 'Complimentary Bangladesh Delivery Unlocked' : `Add ৳${(freeShippingThreshold - subtotal).toLocaleString()} for Free Delivery`}
+                </span>
+                <span className="text-[#7d5700]">{progressPercent}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-[#ede7dd] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#7d5700] transition-all duration-500 rounded-full"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Cart Items */}
+            <div className="flex flex-col gap-3">
           {cartItems.map((item, index) => (
             <div
               key={`${item.product.id}-${item.size}-${index}`}
@@ -147,9 +151,10 @@ export const CartScreen: React.FC<CartScreenProps> = ({
               </div>
             </div>
           ))}
+          </div>
 
           {/* Complimentary Gift Box Option */}
-          <div className="bg-[#f3ede3] rounded-xl p-3 border border-[#e8e2d8] flex items-center justify-between">
+          <div className="bg-[#f3ede3] rounded-xl p-3.5 border border-[#e8e2d8] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="material-symbols-outlined text-[20px] text-[#7d5700]">redeem</span>
               <div>
@@ -168,67 +173,89 @@ export const CartScreen: React.FC<CartScreenProps> = ({
               className="w-5 h-5 accent-[#7d5700] rounded cursor-pointer"
             />
           </div>
+        </div>
 
-          {/* Promo Code Input */}
-          <form onSubmit={handleApplyPromo} className="flex gap-2">
-            <input
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
-              placeholder="Code (Try: AUTUMN25)"
-              className="flex-1 min-w-0 h-11 px-3 rounded-lg bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[13px] uppercase placeholder:normal-case placeholder:text-[#4b4640]/60 focus:outline-none focus:ring-1 focus:ring-[#7d5700]"
-            />
-            <button
-              type="submit"
-              className="h-11 px-4 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] active:scale-95 transition-all cursor-pointer shrink-0"
-            >
-              Apply
-            </button>
-          </form>
+        {/* Right Column: Sticky Order Summary & Checkout */}
+        <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-28 flex flex-col gap-4">
+          <div className="bg-[#f3ede3] rounded-xl p-4 sm:p-5 border border-[#e8e2d8] space-y-4 shadow-sm">
+            <h2 className="font-display text-[18px] text-[#1d1b15] font-semibold border-b border-[#ded5cb] pb-2.5">
+              Order Summary
+            </h2>
 
-          {/* Order Financial Breakdown */}
-          <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] space-y-2 mt-2">
-            <div className="flex justify-between text-[13px] text-[#4b4640]">
-              <span>Bag Subtotal</span>
-              <span className="font-semibold text-[#1d1b15]">৳{subtotal.toLocaleString()}</span>
-            </div>
+            {/* Promo Code Input */}
+            <form onSubmit={handleApplyPromo} className="flex gap-2">
+              <input
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                placeholder="Code (Try: AUTUMN25, DHAKA10)"
+                className="flex-1 min-w-0 h-11 px-3 rounded-lg bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[12px] uppercase placeholder:normal-case placeholder:text-[#4b4640]/60 focus:outline-none focus:ring-1 focus:ring-[#7d5700]"
+              />
+              <button
+                type="submit"
+                className="h-11 px-4 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                Apply
+              </button>
+            </form>
 
-            {discountPercent > 0 && (
-              <div className="flex justify-between text-[13px] text-[#7d5700]">
-                <span>Promotional Courtesy ({discountPercent}%)</span>
-                <span className="font-semibold">-৳{discountAmount.toLocaleString()}</span>
+            {/* Order Financial Breakdown */}
+            <div className="space-y-2.5 pt-1 text-[13px]">
+              <div className="flex justify-between text-[#4b4640]">
+                <span>Bag Subtotal ({cartItems.length} items)</span>
+                <span className="font-semibold text-[#1d1b15]">৳{subtotal.toLocaleString()}</span>
               </div>
-            )}
 
-            <div className="flex justify-between text-[13px] text-[#4b4640]">
-              <span>Nationwide Courier (Pathao/Steadfast)</span>
-              <span className="font-semibold text-[#7d5700]">
-                {isFreeShipping ? 'Complimentary' : `৳${shippingCost}`}
-              </span>
+              {discountPercent > 0 && (
+                <div className="flex justify-between text-[#7d5700]">
+                  <span>Promotional Courtesy ({discountPercent}%)</span>
+                  <span className="font-semibold">-৳{discountAmount.toLocaleString()}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-[#4b4640]">
+                <span>Nationwide Courier (Pathao/Steadfast)</span>
+                <span className="font-semibold text-[#7d5700]">
+                  {isFreeShipping ? 'Complimentary' : `৳${shippingCost}`}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-[#4b4640]">
+                <span>VAT / Tax (Bangladesh)</span>
+                <span className="font-semibold text-[#1d1b15]">Included in Price</span>
+              </div>
+
+              <div className="border-t border-[#cec5bd] pt-3 flex justify-between items-baseline text-[16px]">
+                <span className="font-semibold text-[#1d1b15]">Total Due</span>
+                <span className="font-display text-[22px] sm:text-[24px] font-bold text-[#1d1b15]">
+                  ৳{finalTotal.toLocaleString()}
+                </span>
+              </div>
             </div>
 
-            <div className="flex justify-between text-[13px] text-[#4b4640]">
-              <span>VAT / Tax (Bangladesh)</span>
-              <span className="font-semibold text-[#1d1b15]">Included in Price</span>
-            </div>
+            {/* Primary Checkout CTA */}
+            <button
+              id="cart-proceed-checkout-btn"
+              onClick={onOpenCheckout}
+              className="w-full h-12 sm:h-13 bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-bold text-[12px] sm:text-[13px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-md cursor-pointer"
+            >
+              <span>Proceed to Secure Checkout</span>
+              <span className="material-symbols-outlined text-[18px]">lock</span>
+            </button>
 
-            <div className="border-t border-[#cec5bd] pt-2.5 flex justify-between items-baseline text-[16px]">
-              <span className="font-semibold text-[#1d1b15]">Total Due</span>
-              <span className="font-display text-[22px] font-semibold text-[#1d1b15]">
-                ৳{finalTotal.toLocaleString()}
-              </span>
+            {/* Trust badges */}
+            <div className="pt-2 border-t border-[#cec5bd]/40 flex flex-col gap-2 text-[11px] text-[#4b4640]">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] text-[#2e7d32]">verified_user</span>
+                <span>Cash on Delivery (পণ্য দেখে মূল্য পরিশোধ)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] text-[#7d5700]">sync</span>
+                <span>7-Day Hassle-Free Size Exchange</span>
+              </div>
             </div>
           </div>
-
-          {/* Primary Checkout CTA */}
-          <button
-            id="cart-proceed-checkout-btn"
-            onClick={onOpenCheckout}
-            className="w-full h-13 bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-semibold text-[13px] uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-md cursor-pointer mt-1"
-          >
-            <span>Proceed to Secure Checkout</span>
-            <span className="material-symbols-outlined text-[18px]">lock</span>
-          </button>
         </div>
+      </div>
       ) : (
         <div className="py-20 text-center bg-[#f3ede3] rounded-xl border border-[#e8e2d8] p-8 flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-[#ede7dd] flex items-center justify-center text-[#7d5700] mb-4">

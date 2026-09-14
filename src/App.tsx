@@ -154,7 +154,7 @@ export default function App() {
       />
 
       {/* Main View Area with Responsive Mobile/Tablet/Desktop Framing */}
-      <main className="flex-1 w-full max-w-md md:max-w-2xl lg:max-w-4xl mx-auto pt-[92px] pb-10 sm:pb-14">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-[86px] sm:pt-[96px] pb-12 sm:pb-16">
         {activeTab === 'home' && (
           <HomeScreen
             wishlistIds={wishlistIds}

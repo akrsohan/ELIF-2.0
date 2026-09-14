@@ -122,8 +122,8 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
         </div>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">
+      {/* Product Grid (PC Responsive 4 Columns) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-10">
         {filteredProducts.map((product) => {
           const isWishlisted = wishlistIds.includes(product.id);
           return (

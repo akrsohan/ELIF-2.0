@@ -74,7 +74,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4 animate-fadeIn"
     >
       <div
-        className="w-full max-w-2xl bg-[#fff9ee] rounded-t-2xl sm:rounded-2xl max-h-[92vh] sm:max-h-[92vh] overflow-y-auto shadow-2xl border border-[#e8e2d8] flex flex-col relative no-scrollbar"
+        className="w-full max-w-2xl md:max-w-4xl lg:max-w-5xl bg-[#fff9ee] rounded-t-2xl sm:rounded-2xl max-h-[92vh] sm:max-h-[92vh] shadow-2xl border border-[#e8e2d8] flex flex-col relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 1. TOP STICKY BAR */}
@@ -122,10 +122,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
         </div>
 
-        {/* 2. PRODUCT IMAGE GALLERY WITH MAIN PREVIEW & ROW-WISE THUMBNAILS */}
-        <div className="bg-[#ede7dd] p-3 sm:p-4 border-b border-[#e8e2d8]">
-          {/* Main Large Image Display */}
-          <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[380px] bg-[#e2dbd0] rounded-xl overflow-hidden shadow-inner group">
+        {/* SCROLLABLE BODY (2-COLUMN GRID ON TABLET & PC) */}
+        <div className="overflow-y-auto flex-1 no-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-12 min-h-0">
+            {/* LEFT COLUMN: PRODUCT IMAGE GALLERY & TEXTILE ORIGIN */}
+            <div className="md:col-span-6 bg-[#ede7dd] p-3 sm:p-5 border-b md:border-b-0 md:border-r border-[#e8e2d8] flex flex-col justify-start">
+              {/* Main Large Image Display */}
+              <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] md:aspect-[4/5] max-h-[420px] bg-[#e2dbd0] rounded-xl overflow-hidden shadow-inner group">
             <img
               src={imageGallery[selectedImageIndex]}
               alt={`${product.name} - View ${selectedImageIndex + 1}`}
@@ -204,11 +207,26 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </button>
               ))}
             </div>
+
+            {/* Desktop Textile Origin Card */}
+            <div className="hidden md:flex flex-col gap-2 mt-5 p-3.5 bg-[#f3ede3] rounded-xl border border-[#ded5cb] text-[11px] text-[#4b4640]">
+              <div className="flex items-center gap-1.5 font-semibold text-[#1d1b15] uppercase tracking-wider text-[10px]">
+                <span className="material-symbols-outlined text-[16px] text-[#7d5700]">verified</span>
+                <span>Atelier Heritage & Craftsmanship</span>
+              </div>
+              <p className="leading-relaxed">
+                Handcrafted at our Dhaka flagship tailoring suite using ethically sourced fibres from Rajshahi and heritage European mills.
+              </p>
+              <div className="flex items-center gap-3 pt-1 text-[10px] text-[#7d5700] font-semibold">
+                <span>✓ OEKO-TEX Standard</span>
+                <span>✓ Natural Vegetable Dyes</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 3. PRODUCT INFO & PRICING */}
-        <div className="p-4 sm:p-6 flex flex-col gap-5">
+        {/* RIGHT COLUMN: PRODUCT INFO & PRICING */}
+        <div className="md:col-span-6 p-4 sm:p-6 flex flex-col gap-5">
           <div>
             <span className="text-[11px] font-bold text-[#7d5700] uppercase tracking-wider block mb-1">
               ELIF Dhaka Atelier
@@ -515,6 +533,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
         {/* 8. STICKY BOTTOM ACTIONS BAR: DIRECT BUY, ADD TO BAG, WISHLIST */}
         <div className="sticky bottom-0 z-30 bg-[#fff9ee] p-3 sm:p-4 border-t border-[#e8e2d8] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
