@@ -27,39 +27,40 @@ export const CartScreen: React.FC<CartScreenProps> = ({
     0
   );
 
-  const freeShippingThreshold = 300;
+  const freeShippingThreshold = 5000;
   const isFreeShipping = subtotal >= freeShippingThreshold;
-  const shippingCost = isFreeShipping || cartItems.length === 0 ? 0 : 25;
+  const shippingCost = isFreeShipping || cartItems.length === 0 ? 0 : 120;
   const discountAmount = Math.round((subtotal * discountPercent) / 100);
   const finalTotal = subtotal - discountAmount + shippingCost;
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim().toUpperCase() === 'AUTUMN25') {
+    const code = promoCode.trim().toUpperCase();
+    if (code === 'DHAKA10' || code === 'AUTUMN25') {
       setDiscountPercent(10);
-      onShowToast('10% Private Salon courtesy applied.');
-    } else if (promoCode.trim().toUpperCase() === 'ELIFVIP') {
+      onShowToast('10% Dhaka Atelier privilege applied.');
+    } else if (code === 'BKASH15' || code === 'ELIFVIP') {
       setDiscountPercent(15);
-      onShowToast('15% VIP Atelier privilege applied.');
+      onShowToast('15% VIP customer courtesy applied.');
     } else {
-      onShowToast('Invalid or expired invitation code.');
+      onShowToast('Invalid coupon. Try: DHAKA10 or BKASH15');
     }
   };
 
   const progressPercent = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
 
   return (
-    <div className="flex flex-col w-full px-4 pt-2 pb-24 selection:bg-[#ffdeaa]">
+    <div className="flex flex-col w-full px-4 pt-2 pb-28 selection:bg-[#ffdeaa]">
       {/* Header */}
       <div className="mb-4">
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700]">
-          Haute Acquisition
+          Haute Acquisition • বাংলাদেশ
         </span>
         <h1 className="font-display text-[28px] sm:text-[32px] text-[#1d1b15] tracking-tight">
           Shopping Bag
         </h1>
         <p className="text-[13px] text-[#4b4640] mt-0.5">
-          {cartItems.length} {cartItems.length === 1 ? 'creation' : 'creations'} selected.
+          {cartItems.length} {cartItems.length === 1 ? 'creation' : 'creations'} selected • Delivered from Dhaka Atelier
         </p>
       </div>
 
@@ -68,7 +69,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
         <div className="flex items-center justify-between text-[11px] font-semibold text-[#1d1b15] mb-1.5 uppercase tracking-wider">
           <span className="flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[16px] text-[#7d5700]">local_shipping</span>
-            {isFreeShipping ? 'Complimentary Express Courier Unlocked' : `Add €${freeShippingThreshold - subtotal} for Complimentary Express`}
+            {isFreeShipping ? 'Complimentary Bangladesh Delivery Unlocked' : `Add ৳${(freeShippingThreshold - subtotal).toLocaleString()} for Free Delivery`}
           </span>
           <span className="text-[#7d5700]">{progressPercent}%</span>
         </div>
@@ -188,32 +189,32 @@ export const CartScreen: React.FC<CartScreenProps> = ({
           <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] space-y-2 mt-2">
             <div className="flex justify-between text-[13px] text-[#4b4640]">
               <span>Bag Subtotal</span>
-              <span className="font-semibold text-[#1d1b15]">€{subtotal}</span>
+              <span className="font-semibold text-[#1d1b15]">৳{subtotal.toLocaleString()}</span>
             </div>
 
             {discountPercent > 0 && (
               <div className="flex justify-between text-[13px] text-[#7d5700]">
-                <span>Private Courtesy ({discountPercent}%)</span>
-                <span className="font-semibold">-€{discountAmount}</span>
+                <span>Promotional Courtesy ({discountPercent}%)</span>
+                <span className="font-semibold">-৳{discountAmount.toLocaleString()}</span>
               </div>
             )}
 
             <div className="flex justify-between text-[13px] text-[#4b4640]">
-              <span>DHL Express Delivery</span>
+              <span>Nationwide Courier (Pathao/Steadfast)</span>
               <span className="font-semibold text-[#7d5700]">
-                {isFreeShipping ? 'Complimentary' : '€25'}
+                {isFreeShipping ? 'Complimentary' : `৳${shippingCost}`}
               </span>
             </div>
 
             <div className="flex justify-between text-[13px] text-[#4b4640]">
-              <span>Taxes & Customs</span>
-              <span className="font-semibold text-[#1d1b15]">Included</span>
+              <span>VAT / Tax (Bangladesh)</span>
+              <span className="font-semibold text-[#1d1b15]">Included in Price</span>
             </div>
 
             <div className="border-t border-[#cec5bd] pt-2.5 flex justify-between items-baseline text-[16px]">
               <span className="font-semibold text-[#1d1b15]">Total Due</span>
               <span className="font-display text-[22px] font-semibold text-[#1d1b15]">
-                €{finalTotal}
+                ৳{finalTotal.toLocaleString()}
               </span>
             </div>
           </div>

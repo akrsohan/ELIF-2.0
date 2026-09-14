@@ -102,10 +102,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {product.name}
             </h2>
             <p className="text-[13px] text-[#4b4640] mt-0.5">{product.subtitle}</p>
-            <p className="font-display text-[20px] sm:text-[22px] font-semibold text-[#1d1b15] mt-2">
-              {product.currency}
-              {product.price}
-            </p>
+            <div className="flex items-baseline gap-2 mt-2">
+              <span className="font-display text-[22px] sm:text-[24px] font-semibold text-[#1d1b15]">
+                {product.currency}{product.price.toLocaleString()}
+              </span>
+              <span className="text-[11px] text-[#2e7d32] font-semibold bg-[#e8f5e9] px-2 py-0.5 rounded-full">
+                COD Available
+              </span>
+            </div>
           </div>
 
           {/* Color Selector */}
@@ -199,11 +203,18 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
               )}
               {activeTab === 'shipping' && (
-                <p>
-                  Complimentary carbon-neutral DHL Express delivery within 2-3 business
-                  days. Packaged in archival embossed presentation boxes with prepaid 30-day
-                  courtesy return labels.
-                </p>
+                <div className="space-y-1.5">
+                  <p>
+                    Complimentary express courier across Dhaka (24–48 hours) and 2–3 days to Chittagong, Sylhet, and all 64 districts via Pathao / Steadfast.
+                  </p>
+                  <p className="text-[#2e7d32] font-semibold text-[12px] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px]">verified</span>
+                    Cash on Delivery (COD) supported at doorstep inspection.
+                  </p>
+                  <p className="text-[11px] text-[#7d766f]">
+                    Delivered from our Gulshan 2 Flagship Atelier in hand-tied artisanal boxes with 7-day exchange guarantee.
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -214,7 +225,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               onClick={handleAdd}
               className="w-full h-12 bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-semibold text-[13px] uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-md cursor-pointer"
             >
-              <span>Add to Bag • {product.currency}{product.price}</span>
+              <span>Add to Bag • {product.currency}{product.price.toLocaleString()}</span>
               <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
             </button>
           </div>

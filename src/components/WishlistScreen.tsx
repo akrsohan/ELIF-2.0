@@ -97,7 +97,7 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
                   </p>
                   <p className="text-[16px] font-semibold text-[#1d1b15] mt-1">
                     {product.currency}
-                    {product.price}
+                    {product.price.toLocaleString()}
                   </p>
                 </div>
 

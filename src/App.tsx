@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
-import { BottomNav } from './components/BottomNav';
+import { BottomFooter } from './components/BottomFooter';
 import { HomeScreen } from './components/HomeScreen';
 import { CategoriesScreen } from './components/CategoriesScreen';
 import { WishlistScreen } from './components/WishlistScreen';
@@ -139,13 +139,15 @@ export default function App() {
       {/* Fixed Luxury Header */}
       <Header
         cartCount={totalCartCount}
+        wishlistCount={wishlistIds.length}
+        activeTab={activeTab}
         onOpenMenu={() => setIsMenuOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
         onNavigateTab={handleNavigateTab}
       />
 
       {/* Main View Area with Responsive Mobile/Tablet/Desktop Framing */}
-      <main className="flex-1 w-full max-w-md md:max-w-2xl lg:max-w-4xl mx-auto pt-[92px] pb-28">
+      <main className="flex-1 w-full max-w-md md:max-w-2xl lg:max-w-4xl mx-auto pt-[92px] pb-10 sm:pb-14">
         {activeTab === 'home' && (
           <HomeScreen
             wishlistIds={wishlistIds}
@@ -196,12 +198,10 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Bottom Navigation */}
-      <BottomNav
-        activeTab={activeTab}
-        cartCount={totalCartCount}
-        wishlistCount={wishlistIds.length}
-        onSelectTab={(tab) => handleNavigateTab(tab)}
+      {/* Bottom Footer Navbar with Copyrights, Policies, Cookies, Social Media */}
+      <BottomFooter
+        onNavigateTab={handleNavigateTab}
+        onShowToast={showToast}
       />
 
       {/* Modals & Overlays */}

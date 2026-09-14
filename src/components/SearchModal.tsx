@@ -132,8 +132,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                           {p.subtitle}
                         </p>
                         <p className="text-[14px] font-semibold text-[#7d5700] mt-1">
-                          {p.currency}
-                          {p.price}
+                          {p.currency}{p.price.toLocaleString()}
                         </p>
                       </div>
                     </div>

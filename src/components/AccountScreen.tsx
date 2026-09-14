@@ -13,19 +13,19 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
       <div className="bg-[#f3ede3] rounded-xl p-5 border border-[#e8e2d8] shadow-sm mb-5">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-[#1d1b19] text-white flex items-center justify-center font-display text-[22px] shadow-sm">
-            EV
+            FA
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-display text-[22px] text-[#1d1b15]">
-                Eleanor Vance
+                Farhana Ahmed
               </h1>
               <span className="bg-[#ffc55f] text-[#755100] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                VIP Salon
+                VIP Dhaka
               </span>
             </div>
             <p className="text-[12px] text-[#4b4640]">
-              Member N° 8492 • Paris & Geneva Client
+              Member N° 8492 • Gulshan & Banani Patron
             </p>
           </div>
         </div>
@@ -37,11 +37,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           </div>
           <div>
             <span className="text-[10px] uppercase tracking-wider text-[#4b4640] block">Atelier</span>
-            <span className="text-[13px] font-semibold text-[#1d1b15]">Paris 8e</span>
+            <span className="text-[13px] font-semibold text-[#1d1b15]">Dhaka Flagship</span>
           </div>
           <div>
             <span className="text-[10px] uppercase tracking-wider text-[#4b4640] block">Stylist</span>
-            <span className="text-[13px] font-semibold text-[#1d1b15]">Claire M.</span>
+            <span className="text-[13px] font-semibold text-[#1d1b15]">Nusrat J.</span>
           </div>
         </div>
       </div>
@@ -77,15 +77,15 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
                   Active Consignment
                 </span>
-                <p className="text-[14px] font-semibold text-[#1d1b15]">Order #EL-9042</p>
+                <p className="text-[14px] font-semibold text-[#1d1b15]">Order #EL-BD9042</p>
               </div>
               <span className="bg-[#e8e2d8] text-[#1d1b15] text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                In Transit (DHL)
+                In Transit (Pathao / Steadfast)
               </span>
             </div>
 
             <p className="text-[12px] text-[#4b4640] mt-3">
-              Delivery estimated: Tomorrow by 14:00 • Paris 8ème arrondissement
+              Delivery estimated: Tomorrow by 14:00 • Banani / Gulshan 2, Dhaka
             </p>
 
             {/* Tracking Milestones */}
@@ -114,10 +114,10 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
             </div>
 
             <button
-              onClick={() => onShowToast('Live DHL Courier Location: Hub Roissy Charles de Gaulle (On Route).')}
+              onClick={() => onShowToast('Steadfast / Pathao Live Tracking #PT-889104: Courier assigned at Gulshan-2 Hub.')}
               className="w-full h-10 rounded-lg bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#ede7dd] transition-colors cursor-pointer"
             >
-              Track Courier Live
+              Track Courier Live (Bangladesh)
             </button>
           </div>
 
@@ -125,10 +125,10 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] opacity-90">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[13px] font-semibold text-[#1d1b15]">Order #EL-8812</p>
-                <p className="text-[11px] text-[#4b4640]">Spring Equinox Collection • €980</p>
+                <p className="text-[13px] font-semibold text-[#1d1b15]">Order #EL-BD8812</p>
+                <p className="text-[11px] text-[#4b4640]">Heritage Jamdani & Silk Edition • ৳14,500</p>
               </div>
-              <span className="text-[11px] text-[#7d5700] font-semibold">Delivered</span>
+              <span className="text-[11px] text-[#7d5700] font-semibold">Delivered • COD Paid</span>
             </div>
           </div>
         </div>
@@ -144,21 +144,21 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
               Autumn Solace Fitting Suite
             </h3>
             <p className="text-[12px] text-[#4b4640] mt-1">
-              Thursday, 18 September at 16:30 • 14 Rue Saint-Honoré, Paris
+              Thursday at 16:30 • House 42, Road 11, Banani / Gulshan 2, Dhaka
             </p>
             <p className="text-[11px] text-[#7d5700] mt-2">
-              Assigned Master Tailor: Jean-Luc Moreau
+              Assigned Master Tailor: Ustad Kabir Hossain
             </p>
 
             <div className="flex gap-2 mt-4">
               <button
-                onClick={() => onShowToast('Fitting confirmed with Atelier Concierge.')}
+                onClick={() => onShowToast('Fitting confirmed with Dhaka Atelier Concierge.')}
                 className="flex-1 h-10 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#7d5700] active:scale-95 transition-all cursor-pointer"
               >
                 Confirm
               </button>
               <button
-                onClick={() => onShowToast('Reschedule request sent to Claire M.')}
+                onClick={() => onShowToast('Reschedule request sent to Nusrat J.')}
                 className="h-10 px-4 bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#ede7dd] active:scale-95 transition-all cursor-pointer"
               >
                 Reschedule
@@ -167,10 +167,10 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           </div>
 
           <button
-            onClick={() => onShowToast('Private salon reservation opened for Geneva, Paris, and Milan.')}
+            onClick={() => onShowToast('Private salon reservation opened for Gulshan 2 and Banani Ateliers.')}
             className="w-full h-11 rounded-lg border border-[#7d5700] text-[#7d5700] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#ffc55f]/10 active:scale-95 transition-all cursor-pointer"
           >
-            + Book Additional Atelier Session
+            + Book Additional Dhaka Fitting Session
           </button>
         </div>
       )}

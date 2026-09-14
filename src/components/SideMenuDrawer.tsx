@@ -77,16 +77,27 @@ export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
 
           <div className="border-t border-[#e8e2d8] pt-4 flex flex-col gap-2">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700] px-2 mb-1">
-              The Flagship
+              The Flagship & Services
             </span>
             <button
               onClick={() => {
-                onShowToast('Atelier Paris: 14 Rue Saint-Honoré, 75001 Paris.');
+                onShowToast('Dhaka Atelier: House 42, Road 11, Block D, Banani / Gulshan 2, Dhaka.');
                 onClose();
               }}
-              className="text-left py-2 px-3 text-[13px] text-[#4b4640] hover:text-[#1d1b15] cursor-pointer"
+              className="text-left py-2 px-3 text-[13px] text-[#4b4640] hover:text-[#1d1b15] cursor-pointer flex items-center justify-between"
             >
-              Paris Atelier & Private Salon
+              <span>Dhaka Flagship Salon (Gulshan 2)</span>
+              <span className="text-[10px] text-[#7d5700] font-semibold bg-[#ffdeaa]/50 px-1.5 py-0.5 rounded">Visiting</span>
+            </button>
+            <button
+              onClick={() => {
+                onShowToast('Dhaka WhatsApp Stylist: +880 1711-456789 (Open 10 AM - 10 PM)');
+                onClose();
+              }}
+              className="text-left py-2 px-3 text-[13px] text-[#4b4640] hover:text-[#1d1b15] cursor-pointer flex items-center justify-between"
+            >
+              <span>WhatsApp Personal Stylist</span>
+              <span className="text-[10px] text-[#2e7d32] font-semibold">Online</span>
             </button>
             <button
               onClick={() => {
@@ -104,14 +115,18 @@ export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
         <div className="border-t border-[#e8e2d8] pt-4 text-[12px] text-[#4b4640]">
           <div className="flex items-center justify-between mb-2">
             <span>Currency</span>
-            <span className="font-semibold text-[#1d1b15]">EUR (€)</span>
+            <span className="font-semibold text-[#1d1b15]">BDT (৳) Taka</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-2">
             <span>Region</span>
-            <span className="font-semibold text-[#1d1b15]">France / Europe</span>
+            <span className="font-semibold text-[#1d1b15]">Bangladesh (All 64 Districts)</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-[#2e7d32] font-medium">
+            <span>Payment Modes</span>
+            <span>bKash • COD • Cards</span>
           </div>
           <p className="text-[10px] uppercase tracking-wider text-[#7d766f] mt-3">
-            © 2025 ELIF STUDIO PARIS
+            © 2025 ELIF ATELIER • DHAKA & PARIS
           </p>
         </div>
       </div>

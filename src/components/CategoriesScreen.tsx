@@ -184,7 +184,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
                 <div className="flex items-center justify-between mt-auto pt-1 border-t border-[#e8e2d8]/80">
                   <span className="text-[15px] font-semibold text-[#1d1b15]">
                     {product.currency}
-                    {product.price}
+                    {product.price.toLocaleString()}
                   </span>
 
                   <button
