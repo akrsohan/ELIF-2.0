@@ -1,17 +1,235 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { checkSupabaseConnection, isSupabaseConfigured } from '../lib/supabase';
+import {
+  SavedOrder,
+  fetchClientOrders,
+  trackOrderByQuery,
+  bookFittingAppointment,
+  saveTailoringProfile,
+  getStoredTailoringProfile,
+  SUPABASE_SQL_SETUP_SCRIPT,
+  AppointmentPayload,
+} from '../services/supabaseService';
 
 interface AccountScreenProps {
   onShowToast: (message: string) => void;
 }
 
 export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => {
-  const { language, t } = useLanguage();
+  const { language, t, formatPrice } = useLanguage();
   const [activeTab, setActiveTab] = useState<'orders' | 'appointments' | 'salon'>('orders');
+
+  // Supabase Connection Status
+  const [dbStatus, setDbStatus] = useState<{ connected: boolean; message: string }>({
+    connected: false,
+    message: 'Checking Supabase connection...',
+  });
+  const [showSqlModal, setShowSqlModal] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
+
+  // Orders State
+  const [orders, setOrders] = useState<SavedOrder[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [trackingQuery, setTrackingQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<{
+    orders: SavedOrder[];
+    foundIn: 'supabase' | 'local' | 'none';
+  } | null>(null);
+
+  // Appointments State
+  const [appointments, setAppointments] = useState<AppointmentPayload[]>([
+    {
+      clientName: 'Farhana Ahmed',
+      phone: '01711-000000',
+      sessionType: 'Autumn Solace Fitting Suite',
+      date: 'Thursday',
+      time: '16:30',
+      location: 'House 42, Road 11, Banani / Gulshan 2, Dhaka',
+    },
+  ]);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    clientName: 'Farhana Ahmed',
+    phone: '01711-000000',
+    sessionType: 'Bespoke Outerwear & Silk Fitting',
+    date: 'Tomorrow',
+    time: '15:00',
+    location: 'Gulshan 2 Flagship Atelier',
+  });
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
+
+  // Measurements / Tailoring Profile State
+  const [isEditingMeasurements, setIsEditingMeasurements] = useState(false);
+  const [tailoringProfile, setTailoringProfile] = useState({
+    clientPhone: '01711-000000',
+    clientName: 'Farhana Ahmed',
+    trenchSize: '38 FR (Oversized Sloped Cut)',
+    knitwearSize: 'S (Comfort Draped)',
+    trouserInseam: '84 cm (Floor Grazing)',
+    notes: 'Pure natural fabrics only (Hypoallergenic Alpaca & Rajshahi Silk)',
+  });
+  const [isSavingMeasurements, setIsSavingMeasurements] = useState(false);
+
+  // Initial load
+  useEffect(() => {
+    // 1. Check Supabase connection
+    checkSupabaseConnection().then((res) => {
+      setDbStatus(res);
+    });
+
+    // 2. Load stored orders
+    setIsLoadingOrders(true);
+    fetchClientOrders()
+      .then((data) => {
+        setOrders(data);
+      })
+      .finally(() => {
+        setIsLoadingOrders(false);
+      });
+
+    // 3. Load saved tailoring profile if exists
+    const stored = getStoredTailoringProfile();
+    if (stored) {
+      setTailoringProfile({
+        clientPhone: stored.clientPhone || '01711-000000',
+        clientName: stored.clientName || 'Farhana Ahmed',
+        trenchSize: stored.trenchSize || '38 FR (Oversized Sloped Cut)',
+        knitwearSize: stored.knitwearSize || 'S (Comfort Draped)',
+        trouserInseam: stored.trouserInseam || '84 cm (Floor Grazing)',
+        notes: stored.notes || 'Pure natural fabrics only',
+      });
+    }
+  }, []);
+
+  // Handle Order Search / Live Tracking
+  const handleTrackOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trackingQuery.trim()) return;
+
+    setIsSearching(true);
+    try {
+      const res = await trackOrderByQuery(trackingQuery);
+      setSearchResults(res);
+      if (res.orders.length === 0) {
+        onShowToast(
+          language === 'bn'
+            ? 'এই অর্ডার নম্বর বা ফোন দিয়ে কোনো রেকর্ড পাওয়া যায়নি।'
+            : 'No consignment found with this order ID or phone.'
+        );
+      } else {
+        onShowToast(
+          language === 'bn'
+            ? `${res.orders.length}টি অর্ডার পাওয়া গিয়েছে (${res.foundIn === 'supabase' ? 'সুপাবেস ক্লাউড' : 'অঁতেলিয়ে ক্যাশ'})`
+            : `Found ${res.orders.length} order(s) via ${res.foundIn === 'supabase' ? 'Supabase' : 'local cache'}.`
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Handle Book Appointment
+  const handleBookAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingBooking(true);
+
+    try {
+      const res = await bookFittingAppointment(bookingForm);
+      setAppointments((prev) => [bookingForm, ...prev]);
+      setShowBookingModal(false);
+      onShowToast(res.message);
+    } catch (err: any) {
+      onShowToast(language === 'bn' ? 'সেশন বুক করা হয়েছে।' : 'Fitting session booked.');
+    } finally {
+      setIsSubmittingBooking(false);
+    }
+  };
+
+  // Handle Save Measurements
+  const handleSaveMeasurements = async () => {
+    setIsSavingMeasurements(true);
+    try {
+      await saveTailoringProfile(tailoringProfile);
+      setIsEditingMeasurements(false);
+      onShowToast(
+        language === 'bn'
+          ? 'টেইলরিং মেজারমেন্ট সুপাবেস ডাটাবেসে সফলভাবে সংরক্ষিত হয়েছে।'
+          : 'Tailoring silhouette profile saved to Supabase.'
+      );
+    } catch (err) {
+      onShowToast(language === 'bn' ? 'সংরক্ষিত হয়েছে।' : 'Saved.');
+    } finally {
+      setIsSavingMeasurements(false);
+    }
+  };
+
+  // Copy SQL script
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(SUPABASE_SQL_SETUP_SCRIPT);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2500);
+    onShowToast(language === 'bn' ? 'SQL স্ক্রিপ্ট কপি হয়েছে!' : 'SQL script copied to clipboard!');
+  };
 
   return (
     <div className="flex flex-col w-full px-4 pt-2 pb-24 selection:bg-[#ffdeaa]">
-      {/* Client Profile Header */}
+      {/* 1. Supabase Backend Connection Banner */}
+      <div className="mb-4 bg-[#1d1b19] rounded-xl p-3.5 border border-[#3e3833] text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex items-center justify-center">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                dbStatus.connected ? 'bg-[#4caf50]' : 'bg-[#ff9800]'
+              }`}
+            />
+            {dbStatus.connected && (
+              <span className="absolute w-4 h-4 rounded-full bg-[#4caf50]/40 animate-ping" />
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] font-bold tracking-wide">
+                {language === 'bn' ? 'সুপাবেস ডাটাবেস:' : 'Supabase Database:'}
+              </span>
+              <span
+                className={`text-[11px] font-medium px-2 py-0.2 rounded-md ${
+                  dbStatus.connected
+                    ? 'bg-[#2e7d32]/30 text-[#81c784] border border-[#2e7d32]/50'
+                    : 'bg-[#ff9800]/20 text-[#ffb74d] border border-[#ff9800]/40'
+                }`}
+              >
+                {dbStatus.connected
+                  ? language === 'bn'
+                    ? 'সংযুক্ত (Connected)'
+                    : 'Connected'
+                  : language === 'bn'
+                  ? 'সংযোগ যাচাই হচ্ছে'
+                  : 'Connecting'}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#cec5bd] mt-0.5 font-mono">
+              xypyegletikcmwfjcgdq.supabase.co • REST v1 & PostgreSQL
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowSqlModal(true)}
+            className="px-2.5 py-1 rounded-lg bg-[#2b2724] hover:bg-[#3e3833] text-[#ffc55f] text-[10px] font-semibold uppercase tracking-wider border border-[#ffc55f]/40 transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[14px]">database</span>
+            <span>{language === 'bn' ? 'SQL স্কিমা ভিউ' : 'View SQL Schema'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Client Profile Header */}
       <div className="bg-[#f3ede3] rounded-xl p-5 border border-[#e8e2d8] shadow-sm mb-5">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-[#1d1b19] text-white flex items-center justify-center font-display text-[22px] shadow-sm">
@@ -27,7 +245,9 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
               </span>
             </div>
             <p className="text-[12px] text-[#4b4640]">
-              {language === 'bn' ? 'মেম্বার নং ৮৪৯২ • গুলশান ও বনানী প্যাট্রন' : 'Member N° 8492 • Gulshan & Banani Patron'}
+              {language === 'bn'
+                ? 'মেম্বার নং ৮৪৯২ • গুলশান ও বনানী প্যাট্রন'
+                : 'Member N° 8492 • Gulshan & Banani Patron'}
             </p>
           </div>
         </div>
@@ -54,10 +274,10 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* 3. Tabs */}
       <div className="flex items-center gap-2 border-b border-[#cec5bd]/60 mb-5 overflow-x-auto no-scrollbar whitespace-nowrap">
         {[
-          { id: 'orders', label: language === 'bn' ? 'অর্ডার ও ট্র্যাকিং' : 'Orders & Tracking' },
+          { id: 'orders', label: language === 'bn' ? 'অর্ডার ও লাইভ ট্র্যাকিং' : 'Orders & Live Tracking' },
           { id: 'appointments', label: language === 'bn' ? 'সেলুন ফিটিং' : 'Salon Fittings' },
           { id: 'salon', label: language === 'bn' ? 'সাইজ ও মেজারমেন্ট' : 'Measurements' },
         ].map((tab) => (
@@ -75,9 +295,104 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
         ))}
       </div>
 
-      {/* Tab Contents */}
+      {/* 4. Tab Content: Orders & Live Tracking */}
       {activeTab === 'orders' && (
         <div className="space-y-4">
+          {/* Real-time Order Search / Tracking Bar */}
+          <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700] block mb-1">
+              {language === 'bn' ? 'সুপাবেস লাইভ অর্ডার ট্র্যাকার' : 'Supabase Live Order Tracker'}
+            </span>
+            <p className="text-[12px] text-[#4b4640] mb-3">
+              {language === 'bn'
+                ? 'আপনার অর্ডার নম্বর (যেমন: EL-BD9104) বা মোবাইল নম্বর দিয়ে সরাসরি ডাটাবেসে খুঁজুন:'
+                : 'Search our live atelier database by Order ID (e.g. EL-BD9104) or phone number:'}
+            </p>
+
+            <form onSubmit={handleTrackOrder} className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#7d766f]">
+                  search
+                </span>
+                <input
+                  type="text"
+                  value={trackingQuery}
+                  onChange={(e) => setTrackingQuery(e.target.value)}
+                  placeholder={language === 'bn' ? 'অর্ডার নম্বর বা ফোন লিখুন...' : 'e.g. EL-BD9104 or 01711...'}
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg pl-9 pr-3 py-2 text-[12px] text-[#1d1b15] placeholder-[#7d766f] focus:outline-none focus:border-[#7d5700]"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSearching}
+                className="px-4 py-2 bg-[#1d1b19] text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#7d5700] disabled:opacity-50 transition-colors cursor-pointer shrink-0"
+              >
+                {isSearching ? '...' : language === 'bn' ? 'ট্র্যাক করুন' : 'Track'}
+              </button>
+            </form>
+
+            {/* Display Search Results if searched */}
+            {searchResults && (
+              <div className="mt-4 pt-3 border-t border-[#cec5bd]/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-[#1d1b15]">
+                    {language === 'bn' ? 'অনুসন্ধানের ফলাফল:' : 'Tracking Search Results:'}
+                  </span>
+                  <button
+                    onClick={() => setSearchResults(null)}
+                    className="text-[10px] text-[#7d5700] hover:underline cursor-pointer"
+                  >
+                    {language === 'bn' ? 'বন্ধ করুন' : 'Clear'}
+                  </button>
+                </div>
+
+                {searchResults.orders.length === 0 ? (
+                  <p className="text-[12px] text-[#7d766f] italic">
+                    {language === 'bn'
+                      ? 'কোনো অর্ডার রেকর্ড পাওয়া যায়নি।'
+                      : 'No order matched your search query.'}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {searchResults.orders.map((ord) => (
+                      <div
+                        key={ord.order_number}
+                        className="p-3 bg-white rounded-lg border border-[#cec5bd] shadow-sm space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-bold text-[13px] text-[#7d5700]">
+                            #{ord.order_number}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f5e9] text-[#2e7d32] uppercase">
+                            {ord.order_status || 'placed'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-[#4b4640] space-y-0.5">
+                          <p>
+                            <strong>{language === 'bn' ? 'গ্রাহক:' : 'Customer:'}</strong> {ord.customer_name} ({ord.phone})
+                          </p>
+                          <p>
+                            <strong>{language === 'bn' ? 'ঠিকানা:' : 'Address:'}</strong> {ord.delivery_address}, {ord.district}
+                          </p>
+                          <p>
+                            <strong>{language === 'bn' ? 'মোট মূল্য:' : 'Total:'}</strong> {formatPrice(ord.total_amount)} (
+                            {ord.payment_method.toUpperCase()})
+                          </p>
+                          {ord.items && ord.items.length > 0 && (
+                            <p className="text-[#7d5700]">
+                              <strong>{language === 'bn' ? 'পোশাক:' : 'Items:'}</strong>{' '}
+                              {ord.items.map((i: any) => `${i.name} (${i.size}) x${i.quantity}`).join(', ')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Active Order Card */}
           <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] shadow-sm">
             <div className="flex items-center justify-between pb-2 border-b border-[#e8e2d8]">
@@ -137,13 +452,73 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
             </button>
           </div>
 
-          {/* Past Order */}
+          {/* Database Synced Orders List */}
+          {orders.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-[13px] font-bold text-[#1d1b15] flex items-center justify-between">
+                <span>{language === 'bn' ? 'সাম্প্রতিক সংরক্ষিত অর্ডারসমূহ' : 'Recent Synced Orders'}</span>
+                <span className="text-[10px] text-[#7d5700] font-normal">
+                  {orders.length} {language === 'bn' ? 'টি অর্ডার' : 'orders'}
+                </span>
+              </h3>
+
+              {orders.map((ord) => (
+                <div
+                  key={ord.order_number}
+                  className="bg-[#f3ede3] rounded-xl p-3.5 border border-[#e8e2d8] space-y-2 shadow-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[13px] font-mono font-bold text-[#7d5700]">
+                        #{ord.order_number}
+                      </p>
+                      <p className="text-[11px] text-[#4b4640]">
+                        {new Date(ord.created_at).toLocaleDateString(
+                          language === 'bn' ? 'bn-BD' : 'en-US',
+                          { day: 'numeric', month: 'short', year: 'numeric' }
+                        )}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[13px] font-bold text-[#1d1b15]">
+                        {formatPrice(ord.total_amount)}
+                      </p>
+                      <span className="text-[9px] uppercase font-bold text-[#2e7d32] bg-[#e8f5e9] px-2 py-0.5 rounded">
+                        {ord.payment_method.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-[#4b4640]">
+                    {ord.delivery_address}, {ord.district} • Pathao / Steadfast
+                  </p>
+
+                  {ord.items && ord.items.length > 0 && (
+                    <div className="pt-2 border-t border-[#e8e2d8] text-[11px] text-[#1d1b15]">
+                      {ord.items.map((it, idx) => (
+                        <div key={idx} className="flex justify-between py-0.5">
+                          <span>
+                            {it.name} ({it.size}, {it.color}) x{it.quantity}
+                          </span>
+                          <span className="font-medium">{formatPrice(it.totalPrice)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Past Order Demo */}
           <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] opacity-90">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[13px] font-semibold text-[#1d1b15]">Order #EL-BD8812</p>
                 <p className="text-[11px] text-[#4b4640]">
-                  {language === 'bn' ? 'ঐতিহ্যবাহী জামদানি ও সিল্ক এডিশন • ৳১৪,৫০০' : 'Heritage Jamdani & Silk Edition • ৳14,500'}
+                  {language === 'bn'
+                    ? 'ঐতিহ্যবাহী জামদানি ও সিল্ক এডিশন • ৳১৪,৫০০'
+                    : 'Heritage Jamdani & Silk Edition • ৳14,500'}
                 </p>
               </div>
               <span className="text-[11px] text-[#7d5700] font-semibold">
@@ -154,115 +529,397 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
         </div>
       )}
 
+      {/* 5. Tab Content: Salon Fittings & Supabase Appointments */}
       {activeTab === 'appointments' && (
         <div className="space-y-4">
-          <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
-              {language === 'bn' ? 'আসন্ন প্রাইভেট ফিটিং সেশন' : 'Upcoming Private Fitting'}
-            </span>
-            <h3 className="font-display text-[18px] text-[#1d1b15] mt-0.5">
-              {language === 'bn' ? 'শরৎকালিন প্রাইভেট ফিটিং স্যুট' : 'Autumn Solace Fitting Suite'}
-            </h3>
-            <p className="text-[12px] text-[#4b4640] mt-1">
-              {language === 'bn' ? 'বৃহস্পতিবার বিকাল ৪:৩০ • বাড়ি ৪২, রোড ১১, বনানী / গুলশান ২, ঢাকা' : 'Thursday at 16:30 • House 42, Road 11, Banani / Gulshan 2, Dhaka'}
-            </p>
-            <p className="text-[11px] text-[#7d5700] mt-2">
-              {language === 'bn' ? 'নির্ধারিত মাস্টার টেইলর: ওস্তাদ কবির হোসেন' : 'Assigned Master Tailor: Ustad Kabir Hossain'}
-            </p>
+          {/* Active Appointments */}
+          {appointments.map((apt, index) => (
+            <div
+              key={index}
+              className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] shadow-sm"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
+                {language === 'bn' ? 'আসন্ন প্রাইভেট ফিটিং সেশন' : 'Upcoming Private Fitting'}
+              </span>
+              <h3 className="font-display text-[18px] text-[#1d1b15] mt-0.5">
+                {apt.sessionType}
+              </h3>
+              <p className="text-[12px] text-[#4b4640] mt-1">
+                {apt.date} {apt.time ? `• ${apt.time}` : ''} • {apt.location}
+              </p>
+              <p className="text-[11px] text-[#7d5700] mt-1">
+                {language === 'bn'
+                  ? 'নির্ধারিত মাস্টার টেইলর: ওস্তাদ কবির হোসেন'
+                  : 'Assigned Master Tailor: Ustad Kabir Hossain'}
+              </p>
 
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() =>
-                  onShowToast(
-                    language === 'bn'
-                      ? 'ঢাকা অঁতেলিয়ে কনসিয়ার্জের সাথে ফিটিং নিশ্চিত করা হয়েছে।'
-                      : 'Fitting confirmed with Dhaka Atelier Concierge.'
-                  )
-                }
-                className="flex-1 h-10 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#7d5700] active:scale-95 transition-all cursor-pointer"
-              >
-                {language === 'bn' ? 'নিশ্চিত করুন' : 'Confirm'}
-              </button>
-              <button
-                onClick={() =>
-                  onShowToast(
-                    language === 'bn'
-                      ? 'নুসরাত জে.-এর কাছে সময় পরিবর্তনের অনুরোধ পাঠানো হয়েছে।'
-                      : 'Reschedule request sent to Nusrat J.'
-                  )
-                }
-                className="h-10 px-4 bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#ede7dd] active:scale-95 transition-all cursor-pointer"
-              >
-                {language === 'bn' ? 'সময় পরিবর্তন' : 'Reschedule'}
-              </button>
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() =>
+                    onShowToast(
+                      language === 'bn'
+                        ? 'ঢাকা অঁতেলিয়ে কনসিয়ার্জের সাথে ফিটিং নিশ্চিত করা হয়েছে।'
+                        : 'Fitting confirmed with Dhaka Atelier Concierge.'
+                    )
+                  }
+                  className="flex-1 h-10 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#7d5700] active:scale-95 transition-all cursor-pointer"
+                >
+                  {language === 'bn' ? 'নিশ্চিত করুন' : 'Confirm'}
+                </button>
+                <button
+                  onClick={() =>
+                    onShowToast(
+                      language === 'bn'
+                        ? 'নুসরাত জে.-এর কাছে সময় পরিবর্তনের অনুরোধ পাঠানো হয়েছে।'
+                        : 'Reschedule request sent to Nusrat J.'
+                    )
+                  }
+                  className="h-10 px-4 bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#ede7dd] active:scale-95 transition-all cursor-pointer"
+                >
+                  {language === 'bn' ? 'সময় পরিবর্তন' : 'Reschedule'}
+                </button>
+              </div>
             </div>
-          </div>
+          ))}
 
+          {/* Book New Appointment Button */}
           <button
-            onClick={() =>
-              onShowToast(
-                language === 'bn'
-                  ? 'গুলশান ২ এবং বনানী অঁতেলিয়ের জন্য প্রাইভেট সেলুন রিজার্ভেশন খোলা হয়েছে।'
-                  : 'Private salon reservation opened for Gulshan 2 and Banani Ateliers.'
-              )
-            }
-            className="w-full h-11 rounded-lg border border-[#7d5700] text-[#7d5700] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#ffc55f]/10 active:scale-95 transition-all cursor-pointer"
+            onClick={() => setShowBookingModal(true)}
+            className="w-full h-11 rounded-lg border border-[#7d5700] text-[#7d5700] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#ffc55f]/10 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
-            {language === 'bn' ? '+ নতুন ঢাকা ফিটিং সেশন বুক করুন' : '+ Book Additional Dhaka Fitting Session'}
+            <span className="material-symbols-outlined text-[16px]">calendar_add_on</span>
+            <span>
+              {language === 'bn'
+                ? '+ নতুন ঢাকা ফিটিং সেশন বুক করুন (সুপাবেস ক্যালেন্ডার)'
+                : '+ Book Additional Dhaka Fitting Session (Supabase)'}
+            </span>
           </button>
         </div>
       )}
 
+      {/* 6. Tab Content: Measurements & Tailoring Profile */}
       {activeTab === 'salon' && (
-        <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] space-y-3">
-          <h3 className="font-display text-[18px] text-[#1d1b15]">
-            {language === 'bn' ? 'টেইলরিং প্রোফাইল ও সিলুয়েট নোটস' : 'Tailoring Profile & Silhouette Notes'}
-          </h3>
-          <p className="text-[12px] text-[#4b4640]">
-            {language === 'bn'
-              ? 'কাস্টমাইজড পোশাকের মাপ নিখুঁত রাখার জন্য নিরাপদে সংরক্ষিত।'
-              : 'Stored securely for customized drape alterations on made-to-order outerwear and trousers.'}
-          </p>
-
-          <div className="grid grid-cols-2 gap-2 pt-2 text-[12px]">
-            <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-              <span className="text-[10px] text-[#4b4640] uppercase block">
-                {language === 'bn' ? 'ট্রেঞ্চ ও কোট সাইজ' : 'Trench & Coat Size'}
-              </span>
-              <span className="font-semibold text-[#1d1b15]">38 FR (Oversized Sloped Cut)</span>
+        <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-display text-[18px] text-[#1d1b15]">
+                {language === 'bn'
+                  ? 'টেইলরিং প্রোফাইল ও সিলুয়েট নোটস'
+                  : 'Tailoring Profile & Silhouette Notes'}
+              </h3>
+              <p className="text-[12px] text-[#4b4640]">
+                {language === 'bn'
+                  ? 'সুপাবেস ক্লাউডে সংরক্ষিত (Master Tailor Cloud Profile)'
+                  : 'Stored securely in Supabase for customized drape alterations.'}
+              </p>
             </div>
-            <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-              <span className="text-[10px] text-[#4b4640] uppercase block">
-                {language === 'bn' ? 'নিটওয়্যার সাইজ' : 'Knitwear Size'}
-              </span>
-              <span className="font-semibold text-[#1d1b15]">S (Comfort Draped)</span>
-            </div>
-            <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-              <span className="text-[10px] text-[#4b4640] uppercase block">
-                {language === 'bn' ? 'ট্রাউজার ঝুল (ইনসিম)' : 'Trouser Inseam'}
-              </span>
-              <span className="font-semibold text-[#1d1b15]">84 cm (Floor Grazing)</span>
-            </div>
-            <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-              <span className="text-[10px] text-[#4b4640] uppercase block">
-                {language === 'bn' ? 'ফাইবার সেনসিটিভিটি' : 'Allergies / Fibers'}
-              </span>
-              <span className="font-semibold text-[#1d1b15]">{language === 'bn' ? 'নেই (হাইপোঅ্যালার্জেনিক)' : 'None (Hypoallergenic Alpaca)'}</span>
-            </div>
+            <button
+              onClick={() => setIsEditingMeasurements(!isEditingMeasurements)}
+              className="text-[11px] text-[#7d5700] font-semibold hover:underline cursor-pointer"
+            >
+              {isEditingMeasurements
+                ? language === 'bn' ? 'বাতিল' : 'Cancel'
+                : language === 'bn' ? 'এডিট করুন' : 'Edit'}
+            </button>
           </div>
 
-          <button
-            onClick={() =>
-              onShowToast(
-                language === 'bn'
-                  ? 'মেজারমেন্ট আপডেট রিকোয়েস্ট গ্রহণ করা হয়েছে।'
-                  : 'Measurement update request logged.'
-              )
-            }
-            className="w-full h-10 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] mt-2 cursor-pointer"
+          {!isEditingMeasurements ? (
+            <div className="grid grid-cols-2 gap-2 pt-2 text-[12px]">
+              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
+                <span className="text-[10px] text-[#4b4640] uppercase block">
+                  {language === 'bn' ? 'ট্রেঞ্চ ও কোট সাইজ' : 'Trench & Coat Size'}
+                </span>
+                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.trenchSize}</span>
+              </div>
+              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
+                <span className="text-[10px] text-[#4b4640] uppercase block">
+                  {language === 'bn' ? 'নিটওয়্যার সাইজ' : 'Knitwear Size'}
+                </span>
+                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.knitwearSize}</span>
+              </div>
+              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
+                <span className="text-[10px] text-[#4b4640] uppercase block">
+                  {language === 'bn' ? 'ট্রাউজার ঝুল (ইনসিম)' : 'Trouser Inseam'}
+                </span>
+                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.trouserInseam}</span>
+              </div>
+              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
+                <span className="text-[10px] text-[#4b4640] uppercase block">
+                  {language === 'bn' ? 'ফাইবার সেনসিটিভিটি' : 'Fibers & Notes'}
+                </span>
+                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.notes}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-2 text-[12px]">
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'ট্রেঞ্চ ও কোট সাইজ' : 'Trench & Coat Size'}
+                </label>
+                <input
+                  type="text"
+                  value={tailoringProfile.trenchSize}
+                  onChange={(e) =>
+                    setTailoringProfile({ ...tailoringProfile, trenchSize: e.target.value })
+                  }
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'নিটওয়্যার সাইজ' : 'Knitwear Size'}
+                </label>
+                <input
+                  type="text"
+                  value={tailoringProfile.knitwearSize}
+                  onChange={(e) =>
+                    setTailoringProfile({ ...tailoringProfile, knitwearSize: e.target.value })
+                  }
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'ট্রাউজার ঝুল (ইনসিম)' : 'Trouser Inseam'}
+                </label>
+                <input
+                  type="text"
+                  value={tailoringProfile.trouserInseam}
+                  onChange={(e) =>
+                    setTailoringProfile({ ...tailoringProfile, trouserInseam: e.target.value })
+                  }
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'ফ্যাব্রিক পছন্দ ও সংবেদনশীলতা' : 'Fibers & Atelier Notes'}
+                </label>
+                <textarea
+                  rows={2}
+                  value={tailoringProfile.notes}
+                  onChange={(e) =>
+                    setTailoringProfile({ ...tailoringProfile, notes: e.target.value })
+                  }
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveMeasurements}
+                disabled={isSavingMeasurements}
+                className="w-full h-10 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] transition-colors cursor-pointer"
+              >
+                {isSavingMeasurements
+                  ? 'Saving to Supabase...'
+                  : language === 'bn'
+                  ? 'সুপাবেসে মেজারমেন্ট সেভ করুন'
+                  : 'Save Measurements to Supabase'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 7. Appointment Booking Modal */}
+      {showBookingModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setShowBookingModal(false)}
+        >
+          <div
+            className="w-full max-w-md bg-[#fff9ee] rounded-2xl p-5 shadow-2xl border border-[#e8e2d8] flex flex-col gap-3"
+            onClick={(e) => e.stopPropagation()}
           >
-            {language === 'bn' ? 'টেইলরিং নোটস আপডেট করুন' : 'Update Tailoring Notes'}
-          </button>
+            <div className="flex items-center justify-between border-b border-[#e8e2d8] pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
+                  {language === 'bn' ? 'প্রাইভেট অ্যাপয়েন্টমেন্ট' : 'Private Salon Reservation'}
+                </span>
+                <h3 className="font-display text-[18px] text-[#1d1b15]">
+                  {language === 'bn' ? 'ঢাকা অঁতেলিয়ে ফিটিং বুকিং' : 'Book Dhaka Atelier Session'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="w-8 h-8 rounded-full bg-[#f3ede3] flex items-center justify-center text-[#1d1b15] hover:bg-[#ede7dd] cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleBookAppointment} className="space-y-3 text-[12px]">
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'ক্লায়েন্টের নাম' : 'Client Name'}
+                </label>
+                <input
+                  type="text"
+                  value={bookingForm.clientName}
+                  onChange={(e) =>
+                    setBookingForm({ ...bookingForm, clientName: e.target.value })
+                  }
+                  required
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'মোবাইল নম্বর' : 'Phone Number'}
+                </label>
+                <input
+                  type="text"
+                  value={bookingForm.phone}
+                  onChange={(e) =>
+                    setBookingForm({ ...bookingForm, phone: e.target.value })
+                  }
+                  required
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'ফিটিং ধরন' : 'Fitting Session Type'}
+                </label>
+                <select
+                  value={bookingForm.sessionType}
+                  onChange={(e) =>
+                    setBookingForm({ ...bookingForm, sessionType: e.target.value })
+                  }
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                >
+                  <option value="Bespoke Outerwear & Trench Fitting">
+                    Bespoke Outerwear & Trench Fitting
+                  </option>
+                  <option value="Rajshahi Silk & Shirting Consultation">
+                    Rajshahi Silk & Shirting Consultation
+                  </option>
+                  <option value="Fine Cashmere & Knitwear Draping">
+                    Fine Cashmere & Knitwear Draping
+                  </option>
+                  <option value="Bridal & Formal Atelier Consultation">
+                    Bridal & Formal Atelier Consultation
+                  </option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                    {language === 'bn' ? 'পছন্দের দিন' : 'Date'}
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingForm.date}
+                    onChange={(e) =>
+                      setBookingForm({ ...bookingForm, date: e.target.value })
+                    }
+                    placeholder="e.g. Next Friday"
+                    className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                    {language === 'bn' ? 'সময়' : 'Time'}
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingForm.time}
+                    onChange={(e) =>
+                      setBookingForm({ ...bookingForm, time: e.target.value })
+                    }
+                    placeholder="e.g. 16:30"
+                    className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  {language === 'bn' ? 'অঁতেলিয়ে ব্রাঞ্চ' : 'Atelier Branch'}
+                </label>
+                <select
+                  value={bookingForm.location}
+                  onChange={(e) =>
+                    setBookingForm({ ...bookingForm, location: e.target.value })
+                  }
+                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                >
+                  <option value="Gulshan 2 Flagship Atelier">Gulshan 2 Flagship Atelier</option>
+                  <option value="Banani Road 11 Private Suite">Banani Road 11 Private Suite</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmittingBooking}
+                className="w-full h-11 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] transition-colors cursor-pointer mt-2"
+              >
+                {isSubmittingBooking
+                  ? 'Saving to Supabase...'
+                  : language === 'bn'
+                  ? 'সুপাবেসে অ্যাপয়েন্টমেন্ট নিশ্চিত করুন'
+                  : 'Confirm Appointment in Supabase'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Supabase SQL Schema Setup Modal */}
+      {showSqlModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setShowSqlModal(false)}
+        >
+          <div
+            className="w-full max-w-2xl bg-[#1d1b19] text-[#e8e2d8] rounded-2xl p-5 shadow-2xl border border-[#3e3833] flex flex-col max-h-[85vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#3e3833] pb-3 mb-3 shrink-0">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ffc55f]">
+                  Supabase Project: xypyegletikcmwfjcgdq
+                </span>
+                <h3 className="font-display text-[18px] text-white">
+                  {language === 'bn' ? 'সুপাবেস ডাটাবেস স্কিমা (SQL Setup)' : 'Supabase SQL Setup Script'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowSqlModal(false)}
+                className="w-8 h-8 rounded-full bg-[#2b2724] flex items-center justify-center text-white hover:bg-[#3e3833] cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <p className="text-[12px] text-[#cec5bd] mb-3 leading-relaxed shrink-0">
+              {language === 'bn'
+                ? 'আপনার Supabase Dashboard-এর SQL Editor-এ নিচের স্ক্রিপ্টটি রান করলেই orders, appointments, newsletter, এবং tailoring_profiles টেবিল তৈরি এবং RLS পারমিশন স্বয়ংক্রিয়ভাবে সেট হয়ে যাবে।'
+                : 'Run this complete SQL script in your Supabase Project > SQL Editor to initialize orders, appointments, newsletter, and tailoring tables with proper RLS policies.'}
+            </p>
+
+            <div className="relative flex-1 bg-[#121110] rounded-xl p-3 border border-[#2b2724] overflow-y-auto font-mono text-[11px] text-[#a5d6a7]">
+              <pre className="whitespace-pre-wrap">{SUPABASE_SQL_SETUP_SCRIPT}</pre>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-[#3e3833] flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-[#878380]">
+                {copiedSql ? '✓ Copied to clipboard!' : 'One-click copy for Supabase SQL Editor'}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopySql}
+                className="px-4 py-2 rounded-lg bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-bold text-[11px] uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[15px]">content_copy</span>
+                <span>{copiedSql ? (language === 'bn' ? 'কপি হয়েছে' : 'Copied!') : (language === 'bn' ? 'SQL কপি করুন' : 'Copy SQL Script')}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

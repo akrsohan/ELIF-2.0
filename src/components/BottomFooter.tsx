@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TabType } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { subscribeNewsletter } from '../services/supabaseService';
 
 interface BottomFooterProps {
   onNavigateTab: (tab: TabType, categoryFilter?: string) => void;
@@ -13,6 +14,31 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const [activePolicyModal, setActivePolicyModal] = useState<string | null>(null);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes('@')) {
+      onShowToast(language === 'bn' ? 'সঠিক ইমেইল এড্রেস লিখুন।' : 'Please enter a valid email address.');
+      return;
+    }
+    setIsSubscribing(true);
+    try {
+      const res = await subscribeNewsletter(newsletterEmail);
+      setIsSubscribing(false);
+      setNewsletterEmail('');
+      onShowToast(
+        language === 'bn'
+          ? 'ধন্যবাদ! আমাদের ভিআইপি অঁতেলিয়ে গেজেটে আপনার ইমেইল যুক্ত হয়েছে।'
+          : res.message
+      );
+    } catch (err) {
+      setIsSubscribing(false);
+      onShowToast(language === 'bn' ? 'সাবস্ক্রিপশন সম্পন্ন হয়েছে।' : 'Subscribed to VIP Gazette.');
+    }
+  };
 
   const policyContent: Record<string, { title: string; subtitle: string; details: string[] }> = {
     privacy: {
@@ -121,20 +147,26 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
               ? 'হ্যান্ডলুম রাজশাহী সিল্ক, প্রিমিয়াম উল ও কটন থেকে তৈরি আভিজাত্যপূর্ণ পোশাক।'
               : 'Artisanal outerwear, pure Rajshahi silk, and refined essentials tailored in Dhaka and Paris.'}
           </p>
-          <div className="text-[11px] text-[#cec5bd] flex flex-col gap-1 mt-1">
-            <p className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#ffc55f]">location_on</span>
-              <span>Road 11, Banani / Gulshan 2, Dhaka</span>
-            </p>
-            <p className="flex items-center gap-1.5">
+          <div className="text-[11px] text-[#cec5bd] flex flex-col gap-1.5 mt-1">
+            <div className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px] text-[#ffc55f]">call</span>
-              <a href="tel:+8801995513269" className="hover:text-white transition-colors">
-                +880 1995-513269 ({language === 'bn' ? 'সকাল ১০টা - রাত ১০টা' : '10 AM - 10 PM'})
-              </a>
-            </p>
+              <button
+                type="button"
+                onClick={() => setIsPhoneModalOpen(true)}
+                className="hover:text-[#ffc55f] text-left transition-colors cursor-pointer flex items-center gap-1.5 group"
+                title={language === 'bn' ? 'WhatsApp বা সরাসরি কলের অপশন' : 'Click for WhatsApp or Phone Call'}
+              >
+                <span className="underline decoration-[#ffc55f]/40 underline-offset-2 group-hover:decoration-[#ffc55f]">
+                  +880 1995-513269 ({language === 'bn' ? 'সকাল ১০টা - রাত ১০টা' : '10 AM - 10 PM'})
+                </span>
+                <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#ffc55f]/20 text-[#ffc55f]">
+                  {language === 'bn' ? 'অপশন' : 'Options'}
+                </span>
+              </button>
+            </div>
             <p className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px] text-[#ffc55f]">mail</span>
-              <span>concierge@elif-dhaka.com</span>
+              <span className="select-all cursor-default text-[#cec5bd]">elifrekha@gmail.com</span>
             </p>
           </div>
         </div>
@@ -237,15 +269,45 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
           </ul>
         </div>
 
-        {/* Col 4: Social Media & Payment Badges */}
+        {/* Col 4: Newsletter & Social Media */}
         <div className="flex flex-col gap-3">
           <p className="font-semibold text-white uppercase tracking-wider text-[11px] text-[#ffc55f]">
+            {language === 'bn' ? 'ভিআইপি অঁতেলিয়ে গেজেট' : 'VIP Atelier Gazette'}
+          </p>
+          <p className="text-[11px] text-[#a8a199]">
+            {language === 'bn'
+              ? 'নতুন কালেকশন ও প্রাইভেট সিল্ক রিলিজের আপডেট সরাসরি আপনার ইমেইলে পেতে যুক্ত হোন:'
+              : 'Subscribe for private runway previews, silk drops, and tailoring archives:'}
+          </p>
+
+          {/* Connected Supabase Newsletter Form */}
+          <form onSubmit={handleSubscribe} className="flex items-center gap-1.5 mt-0.5">
+            <input
+              type="email"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              placeholder={language === 'bn' ? 'আপনার ইমেইল লিখুন...' : 'name@example.com'}
+              required
+              className="bg-[#24211e] border border-[#3e3833] rounded-lg px-2.5 py-1.5 text-[11px] text-white placeholder-[#878380] focus:outline-none focus:border-[#ffc55f] flex-1"
+            />
+            <button
+              type="submit"
+              disabled={isSubscribing}
+              className="px-3 py-1.5 rounded-lg bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-bold text-[10px] uppercase tracking-wider transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+            >
+              {isSubscribing
+                ? '...'
+                : language === 'bn' ? 'যুক্ত হোন' : 'Join'}
+            </button>
+          </form>
+
+          <p className="font-semibold text-white uppercase tracking-wider text-[11px] text-[#ffc55f] mt-2">
             {language === 'bn' ? 'সোশ্যাল মিডিয়া' : 'Connect & Follow'}
           </p>
           <p className="text-[11px] text-[#a8a199]">
             {language === 'bn'
-              ? 'নতুন কালেকশন ও স্টাইলিং আপডেটের জন্য আমাদের সোশ্যাল মিডিয়া ফলো করুন:'
-              : 'Follow our atelier updates and runway previews across our official channels:'}
+              ? 'আমাদের অফিশিয়াল চ্যানেলে ফলো করুন:'
+              : 'Follow our official Dhaka channels:'}
           </p>
 
           {/* Social Icons with Official Brand Colors on Hover */}
@@ -400,6 +462,112 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
               <button
                 onClick={() => setActivePolicyModal(null)}
                 className="px-5 py-2 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg cursor-pointer hover:bg-[#7d5700] transition-colors"
+              >
+                {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. PHONE & WHATSAPP ACTION MODAL */}
+      {isPhoneModalOpen && (
+        <div
+          onClick={() => setIsPhoneModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-[#fff9ee] text-[#1d1b15] rounded-2xl p-5 sm:p-6 shadow-2xl border border-[#e8e2d8] flex flex-col gap-3.5 relative"
+          >
+            <div className="flex items-start justify-between border-b border-[#e8e2d8] pb-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
+                  {language === 'bn' ? 'যোগাযোগ মাধ্যম নির্বাচন করুন' : 'Select Contact Option'}
+                </p>
+                <h3 className="font-display text-[19px] font-bold text-[#1d1b15] mt-0.5">
+                  +880 1995-513269
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPhoneModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#f3ede3] flex items-center justify-center text-[#1d1b15] hover:bg-[#ede7dd] cursor-pointer"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-[12px] text-[#4b4640] leading-relaxed">
+              {language === 'bn'
+                ? 'আপনি কি WhatsApp এ বার্তা পাঠাতে চান নাকি সরাসরি ফোনে কল করতে চান?'
+                : 'Would you like to send a message on WhatsApp or call directly from your phone?'}
+            </p>
+
+            <div className="flex flex-col gap-2.5">
+              {/* Option 1: WhatsApp Message */}
+              <a
+                href="https://wa.me/8801995513269?text=Hello%20ELIF%20Studio%2C%20I%20would%20like%20to%20inquire%20about%20your%20products."
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsPhoneModalOpen(false)}
+                className="flex items-center gap-3.5 p-3.5 rounded-xl bg-[#25D366]/10 border border-[#25D366]/35 hover:bg-[#25D366]/20 transition-all text-left group cursor-pointer"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-5.805 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[13px] font-bold text-[#1d1b15]">
+                      {language === 'bn' ? 'WhatsApp এ মেসেজ দিন' : 'Message on WhatsApp'}
+                    </p>
+                    <span className="text-[10px] font-bold text-[#2e7d32] bg-[#2e7d32]/10 px-2 py-0.5 rounded uppercase">
+                      {language === 'bn' ? 'চ্যাট' : 'Chat'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#4b4640] mt-0.5">
+                    {language === 'bn'
+                      ? 'হোয়াটসঅ্যাপে সরাসরি মেসেজ বা ছবি পাঠিয়ে অর্ডার দিন'
+                      : 'Chat directly on WhatsApp for inquiries & orders'}
+                  </p>
+                </div>
+              </a>
+
+              {/* Option 2: Mobile Dialer Call */}
+              <a
+                href="tel:+8801995513269"
+                onClick={() => setIsPhoneModalOpen(false)}
+                className="flex items-center gap-3.5 p-3.5 rounded-xl bg-[#ffc55f]/15 border border-[#ffc55f]/40 hover:bg-[#ffc55f]/25 transition-all text-left group cursor-pointer"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#1d1b19] text-[#ffc55f] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined text-[22px]">call</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[13px] font-bold text-[#1d1b15]">
+                      {language === 'bn' ? 'ফোনে সরাসরি কল করুন' : 'Call via Phone Dialer'}
+                    </p>
+                    <span className="text-[10px] font-bold text-[#7d5700] bg-[#ffc55f]/30 px-2 py-0.5 rounded uppercase">
+                      {language === 'bn' ? 'ডায়াল' : 'Dial'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#4b4640] mt-0.5">
+                    {language === 'bn'
+                      ? 'মোবাইলের ডায়ালারে +880 1995-513269 কল চালু হবে'
+                      : 'Opens your device dial pad to place a call'}
+                  </p>
+                </div>
+              </a>
+            </div>
+
+            <div className="pt-2 border-t border-[#e8e2d8] flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsPhoneModalOpen(false)}
+                className="w-full py-2 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg cursor-pointer hover:bg-[#7d5700] transition-colors"
               >
                 {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
               </button>

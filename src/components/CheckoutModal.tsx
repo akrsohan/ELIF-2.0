@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CartItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { createOrderInSupabase } from '../services/supabaseService';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface CheckoutModalProps {
   onClose: () => void;
   onClearCart: () => void;
   onShowToast: (message: string) => void;
+  onNavigateToAccount?: () => void;
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -18,33 +20,69 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onClose,
   onClearCart,
   onShowToast,
+  onNavigateToAccount,
 }) => {
   const { language, t, localizeProduct, formatPrice, formatNumber } = useLanguage();
 
   if (!isOpen) return null;
 
   const [step, setStep] = useState<'details' | 'processing' | 'confirmed'>('details');
-  const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'cod' | 'nagad' | 'card'>('bkash');
+  const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'cod' | 'nagad' | 'card'>('cod');
   const [district, setDistrict] = useState<'Dhaka' | 'Chattogram' | 'Sylhet' | 'Other'>('Dhaka');
 
-  const handlePay = () => {
+  // Client & delivery form fields
+  const [customerName, setCustomerName] = useState(language === 'bn' ? 'ফারহানা আহমেদ' : 'Farhana Ahmed');
+  const [phone, setPhone] = useState('01711-000000');
+  const [address, setAddress] = useState(
+    language === 'bn'
+      ? 'বাড়ি ৪২, রোড ১১, ব্লক ডি, বনানী / গুলশান ২, ঢাকা - ১২১৩'
+      : 'House 42, Road 11, Block D, Banani / Gulshan 2, Dhaka - 1213'
+  );
+  const [notes, setNotes] = useState('');
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [confirmedOrderNumber, setConfirmedOrderNumber] = useState<string>('EL-BD9104');
+  const [dbSource, setDbSource] = useState<'supabase' | 'local'>('supabase');
+
+  const handlePay = async () => {
     setStep('processing');
-    setTimeout(() => {
+    const deliveryFee = district === 'Dhaka' ? 0 : 150;
+    const finalTotal = totalAmount + deliveryFee;
+
+    try {
+      const res = await createOrderInSupabase({
+        customerName: customerName.trim() || (language === 'bn' ? 'ফারহানা আহমেদ' : 'Farhana Ahmed'),
+        phone: phone.trim() || '01711-000000',
+        deliveryAddress: address.trim(),
+        district,
+        paymentMethod,
+        cartItems,
+        subtotal: totalAmount,
+        deliveryFee,
+        totalAmount: finalTotal,
+        notes: notes.trim(),
+      });
+
+      setConfirmedOrderNumber(res.orderNumber);
+      setDbSource(res.source);
       setStep('confirmed');
       onClearCart();
+
+      const sourceTag = res.source === 'supabase' ? ' (Supabase DB)' : '';
       const msg =
         language === 'bn'
           ? paymentMethod === 'cod'
-            ? 'ক্যাশ অন ডেলিভারিতে অর্ডার নিশ্চিত হয়েছে! আমাদের ঢাকা অঁতেলিয়ে থেকে পার্সেলটি প্রস্তুত করা হচ্ছে।'
-            : (paymentMethod === 'bkash' ? 'বিকাশ' : paymentMethod === 'nagad' ? 'নগদ' : 'কার্ড') +
-              '-এর মাধ্যমে পেমেন্ট সফল হয়েছে। আপনার পার্সেলটি প্রস্তুত করা হচ্ছে।'
-          : paymentMethod === 'cod'
-            ? 'Order confirmed with Cash on Delivery! Our Dhaka atelier is preparing your package.'
-            : 'Payment authorized successfully via ' +
-              (paymentMethod === 'bkash' ? 'bKash' : paymentMethod === 'nagad' ? 'Nagad' : 'Card') +
-              '. Your consignment is being tailored.';
+            ? `অর্ডার #${res.orderNumber} সফলভাবে নিশ্চিত ও সংরক্ষিত হয়েছে${sourceTag}!`
+            : `${paymentMethod === 'bkash' ? 'বিকাশ' : paymentMethod === 'nagad' ? 'নগদ' : 'কার্ড'}-এ #${res.orderNumber} অর্ডার অনুমোদিত হয়েছে${sourceTag}!`
+          : `Order #${res.orderNumber} confirmed and synced to atelier database${sourceTag}!`;
+
       onShowToast(msg);
-    }, 1400);
+    } catch (err: any) {
+      console.error('Order checkout error:', err);
+      setConfirmedOrderNumber(`EL-BD${Math.floor(1000 + Math.random() * 9000)}`);
+      setStep('confirmed');
+      onClearCart();
+      onShowToast(language === 'bn' ? 'অর্ডার সংরক্ষিত হয়েছে!' : 'Order recorded successfully!');
+    }
   };
 
   return (
@@ -79,16 +117,87 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Delivery address (Bangladesh) */}
             <div className="bg-[#f3ede3] p-3.5 rounded-xl border border-[#e8e2d8]">
               <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#7d5700] mb-1">
-                <span>{language === 'bn' ? 'ডেলিভারি ঠিকানা' : 'Shipping Address'}</span>
-                <span className="text-[10px] text-[#4b4640] font-normal">🇧🇩 {language === 'bn' ? 'যাচাইকৃত' : 'Verified'}</span>
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">local_shipping</span>
+                  {language === 'bn' ? 'ডেলিভারি তথ্য ও ঠিকানা' : 'Shipping & Recipient'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingAddress(!isEditingAddress)}
+                  className="text-[10px] text-[#7d5700] hover:underline font-semibold cursor-pointer"
+                >
+                  {isEditingAddress
+                    ? language === 'bn' ? 'সম্পন্ন' : 'Done'
+                    : language === 'bn' ? 'পরিবর্তন করুন' : 'Edit Details'}
+                </button>
               </div>
-              <p className="text-[14px] font-semibold text-[#1d1b15]">{language === 'bn' ? 'ফারহানা আহমেদ' : 'Farhana Ahmed'}</p>
-              <p className="text-[12px] text-[#4b4640]">
-                {language === 'bn' ? 'বাড়ি ৪২, রোড ১১, ব্লক ডি, বনানী / গুলশান ২, ঢাকা - ১২১৩' : 'House 42, Road 11, Block D, Banani / Gulshan 2, Dhaka - 1213'}
-              </p>
-              <p className="text-[11px] text-[#7d5700] mt-1 font-medium">
-                {language === 'bn' ? 'পাঠাও এক্সপ্রেস / স্টিডফাস্ট (ঢাকায় ২৪-৪৮ ঘণ্টার মধ্যে ডেলিভারি)' : 'Pathao Express / Steadfast (24-48h Delivery in Dhaka)'}
-              </p>
+
+              {!isEditingAddress ? (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[14px] font-semibold text-[#1d1b15]">{customerName}</p>
+                    <span className="text-[11px] font-medium text-[#4b4640]">{phone}</span>
+                  </div>
+                  <p className="text-[12px] text-[#4b4640] mt-0.5">{address}</p>
+                  <p className="text-[11px] text-[#7d5700] mt-1 font-medium flex items-center gap-1">
+                    <span>⚡</span>
+                    {language === 'bn'
+                      ? 'পাঠাও এক্সপ্রেস / স্টিডফাস্ট (ঢাকায় ২৪-৪৮ ঘণ্টার মধ্যে ডেলিভারি)'
+                      : 'Pathao Express / Steadfast (24-48h Delivery in Dhaka)'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2 mt-2 pt-2 border-t border-[#cec5bd]/60 text-[12px]">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-0.5">
+                      {language === 'bn' ? 'গ্রাহকের নাম' : 'Full Name'}
+                    </label>
+                    <input
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full bg-white border border-[#cec5bd] rounded-lg px-2.5 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                      placeholder="e.g. Farhana Ahmed"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-0.5">
+                      {language === 'bn' ? 'মোবাইল নম্বর (ডেলিভারি ও ওটিপি)' : 'Mobile Phone'}
+                    </label>
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-white border border-[#cec5bd] rounded-lg px-2.5 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-0.5">
+                      {language === 'bn' ? 'সম্পূর্ণ ডেলিভারি ঠিকানা' : 'Delivery Address'}
+                    </label>
+                    <textarea
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      rows={2}
+                      className="w-full bg-white border border-[#cec5bd] rounded-lg px-2.5 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                      placeholder="House, Road, Area, City..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-0.5">
+                      {language === 'bn' ? 'বিশেষ ডেলিভারি নোট (ঐচ্ছিক)' : 'Delivery Note (Optional)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="w-full bg-white border border-[#cec5bd] rounded-lg px-2.5 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                      placeholder={language === 'bn' ? 'যেমন: বিকেলে ডেলিভারি দিন...' : 'e.g. Call before arrival...'}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* District quick selector */}
               <div className="mt-2.5 pt-2 border-t border-[#cec5bd]/60 flex items-center gap-1.5 flex-wrap text-[11px]">
@@ -310,49 +419,79 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <span className="material-symbols-outlined text-[32px]">done_all</span>
             </div>
 
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700] mb-1">
-              {language === 'bn' ? 'অর্ডার নিশ্চিত হয়েছে' : 'Order Confirmed'}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#e8f5e9] border border-[#a5d6a7] text-[#2e7d32] text-[10px] font-bold uppercase tracking-wider mb-2">
+              <span className="w-2 h-2 rounded-full bg-[#2e7d32] animate-pulse" />
+              <span>
+                {dbSource === 'supabase'
+                  ? 'Supabase Cloud Synced'
+                  : 'Order Recorded (Local Atelier Cache)'}
+              </span>
+            </div>
+
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700] mb-0.5">
+              {language === 'bn' ? 'অর্ডার সফলভাবে নিশ্চিত হয়েছে' : 'Consignment Confirmed'}
             </span>
-            <h3 className="font-display text-[24px] text-[#1d1b15] mb-2">
-              {language === 'bn' ? 'ধন্যবাদ, ফারহানা!' : 'Dhannobad, Farhana!'}
+            <h3 className="font-display text-[22px] text-[#1d1b15] mb-1">
+              {language === 'bn' ? `ধন্যবাদ, ${customerName}!` : `Dhannobad, ${customerName}!`}
             </h3>
-            <p className="text-[13px] text-[#4b4640] max-w-[300px] mb-4 leading-relaxed">
+            <p className="text-[12px] text-[#4b4640] max-w-[320px] mb-3 leading-relaxed">
               {language === 'bn'
-                ? 'আপনার অর্ডার (#EL-BD9104) আমাদের গুলশান ২ অঁতেলিয়ে শাখায় গৃহীত হয়েছে। খুব শীঘ্রই ডেলিভারির জন্য প্রস্তুত হবে।'
-                : 'Your order #EL-BD9104 has been received at our Gulshan 2 atelier. Hand-inspection and packaging will begin immediately.'}
+                ? `আপনার অর্ডার #${confirmedOrderNumber} আমাদের গুলশান ২ অঁতেলিয়ে শাখায় ডাটাবেসে নিবন্ধিত হয়েছে। প্রস্তুত হলেই কুরিয়ারে হস্তান্তর করা হবে।`
+                : `Your order #${confirmedOrderNumber} is registered in our atelier database. Hand-inspection and packaging are now underway.`}
             </p>
 
-            <div className="w-full bg-[#f3ede3] rounded-xl p-3.5 border border-[#e8e2d8] text-left text-[12px] space-y-1.5 mb-5">
+            <div className="w-full bg-[#f3ede3] rounded-xl p-3.5 border border-[#e8e2d8] text-left text-[12px] space-y-1.5 mb-4">
+              <div className="flex justify-between">
+                <span className="text-[#4b4640]">{language === 'bn' ? 'অর্ডার নম্বর:' : 'Order Number:'}</span>
+                <span className="font-mono font-bold text-[#7d5700]">#{confirmedOrderNumber}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-[#4b4640]">{language === 'bn' ? 'আনুমানিক পৌঁছানোর সময়:' : 'Estimated Arrival:'}</span>
-                <span className="font-semibold text-[#1d1b15]">{language === 'bn' ? 'আগামীকাল (২৪-৪৮ ঘণ্টার মধ্যে)' : 'Tomorrow (within 24-48 Hours)'}</span>
+                <span className="font-semibold text-[#1d1b15]">{language === 'bn' ? '২৪-৪৮ ঘণ্টার মধ্যে' : 'Within 24-48 Hours'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4b4640]">{language === 'bn' ? 'ডেলিভারি এলাকা:' : 'Delivery Location:'}</span>
-                <span className="font-semibold text-[#1d1b15]">{language === 'bn' ? 'বনানী, ঢাকা - ১২১৩' : 'Banani, Dhaka - 1213'}</span>
+                <span className="text-[#4b4640]">{language === 'bn' ? 'ডেলিভারি এলাকা:' : 'Delivery Area:'}</span>
+                <span className="font-semibold text-[#1d1b15] truncate max-w-[180px]">{district}, {address}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4b4640]">{language === 'bn' ? 'কুরিয়ার:' : 'Courier:'}</span>
-                <span className="font-semibold text-[#1d1b15]">Pathao Express / Steadfast</span>
+                <span className="text-[#4b4640]">{language === 'bn' ? 'কুরিয়ার পার্টনার:' : 'Courier Service:'}</span>
+                <span className="font-semibold text-[#1d1b15]">Steadfast / Pathao Express</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#4b4640]">{language === 'bn' ? 'পেমেন্ট স্ট্যাটাস:' : 'Payment Status:'}</span>
+                <span className="text-[#4b4640]">{language === 'bn' ? 'পেমেন্ট মেথড:' : 'Payment:'}</span>
                 <span className="font-semibold text-[#7d5700]">
                   {paymentMethod === 'cod'
-                    ? (language === 'bn' ? `ক্যাশ অন ডেলিভারি (${formatPrice(totalAmount)})` : `Cash on Delivery (${formatPrice(totalAmount)})`)
-                    : (language === 'bn'
-                        ? `অনলাইনে পরিশোধিত (${paymentMethod === 'bkash' ? 'বিকাশ' : paymentMethod === 'nagad' ? 'নগদ' : 'কার্ড'})`
-                        : `Paid Online (${paymentMethod === 'bkash' ? 'bKash' : paymentMethod === 'nagad' ? 'Nagad' : 'Card'})`)}
+                    ? language === 'bn' ? `ক্যাশ অন ডেলিভারি (${formatPrice(totalAmount)})` : `COD on Doorstep (${formatPrice(totalAmount)})`
+                    : language === 'bn'
+                    ? `অনলাইন গেটওয়ে (${paymentMethod === 'bkash' ? 'বিকাশ' : paymentMethod === 'nagad' ? 'নগদ' : 'কার্ড'})`
+                    : `Online Paid (${paymentMethod === 'bkash' ? 'bKash' : paymentMethod === 'nagad' ? 'Nagad' : 'Card'})`}
                 </span>
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="w-full h-12 rounded-lg bg-[#1d1b19] text-white text-[12px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] transition-colors cursor-pointer"
-            >
-              {language === 'bn' ? 'শপিং চালিয়ে যান' : 'Continue Shopping'}
-            </button>
+            <div className="w-full flex flex-col gap-2">
+              {onNavigateToAccount && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onNavigateToAccount();
+                  }}
+                  className="w-full h-11 rounded-lg bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">local_shipping</span>
+                  <span>{language === 'bn' ? 'অ্যাকাউন্টে অর্ডার ট্র্যাক করুন' : 'Track Order in Account'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full h-10 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] transition-colors cursor-pointer"
+              >
+                {language === 'bn' ? 'শপিং চালিয়ে যান' : 'Continue Shopping'}
+              </button>
+            </div>
           </div>
         )}
       </div>

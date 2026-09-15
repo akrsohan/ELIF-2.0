@@ -263,6 +263,7 @@ export default function App() {
         onClose={() => setIsCheckoutOpen(false)}
         onClearCart={() => setCartItems([])}
         onShowToast={showToast}
+        onNavigateToAccount={() => handleNavigateTab('account')}
       />
 
       {/* Floating Toast Notification */}
