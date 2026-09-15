@@ -13,8 +13,10 @@ import { AtelierStoryModal } from './components/AtelierStoryModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { INITIAL_CART, PRODUCTS } from './data/catalog';
 import { CartItem, Product, TabType } from './types';
+import { useLanguage } from './context/LanguageContext';
 
 export default function App() {
+  const { language, localizeProduct } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
   const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART);
@@ -52,11 +54,13 @@ export default function App() {
     setWishlistIds((prev) => {
       const exists = prev.includes(productId);
       const product = PRODUCTS.find((p) => p.id === productId);
+      const loc = product ? localizeProduct(product) : null;
+      const name = loc?.name || 'piece';
       if (exists) {
-        showToast(`Removed from curated wishlist.`);
+        showToast(language === 'bn' ? 'উইশলিস্ট থেকে সরানো হয়েছে।' : 'Removed from curated wishlist.');
         return prev.filter((id) => id !== productId);
       } else {
-        showToast(`Added ${product?.name || 'piece'} to wishlist.`);
+        showToast(language === 'bn' ? `'${name}' উইশলিস্টে যুক্ত করা হয়েছে।` : `Added ${name} to wishlist.`);
         return [...prev, productId];
       }
     });
@@ -82,7 +86,12 @@ export default function App() {
         },
       ];
     });
-    showToast(`Added ${product.name} to shopping bag.`);
+    const loc = localizeProduct(product);
+    showToast(
+      language === 'bn'
+        ? `'${loc.name}' শপিং ব্যাগে যুক্ত হয়েছে।`
+        : `Added ${loc.name} to shopping bag.`
+    );
   };
 
   const handleAddToCartWithOptions = (product: Product, size: string, color: string) => {
@@ -111,7 +120,12 @@ export default function App() {
     handleAddToCartWithOptions(product, size, color);
     setSelectedProduct(null);
     setIsCheckoutOpen(true);
-    showToast(`'${product.name}' নির্বাচন করা হয়েছে। অর্ডার সম্পন্ন করতে ঠিকানা লিখুন।`);
+    const loc = localizeProduct(product);
+    showToast(
+      language === 'bn'
+        ? `'${loc.name}' নির্বাচন করা হয়েছে। অর্ডার সম্পন্ন করতে ঠিকানা লিখুন।`
+        : `'${loc.name}' selected. Enter your address to place order.`
+    );
   };
 
   const handleUpdateCartQuantity = (index: number, newQty: number) => {
@@ -128,7 +142,7 @@ export default function App() {
 
   const handleRemoveCartItem = (index: number) => {
     setCartItems((prev) => prev.filter((_, i) => i !== index));
-    showToast('Item removed from shopping bag.');
+    showToast(language === 'bn' ? 'আইটেমটি ব্যাগ থেকে সরানো হয়েছে।' : 'Item removed from shopping bag.');
   };
 
   const handleNavigateTab = (tab: TabType, filter?: string) => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PRODUCTS } from '../data/catalog';
 import { Product, TabType } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HomeScreenProps {
   wishlistIds: string[];
@@ -21,17 +22,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigateTab,
   onShowToast,
 }) => {
+  const { language, t, localizeProduct, formatNumber, formatPrice } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
   const categories = [
-    { key: 'All', label: 'All Clothing', count: PRODUCTS.length },
-    { key: 'Outerwear', label: 'Coats & Outerwear' },
-    { key: 'Knitwear', label: 'Knitwear & Sweaters' },
-    { key: 'Silk & Shirting', label: 'Silk & Shirts' },
-    { key: 'Trousers', label: 'Pants & Trousers' },
-    { key: 'Leather Goods', label: 'Leather & Bags' },
-    { key: 'Footwear', label: 'Footwear' },
+    { key: 'All', label: t.filterAll, count: PRODUCTS.length },
+    { key: 'Outerwear', label: language === 'bn' ? 'ওভারওয়্যার ও জ্যাকেট' : 'Coats & Outerwear' },
+    { key: 'Knitwear', label: language === 'bn' ? 'নিটওয়্যার ও সোয়েটার' : 'Knitwear & Sweaters' },
+    { key: 'Silk & Shirting', label: language === 'bn' ? 'সিল্ক ও শার্ট' : 'Silk & Shirts' },
+    { key: 'Trousers', label: language === 'bn' ? 'ট্রাউজার্স ও প্যান্ট' : 'Pants & Trousers' },
+    { key: 'Leather Goods', label: language === 'bn' ? 'লেদার ব্যাগ ও সামগ্রী' : 'Leather & Bags' },
+    { key: 'Footwear', label: language === 'bn' ? 'হ্যান্ডমেড জুতা' : 'Footwear' },
   ];
 
   const filteredProducts = PRODUCTS.filter((p) => {
@@ -55,18 +57,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="max-w-xl z-10">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#ffc55f]">
-                Dhaka Flagship Atelier
+                {language === 'bn' ? 'ঢাকা ফ্ল্যাগশিপ অঁতেলিয়ে' : 'Dhaka Flagship Atelier'}
               </span>
               <span className="text-[#878380]">•</span>
               <span className="text-[10px] sm:text-[11px] text-[#cec5bd] uppercase tracking-wider">
-                Autumn Solace ’25
+                {language === 'bn' ? 'অটাম সোলাস ’২৫' : 'Autumn Solace ’25'}
               </span>
             </div>
             <h1 className="font-display text-[24px] sm:text-[32px] lg:text-[38px] leading-tight font-medium text-white mb-2.5">
-              Refined Bangladeshi Craft & Modern Tailoring
+              {language === 'bn' ? 'বাঙালি ঐতিহ্য ও আধুনিক টেইলরিংয়ের মেলবন্ধন' : 'Refined Bangladeshi Craft & Modern Tailoring'}
             </h1>
             <p className="text-[12px] sm:text-[13px] text-[#cec5bd] leading-relaxed mb-4">
-              রাজশাহী সিল্ক, কাশ্মীরি উল ও বেলজিয়ান লিনেনে বোনা প্রিমিয়াম পোশাক। ক্যাশ অন ডেলিভারি (COD) এবং ঢাকা সিটিতে ২৪-৪৮ ঘণ্টায় এক্সপ্রেস হোম ডেলিভারি সুবিধা।
+              {language === 'bn'
+                ? 'রাজশাহী সিল্ক, কাশ্মীরি উল ও বেলজিয়ান লিনেনে বোনা প্রিমিয়াম পোশাক। ক্যাশ অন ডেলিভারি (COD) এবং ঢাকা সিটিতে ২৪-৪৮ ঘণ্টায় এক্সপ্রেস হোম ডেলিভারি সুবিধা।'
+                : 'Pure silhouettes marrying Bengal raw mulberry silks, fine alpaca, and unbleached European wool. Supported by doorstep Cash on Delivery and 24h Dhaka express dispatch.'}
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <button
@@ -78,7 +82,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 }}
                 className="h-9 sm:h-10 px-4 sm:px-5 rounded-xl bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-semibold text-[11px] sm:text-[12px] uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all shadow-md active:scale-95"
               >
-                <span>Explore Silhouettes</span>
+                <span>{language === 'bn' ? 'পোশাক কালেকশন দেখুন' : 'Explore Silhouettes'}</span>
                 <span className="material-symbols-outlined text-[17px]">arrow_downward</span>
               </button>
               {onOpenStory && (
@@ -88,7 +92,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-[11px] sm:text-[12px] uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all border border-white/20"
                 >
                   <span className="material-symbols-outlined text-[16px]">auto_stories</span>
-                  <span>Atelier Dossier</span>
+                  <span>{language === 'bn' ? 'অঁতেলিয়ে ডসিয়ার' : 'Atelier Dossier'}</span>
                 </button>
               )}
             </div>
@@ -99,37 +103,49 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
               <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
                 <span className="material-symbols-outlined text-[17px]">local_shipping</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Fast Courier</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustDelivery}</span>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">ঢাকা ২৪-৪৮ ঘণ্টায়</p>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
+                {language === 'bn' ? 'ঢাকা ২৪-৪৮ ঘণ্টায়' : '24-48h in Dhaka'}
+              </p>
               <p className="text-[10px] text-[#a8a199]">Pathao / Steadfast</p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
               <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
                 <span className="material-symbols-outlined text-[17px]">payments</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Cash on Delivery</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustCod}</span>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">পণ্য দেখে পেমেন্ট</p>
-              <p className="text-[10px] text-[#a8a199]">সারাদেশে হোম ডেলিভারি</p>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
+                {language === 'bn' ? 'পণ্য দেখে পেমেন্ট' : 'Inspect Doorstep'}
+              </p>
+              <p className="text-[10px] text-[#a8a199]">
+                {language === 'bn' ? 'সারাদেশে হোম ডেলিভারি' : 'Nationwide Service'}
+              </p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
               <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
                 <span className="material-symbols-outlined text-[17px]">sync</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">7-Day Return</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustReturn}</span>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">ফ্রি সাইজ এক্সচেঞ্জ</p>
-              <p className="text-[10px] text-[#a8a199]">সহজ এক্সচেঞ্জ পলিসি</p>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
+                {language === 'bn' ? 'ফ্রি সাইজ এক্সচেঞ্জ' : 'Hassle-Free Exchange'}
+              </p>
+              <p className="text-[10px] text-[#a8a199]">
+                {language === 'bn' ? 'সহজ এক্সচেঞ্জ পলিসি' : 'Easy Exchange Policy'}
+              </p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
               <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
                 <span className="material-symbols-outlined text-[17px]">verified</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Authentic</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustAuthentic}</span>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">খাঁটি ও সার্টিফাইড</p>
-              <p className="text-[10px] text-[#a8a199]">OEKO-TEX স্ট্যান্ডার্ড</p>
+              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
+                {language === 'bn' ? 'খাঁটি ও সার্টিফাইড' : '100% Certified Silk'}
+              </p>
+              <p className="text-[10px] text-[#a8a199]">OEKO-TEX Standard</p>
             </div>
           </div>
         </div>
@@ -139,13 +155,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <div className="px-4 mb-4">
         <div className="mb-3">
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700]">
-            Women & Men Collection
+            {t.collectionEyebrow}
           </span>
           <h1 className="font-display text-[26px] sm:text-[32px] text-[#1d1b15] tracking-tight leading-tight">
-            Available Clothing
+            {t.catalogHeading}
           </h1>
-          <p className="text-[12px] text-[#4b4640]">
-            {filteredProducts.length} items ready to dispatch from Dhaka Atelier
+          <p className="text-[12.5px] sm:text-[13.5px] text-[#5c544d] leading-relaxed mt-0.5">
+            {t.catalogTagline}
           </p>
         </div>
 
@@ -174,17 +190,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Sort Controls */}
         <div className="flex items-center justify-between pt-2 text-[11px] text-[#4b4640] border-t border-[#e8e2d8]/80 mt-2">
-          <span>Showing {filteredProducts.length} products</span>
+          <span>
+            {formatNumber(filteredProducts.length)} {t.showingItems}
+          </span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[#7d766f]">Sort:</span>
+            <span className="text-[#7d766f]">{t.sortBy}:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               className="bg-[#f3ede3] border border-[#cec5bd] rounded-md px-2 py-1 text-[11px] font-medium text-[#1d1b15] focus:outline-none cursor-pointer"
             >
-              <option value="featured">Featured (জনপ্রিয়)</option>
-              <option value="price-asc">Price: Low to High (কম দাম)</option>
-              <option value="price-desc">Price: High to Low (বেশি দাম)</option>
+              <option value="featured">{t.sortFeatured}</option>
+              <option value="price-asc">{t.sortPriceLow}</option>
+              <option value="price-desc">{t.sortPriceHigh}</option>
             </select>
           </div>
         </div>
@@ -197,9 +215,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <span className="material-symbols-outlined text-[36px] text-[#7d766f] mb-2">
               checkroom
             </span>
-            <p className="text-[15px] font-semibold text-[#1d1b15]">No clothing items found</p>
+            <p className="text-[15px] font-semibold text-[#1d1b15]">{t.noResults}</p>
             <p className="text-[12px] text-[#4b4640] mt-1">
-              Try searching with another keyword or select "All Clothing".
+              {language === 'bn'
+                ? 'অন্য কোনো কি-ওয়ার্ড দিয়ে খুঁজুন অথবা "সব কালেকশন" সিলেক্ট করুন।'
+                : 'Try searching with another keyword or select "All Clothing".'}
             </p>
             <button
               onClick={() => {
@@ -207,13 +227,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               }}
               className="mt-3 px-4 py-1.5 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider cursor-pointer"
             >
-              Reset Filters
+              {language === 'bn' ? 'ফিল্টার রিসেট করুন' : 'Reset Filters'}
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
             {filteredProducts.map((product) => {
+              const localized = localizeProduct(product);
               const isWishlisted = wishlistIds.includes(product.id);
+              const tagLabel =
+                product.tag === 'Best Seller'
+                  ? t.tagBestSeller
+                  : product.tag === 'Limited'
+                  ? t.tagLimited
+                  : product.tag === 'New'
+                  ? t.tagNew
+                  : product.tag === 'Archive'
+                  ? t.tagArchive
+                  : product.tag;
+
               return (
                 <div
                   key={product.id}
@@ -239,7 +271,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         e.stopPropagation();
                         onToggleWishlist(product.id);
                       }}
-                      aria-label={`Save ${product.name} to wishlist`}
+                      aria-label={`${t.wishlistLabel}: ${localized.name}`}
                       className={`absolute top-2 right-2 w-9 h-9 rounded-full bg-[#fff9ee]/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform shadow-sm cursor-pointer ${
                         isWishlisted ? 'text-[#7d5700]' : 'text-[#1d1b15]'
                       }`}
@@ -265,7 +297,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                             : 'bg-[#1d1b19]/85 backdrop-blur-sm text-white'
                         }`}
                       >
-                        {product.tag}
+                        {tagLabel}
                       </span>
                     )}
                   </div>
@@ -274,7 +306,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <div className="p-3 flex flex-col flex-1 justify-between">
                     <div>
                       <div className="flex items-center justify-between text-[10px] text-[#7d5700] uppercase tracking-wider font-semibold mb-0.5">
-                        <span>{product.category}</span>
+                        <span>{localized.category}</span>
                         <span className="text-[#2e7d32] font-medium">COD</span>
                       </div>
 
@@ -282,22 +314,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         onClick={() => onOpenProductDetail(product)}
                         className="text-[14px] sm:text-[15px] font-semibold text-[#1d1b15] leading-snug cursor-pointer hover:text-[#7d5700] transition-colors line-clamp-1"
                       >
-                        {product.name}
+                        {localized.name}
                       </h3>
 
                       <p className="text-[11px] text-[#4b4640] mt-0.5 line-clamp-1">
-                        {product.subtitle}
+                        {localized.subtitle}
                       </p>
                     </div>
 
                     <div className="pt-3 border-t border-[#cec5bd]/50 mt-2 flex items-center justify-between">
                       <div>
                         <span className="text-[9px] text-[#7d766f] block uppercase tracking-wider leading-none">
-                          Price
+                          {language === 'bn' ? 'মূল্য' : 'Price'}
                         </span>
-                        <span className="text-[16px] sm:text-[17px] font-bold text-[#1d1b15] font-display">
-                          {product.currency}
-                          {product.price.toLocaleString()}
+                        <span className="text-[15px] sm:text-[16px] font-bold text-[#1d1b15] font-display">
+                          {formatPrice(product.price)}
                         </span>
                       </div>
 
@@ -307,11 +338,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                           e.stopPropagation();
                           onOpenProductDetail(product);
                         }}
-                        aria-label={`View details for ${product.name}`}
+                        aria-label={`View details for ${localized.name}`}
                         className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-[#1d1b19] text-white hover:bg-[#34302c] font-semibold text-[10px] sm:text-[11px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-[15px]">visibility</span>
-                        <span>Details</span>
+                        <span>{t.viewDetails}</span>
                       </button>
                     </div>
                   </div>
@@ -322,31 +353,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         )}
       </section>
 
-      {/* 4. CLEAN TRUST & ASSURANCE FOOTER (No fluff) */}
+      {/* 4. CLEAN TRUST & ASSURANCE FOOTER */}
       <div className="w-full px-4 pb-6">
         <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
           <div className="flex flex-col items-center">
             <span className="material-symbols-outlined text-[20px] text-[#7d5700] mb-1">
               local_shipping
             </span>
-            <p className="text-[12px] font-bold text-[#1d1b15]">সারাদেশে ফ্রি ডেলিভারি</p>
-            <p className="text-[10px] text-[#4b4640]">৳৫,০০০ বা তার বেশি অর্ডারে</p>
+            <p className="text-[12px] font-bold text-[#1d1b15]">{t.trustDelivery}</p>
+            <p className="text-[10px] text-[#4b4640]">{t.trustDeliverySub}</p>
           </div>
 
           <div className="flex flex-col items-center border-t sm:border-t-0 sm:border-l sm:border-r border-[#e8e2d8] pt-2 sm:pt-0">
             <span className="material-symbols-outlined text-[20px] text-[#2e7d32] mb-1">
               payments
             </span>
-            <p className="text-[12px] font-bold text-[#1d1b15]">ক্যাশ অন ডেলিভারি (COD)</p>
-            <p className="text-[10px] text-[#4b4640]">পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</p>
+            <p className="text-[12px] font-bold text-[#1d1b15]">{t.trustCod}</p>
+            <p className="text-[10px] text-[#4b4640]">{t.trustCodSub}</p>
           </div>
 
           <div className="flex flex-col items-center border-t sm:border-t-0 border-[#e8e2d8] pt-2 sm:pt-0">
             <span className="material-symbols-outlined text-[20px] text-[#7d5700] mb-1">
               published_with_changes
             </span>
-            <p className="text-[12px] font-bold text-[#1d1b15]">৭ দিনের সহজ এক্সচেঞ্জ</p>
-            <p className="text-[10px] text-[#4b4640]">সাইজ বা ফিটিং পরিবর্তন সুবিধা</p>
+            <p className="text-[12px] font-bold text-[#1d1b15]">{t.trustReturn}</p>
+            <p className="text-[10px] text-[#4b4640]">{t.trustReturnSub}</p>
           </div>
         </div>
       </div>

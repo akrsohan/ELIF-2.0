@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -22,6 +23,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onDirectBuy,
   onShowToast,
 }) => {
+  const { language, t, localizeProduct, localizeCategory, formatPrice, formatNumber } =
+    useLanguage();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -43,6 +46,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!isOpen || !product) return null;
 
+  const localizedProduct = localizeProduct(product);
+
   // Prepare images array (fallback to main product image if images array is empty)
   const imageGallery = product.images && product.images.length > 0 
     ? product.images 
@@ -60,7 +65,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     for (let i = 0; i < quantity; i++) {
       onAddToCart(product, selectedSize, selectedColor);
     }
-    onShowToast(`'${product.name}' (${selectedSize}, ${selectedColor}) ব্যাগে যোগ করা হয়েছে।`);
+    onShowToast(
+      language === 'bn'
+        ? `'${localizedProduct.name}' (${selectedSize}, ${selectedColor}) ব্যাগে যোগ করা হয়েছে।`
+        : `Added '${localizedProduct.name}' (${selectedSize}, ${selectedColor}) to your bag.`
+    );
     onClose();
   };
 
@@ -81,12 +90,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <div className="sticky top-0 z-30 bg-[#fff9ee]/95 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-[#e8e2d8]">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700] bg-[#f3ede3] px-2.5 py-1 rounded-md border border-[#e8e2d8]">
-              {product.category}
+              {localizeCategory(product.category)}
             </span>
             {product.stockCount ? (
               <span className="text-[10px] font-semibold text-[#2e7d32] bg-[#e8f5e9] px-2 py-0.5 rounded-full flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#2e7d32] animate-pulse"></span>
-                In Stock ({product.stockCount} left)
+                {language === 'bn' ? `স্টকে আছে (${formatNumber(product.stockCount)}টি অবশিষ্ট)` : `In Stock (${product.stockCount} left)`}
               </span>
             ) : null}
           </div>
@@ -100,7 +109,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   ? 'bg-[#fce4ec] border-[#f48fb1] text-[#c2185b]'
                   : 'bg-[#f3ede3] border-[#e8e2d8] text-[#1d1b15] hover:bg-[#ede7dd]'
               }`}
-              title={isWishlisted ? 'উইশলিস্টে সেভ আছে' : 'উইশলিস্টে যোগ করুন'}
+              title={isWishlisted ? (language === 'bn' ? 'উইশলিস্টে সেভ আছে' : 'Saved in Wishlist') : (language === 'bn' ? 'উইশলিস্টে যোগ করুন' : 'Add to Wishlist')}
               aria-label="Wishlist toggle"
             >
               <span
@@ -131,7 +140,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] md:aspect-[4/5] max-h-[420px] bg-[#e2dbd0] rounded-xl overflow-hidden shadow-inner group">
             <img
               src={imageGallery[selectedImageIndex]}
-              alt={`${product.name} - View ${selectedImageIndex + 1}`}
+              alt={`${localizedProduct.name} - View ${selectedImageIndex + 1}`}
               className="w-full h-full object-cover object-center transition-all duration-300"
             />
 
@@ -159,26 +168,32 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
               {product.tag && (
                 <span className="bg-[#1d1b19]/90 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm shadow-sm">
-                  {product.tag}
+                  {product.tag === 'Best Seller'
+                    ? t.tagBestSeller
+                    : product.tag === 'Limited'
+                    ? t.tagLimited
+                    : product.tag === 'New'
+                    ? t.tagNew
+                    : product.tag}
                 </span>
               )}
             </div>
 
             {/* Image counter indicator */}
             <span className="absolute bottom-3 right-3 bg-black/60 text-white text-[11px] font-medium px-2.5 py-0.5 rounded-full backdrop-blur-sm">
-              {selectedImageIndex + 1} / {imageGallery.length}
+              {formatNumber(selectedImageIndex + 1)} / {formatNumber(imageGallery.length)}
             </span>
           </div>
 
-          {/* ROW-WISE THUMBNAILS (সবগুলো ছবি সারিবদ্ধভাবে নিচে দেখানো) */}
+          {/* ROW-WISE THUMBNAILS */}
           <div className="mt-3">
             <div className="flex items-center justify-between text-[11px] font-semibold text-[#4b4640] mb-1.5 uppercase tracking-wider">
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[15px] text-[#7d5700]">collections</span>
-                <span>Photo Gallery ({imageGallery.length} Pictures)</span>
+                <span>{language === 'bn' ? `ছবি গ্যালারি (${formatNumber(imageGallery.length)}টি ছবি)` : `Photo Gallery (${imageGallery.length} Pictures)`}</span>
               </span>
               <span className="text-[10px] text-[#7d5700] lowercase font-normal">
-                ছবি পরিবর্তন করতে ক্লিক করুন
+                {language === 'bn' ? 'ছবি পরিবর্তন করতে ট্যাপ করুন' : 'Click to switch photo'}
               </span>
             </div>
 
@@ -212,10 +227,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="hidden md:flex flex-col gap-2 mt-5 p-3.5 bg-[#f3ede3] rounded-xl border border-[#ded5cb] text-[11px] text-[#4b4640]">
               <div className="flex items-center gap-1.5 font-semibold text-[#1d1b15] uppercase tracking-wider text-[10px]">
                 <span className="material-symbols-outlined text-[16px] text-[#7d5700]">verified</span>
-                <span>Atelier Heritage & Craftsmanship</span>
+                <span>{language === 'bn' ? 'অঁতেলিয়ে ঐতিহ্য ও কারুশিল্প' : 'Atelier Heritage & Craftsmanship'}</span>
               </div>
               <p className="leading-relaxed">
-                Handcrafted at our Dhaka flagship tailoring suite using ethically sourced fibres from Rajshahi and heritage European mills.
+                {language === 'bn'
+                  ? 'রাজশাহীর প্রাচীন রেশম ও ইউরোপীয় প্রিমিয়াম মিলের প্রাকৃতিক সুতায় তৈরি ঢাকাই ঐতিহ্য ও আধুনিক ফ্যাশনের মেলবন্ধন।'
+                  : 'Handcrafted at our Dhaka flagship tailoring suite using ethically sourced fibres from Rajshahi and heritage European mills.'}
               </p>
               <div className="flex items-center gap-3 pt-1 text-[10px] text-[#7d5700] font-semibold">
                 <span>✓ OEKO-TEX Standard</span>
@@ -231,22 +248,22 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <span className="text-[11px] font-bold text-[#7d5700] uppercase tracking-wider block mb-1">
               ELIF Dhaka Atelier
             </span>
-            <h1 className="font-display text-[22px] sm:text-[28px] text-[#1d1b15] font-semibold tracking-tight leading-tight">
-              {product.name}
+            <h1 className="font-display text-[22px] sm:text-[26px] text-[#1d1b15] font-semibold tracking-tight leading-tight">
+              {localizedProduct.name}
             </h1>
-            <p className="text-[13px] text-[#4b4640] mt-1 font-medium">{product.subtitle}</p>
+            <p className="text-[13px] text-[#4b4640] mt-1 font-medium">{localizedProduct.subtitle}</p>
 
             {/* Price section */}
             <div className="flex flex-wrap items-baseline gap-3 mt-3 pb-3 border-b border-[#e8e2d8]">
-              <span className="font-display text-[26px] sm:text-[30px] font-bold text-[#1d1b15]">
-                {product.currency}{product.price.toLocaleString()}
+              <span className="font-display text-[24px] sm:text-[28px] font-bold text-[#1d1b15]">
+                {formatPrice(product.price)}
               </span>
               <span className="text-[11px] text-[#7d766f] uppercase tracking-wider">
-                VAT Inclusive
+                {language === 'bn' ? 'ভ্যাট অন্তর্ভুক্ত' : 'VAT Inclusive'}
               </span>
               <span className="text-[11px] text-[#2e7d32] font-semibold bg-[#e8f5e9] px-2.5 py-0.5 rounded-full flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">local_shipping</span>
-                Cash on Delivery Available
+                {t.trustCod}
               </span>
             </div>
 
@@ -254,23 +271,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3 pt-1 text-[11px] text-[#4b4640]">
               <div className="flex items-center gap-1.5 bg-[#f3ede3] p-2 rounded-lg border border-[#e8e2d8]">
                 <span className="material-symbols-outlined text-[16px] text-[#7d5700]">local_shipping</span>
-                <span>ঢাকা ২৪-৪৮ ঘণ্টায়</span>
+                <span>{language === 'bn' ? 'ঢাকা ২৪-৪৮ ঘণ্টায়' : 'Dhaka 24-48h'}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-[#f3ede3] p-2 rounded-lg border border-[#e8e2d8]">
                 <span className="material-symbols-outlined text-[16px] text-[#7d5700]">payments</span>
-                <span>হোম ডেলিভারি ও COD</span>
+                <span>{language === 'bn' ? 'ক্যাশ অন ডেলিভারি' : 'Cash On Delivery'}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-[#f3ede3] p-2 rounded-lg border border-[#e8e2d8] col-span-2 sm:col-span-1">
                 <span className="material-symbols-outlined text-[16px] text-[#7d5700]">sync</span>
-                <span>৭ দিনের সহজ রিটার্ন</span>
+                <span>{language === 'bn' ? '৭ দিনের সহজ রিটার্ন' : '7-Day Return'}</span>
               </div>
             </div>
           </div>
 
-          {/* 4. COLOR SELECTION */}
+          {/* COLOR SELECTION */}
           <div>
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-[#4b4640] mb-2">
-              <span>রং সিলেক্ট করুন (Color Shade):</span>
+              <span>{language === 'bn' ? 'রং নির্বাচন (Color Shade):' : 'Select Color:'}</span>
               <span className="text-[#1d1b15] font-bold">{selectedColor}</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -290,16 +307,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
 
-          {/* 5. SIZE SELECTION & SIZE GUIDE */}
+          {/* SIZE SELECTION & SIZE GUIDE */}
           <div>
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-[#4b4640] mb-2">
-              <span>সাইজ সিলেক্ট করুন (Size):</span>
+              <span>{language === 'bn' ? 'সাইজ নির্বাচন (Size):' : 'Select Size:'}</span>
               <button
                 onClick={() => setShowSizeGuide(!showSizeGuide)}
                 className="text-[#7d5700] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[14px]">straighten</span>
-                <span>{showSizeGuide ? 'Hide Size Chart' : 'Size Guide (সাইজ চার্ট)'}</span>
+                <span>{showSizeGuide ? (language === 'bn' ? 'সাইজ চার্ট লুকান' : 'Hide Size Chart') : (language === 'bn' ? 'সাইজ গাইড (চার্ট)' : 'Size Guide')}</span>
               </button>
             </div>
 
@@ -331,17 +348,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {showSizeGuide && (
               <div className="mt-3 p-3.5 bg-[#f3ede3] rounded-xl border border-[#e8e2d8] text-[12px] animate-fadeIn">
                 <h4 className="font-semibold text-[#1d1b15] mb-2 flex items-center justify-between">
-                  <span>Size & Measurement Guide (ইঞ্চি/cm)</span>
-                  <span className="text-[10px] text-[#7d5700] uppercase font-bold">French / EU Standard</span>
+                  <span>{language === 'bn' ? 'সাইজ ও মেজারমেন্ট গাইড (ইঞ্চি/cm)' : 'Size & Measurement Guide (inches/cm)'}</span>
+                  <span className="text-[10px] text-[#7d5700] uppercase font-bold">Standard Atelier</span>
                 </h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-[11px] text-[#4b4640]">
                     <thead>
                       <tr className="border-b border-[#cec5bd] text-[#1d1b15]">
-                        <th className="py-1 px-2 font-bold">Size</th>
-                        <th className="py-1 px-2 font-bold">Bust / Chest</th>
-                        <th className="py-1 px-2 font-bold">Waist</th>
-                        <th className="py-1 px-2 font-bold">Length</th>
+                        <th className="py-1 px-2 font-bold">{language === 'bn' ? 'সাইজ' : 'Size'}</th>
+                        <th className="py-1 px-2 font-bold">{language === 'bn' ? 'বক্ষ (Bust)' : 'Bust'}</th>
+                        <th className="py-1 px-2 font-bold">{language === 'bn' ? 'কোমর (Waist)' : 'Waist'}</th>
+                        <th className="py-1 px-2 font-bold">{language === 'bn' ? 'দৈর্ঘ্য (Length)' : 'Length'}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#e8e2d8]">
@@ -376,10 +393,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             )}
           </div>
 
-          {/* 6. QUANTITY PICKER */}
+          {/* QUANTITY PICKER */}
           <div className="flex items-center gap-3 pt-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-[#4b4640]">
-              পরিমাণ (Quantity):
+              {language === 'bn' ? 'পরিমাণ (Quantity):' : 'Quantity:'}
             </span>
             <div className="flex items-center border border-[#cec5bd] rounded-lg bg-white overflow-hidden">
               <button
@@ -391,7 +408,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 -
               </button>
               <span className="w-10 text-center text-[13px] font-bold text-[#1d1b15]">
-                {quantity}
+                {formatNumber(quantity)}
               </span>
               <button
                 type="button"
@@ -404,14 +421,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
 
-          {/* 7. DETAILED SPECIFICATIONS TABS */}
+          {/* DETAILED SPECIFICATIONS TABS */}
           <div className="border-t border-[#e8e2d8] pt-3">
             <div className="flex gap-4 border-b border-[#e8e2d8] pb-2 text-[11px] font-semibold uppercase tracking-wider overflow-x-auto no-scrollbar whitespace-nowrap">
               {[
-                { id: 'details', label: 'পোশাকের বিবরণ (Details)' },
-                { id: 'specs', label: 'ফেব্রিক ও কারিগরি (Specs)' },
-                { id: 'care', label: 'যত্ন নেওয়ার নিয়ম (Care)' },
-                { id: 'shipping', label: 'ডেলিভারি পলিসি (Shipping)' },
+                { id: 'details', label: language === 'bn' ? 'পোশাকের বিবরণ' : 'Details' },
+                { id: 'specs', label: language === 'bn' ? 'ফেব্রিক ও কারিগরি' : 'Textile & Specs' },
+                { id: 'care', label: language === 'bn' ? 'যত্ন নেওয়ার নিয়ম' : 'Garment Care' },
+                { id: 'shipping', label: language === 'bn' ? 'ডেলিভারি পলিসি' : 'Shipping Policy' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -431,11 +448,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Overview & Description Tab */}
               {activeTab === 'details' && (
                 <div className="space-y-2">
-                  <p>{product.description}</p>
+                  <p>{localizedProduct.description}</p>
                   {product.features && product.features.length > 0 && (
                     <div className="mt-3 bg-[#f3ede3] p-3 rounded-xl border border-[#e8e2d8]">
                       <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#1d1b15] mb-2">
-                        বিশেষ বৈশিষ্ট্যসমূহ (Key Highlights):
+                        {language === 'bn' ? 'বিশেষ বৈশিষ্ট্যসমূহ (Key Highlights):' : 'Key Highlights:'}
                       </h4>
                       <ul className="space-y-1 text-[12px]">
                         {product.features.map((feature, i) => (
@@ -455,15 +472,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="space-y-2.5">
                   <div className="bg-[#f3ede3] p-3 rounded-xl border border-[#e8e2d8] space-y-1.5">
                     <p>
-                      <strong className="text-[#1d1b15]">Textile Composition:</strong>{' '}
-                      {product.fabric}
+                      <strong className="text-[#1d1b15]">{language === 'bn' ? 'ফেব্রিক ম্যাটেরিয়াল:' : 'Textile Composition:'}</strong>{' '}
+                      {localizedProduct.fabric}
                     </p>
                     <p>
-                      <strong className="text-[#1d1b15]">Artisanal Provenance:</strong>{' '}
-                      {product.origin}
+                      <strong className="text-[#1d1b15]">{language === 'bn' ? 'উৎস ও ঐতিহ্য:' : 'Artisanal Provenance:'}</strong>{' '}
+                      {localizedProduct.origin}
                     </p>
                     <p className="text-[11px] text-[#7d5700] pt-0.5">
-                      Cradle-to-Cradle Gold & OEKO-TEX Standard 100 Certified Textile.
+                      {language === 'bn' ? 'সার্টিফায়েড প্রাকৃতিক ডাই ও ১০০% প্রিমিয়াম ফিনিশিং।' : 'Cradle-to-Cradle Gold & OEKO-TEX Standard 100 Certified Textile.'}
                     </p>
                   </div>
                 </div>
@@ -473,7 +490,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {activeTab === 'care' && (
                 <div className="space-y-2">
                   <p className="text-[12px] text-[#1d1b15] font-semibold">
-                    পোশাকটি দীর্ঘস্থায়ী ও নতুন রাখার নির্দেশনা:
+                    {language === 'bn' ? 'পোশাকটি দীর্ঘস্থায়ী ও নতুন রাখার নির্দেশনা:' : 'Garment preservation guide:'}
                   </p>
                   <ul className="space-y-1.5 text-[12px]">
                     {product.careInstructions && product.careInstructions.length > 0 ? (
@@ -489,11 +506,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <>
                         <li className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[16px] text-[#7d5700]">dry_cleaning</span>
-                          <span>Dry clean or hand wash gently in cold water</span>
+                          <span>{language === 'bn' ? 'ড্রাই ওয়াশ অথবা ঠাণ্ডা পানিতে কোমলভাবে ধুয়ে নিন' : 'Dry clean or hand wash gently in cold water'}</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[16px] text-[#7d5700]">iron</span>
-                          <span>Iron on reverse with low heat setting</span>
+                          <span>{language === 'bn' ? 'হালকা তাপে উল্টো দিক থেকে আয়রন করুন' : 'Iron on reverse with low heat setting'}</span>
                         </li>
                       </>
                     )}
@@ -509,7 +526,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       local_shipping
                     </span>
                     <p>
-                      <strong>ঢাকা মেট্রো এরিয়া:</strong> ২৪ থেকে ৪৮ ঘণ্টার মধ্যে ডেলিভারি। হোম ডেলিভারিতে পণ্য দেখে ক্যাশ অন ডেলিভারি (COD) পেমেন্ট করার সুবিধা রয়েছে।
+                      <strong>{language === 'bn' ? 'ঢাকা মেট্রো এরিয়া:' : 'Dhaka Metro:'}</strong>{' '}
+                      {language === 'bn'
+                        ? '২৪ থেকে ৪৮ ঘণ্টার মধ্যে ডেলিভারি। হোম ডেলিভারিতে পণ্য দেখে ক্যাশ অন ডেলিভারি (COD) পেমেন্ট করার সুবিধা রয়েছে।'
+                        : 'Delivery within 24 to 48 hours. Cash on Delivery is available with doorstep review.'}
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
@@ -517,7 +537,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       distance
                     </span>
                     <p>
-                      <strong>সমগ্র বাংলাদেশ:</strong> চট্টগ্রাম, সিলেট, রাজশাহীসহ ৬৪টি জেলায় ২ থেকে ৩ কর্মদিবসের মধ্যে নির্ভরযোগ্য কুরিয়ারে (Pathao / Steadfast) ডেলিভারি।
+                      <strong>{language === 'bn' ? 'সমগ্র বাংলাদেশ:' : 'Nationwide Bangladesh:'}</strong>{' '}
+                      {language === 'bn'
+                        ? 'চট্টগ্রাম, সিলেট, রাজশাহীসহ ৬৪টি জেলায় ২ থেকে ৩ কর্মদিবসের মধ্যে নির্ভরযোগ্য কুরিয়ারে ডেলিভারি।'
+                        : 'Delivery within 2-3 business days across 64 districts via premium couriers (Pathao/Steadfast).'}
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
@@ -525,7 +548,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       verified
                     </span>
                     <p className="text-[#2e7d32] font-semibold">
-                      ৭ দিনের সহজ সাইজ এক্সচেঞ্জ ও রিটার্ন পলিসি সুবিধা।
+                      {language === 'bn' ? '৭ দিনের সহজ সাইজ এক্সচেঞ্জ ও রিটার্ন পলিসি সুবিধা।' : '7-Day seamless size exchange & return policy.'}
                     </p>
                   </div>
                 </div>
@@ -547,7 +570,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   ? 'bg-[#fce4ec] border-[#f48fb1] text-[#c2185b]'
                   : 'bg-[#f3ede3] border-[#cec5bd] text-[#1d1b15] hover:bg-[#ede7dd]'
               }`}
-              title={isWishlisted ? 'উইশলিস্ট থেকে সরান' : 'উইশলিস্টে রাখুন'}
+              title={isWishlisted ? (language === 'bn' ? 'উইশলিস্ট থেকে সরান' : 'Remove from Wishlist') : (language === 'bn' ? 'উইশলিস্টে রাখুন' : 'Save to Wishlist')}
               aria-label="Wishlist toggle"
             >
               <span
@@ -557,7 +580,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 favorite
               </span>
               <span className="text-[11px] font-semibold uppercase tracking-wider hidden sm:inline">
-                {isWishlisted ? 'Saved' : 'Wishlist'}
+                {isWishlisted ? (language === 'bn' ? 'সেভ করা' : 'Saved') : (language === 'bn' ? 'উইশলিস্ট' : 'Wishlist')}
               </span>
             </button>
 
@@ -567,7 +590,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               className="flex-1 h-12 bg-[#1d1b19] text-white hover:bg-[#34302c] font-semibold text-[12px] sm:text-[13px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-md cursor-pointer border border-[#1d1b19]"
             >
               <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
-              <span>ব্যাগে যোগ করুন</span>
+              <span>{t.addToBag}</span>
             </button>
 
             {/* Direct Buy (Buy Now) Button */}
@@ -576,7 +599,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               className="flex-1 h-12 bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-bold text-[12px] sm:text-[13px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-md cursor-pointer border border-[#e0a838]"
             >
               <span className="material-symbols-outlined text-[18px]">bolt</span>
-              <span>এখনই কিনুন • {product.currency}{(product.price * quantity).toLocaleString()}</span>
+              <span>{t.buyNow} • {formatPrice(product.price * quantity)}</span>
             </button>
           </div>
         </div>

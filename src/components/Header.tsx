@@ -1,6 +1,7 @@
 import React from 'react';
 import { LOGO_URL } from '../data/catalog';
 import { TabType } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HeaderProps {
   cartCount: number;
@@ -19,17 +20,51 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onNavigateTab,
 }) => {
+  const { language, setLanguage, t, formatNumber } = useLanguage();
+
   return (
     <header className="fixed top-0 inset-x-0 z-40 bg-[#fff9ee]/95 backdrop-blur-xl shadow-[0_4px_20px_rgba(29,27,21,0.04)] border-b border-[#e8e2d8]/60 pt-[env(safe-area-inset-top,0px)]">
-      {/* Top Announcement Ribbon with Bangladesh context */}
-      <div className="w-full bg-[#ede7dd]/95 px-3 py-1 flex items-center justify-center overflow-hidden border-b border-[#cec5bd]/40">
-        <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-[#4b4640] truncate text-center max-w-2xl px-1 flex items-center justify-center gap-2">
-          <span>🇧🇩 Nationwide Delivery in Bangladesh</span>
-          <span>•</span>
-          <span className="text-[#7d5700]">Cash on Delivery & bKash</span>
-          <span>•</span>
-          <span>Dhaka 24h Express</span>
-        </p>
+      {/* Top Announcement Ribbon with Bangladesh context & Language Switcher (Option 1) */}
+      <div className="w-full bg-[#ede7dd]/95 px-2.5 sm:px-6 py-1 flex items-center justify-between border-b border-[#cec5bd]/40">
+        <div className="flex-1 text-center overflow-hidden pr-2">
+          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.14em] text-[#4b4640] truncate">
+            {t.announcement}
+          </p>
+        </div>
+
+        {/* Compact & Elegant Language Switcher Pill (Mobile & Desktop Friendly) */}
+        <div className="flex-shrink-0 flex items-center" id="header-lang-switch">
+          <div
+            className="inline-flex items-center rounded-full bg-[#dfd7cc] p-0.5 border border-[#cec5bd] shadow-xs"
+            role="group"
+            aria-label="Language Selector"
+          >
+            <button
+              onClick={() => setLanguage('bn')}
+              title="বাংলায় দেখুন"
+              aria-label="Switch to Bangla"
+              className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider transition-all duration-200 cursor-pointer ${
+                language === 'bn'
+                  ? 'bg-[#1d1b15] text-[#ffc55f] shadow-xs'
+                  : 'text-[#4b4640] hover:text-[#1d1b15]'
+              }`}
+            >
+              বাং
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              title="View in English"
+              aria-label="Switch to English"
+              className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider transition-all duration-200 cursor-pointer ${
+                language === 'en'
+                  ? 'bg-[#1d1b15] text-[#ffc55f] shadow-xs'
+                  : 'text-[#4b4640] hover:text-[#1d1b15]'
+              }`}
+            >
+              EN
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Main Header Bar */}
@@ -61,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold tracking-wider text-[#7d5700] bg-[#ffdeaa]/50 px-2 py-0.5 rounded-full border border-[#7d5700]/20 ml-2">
-            🇧🇩 Dhaka • ৳ BDT
+            {t.taglineDhaka}
           </span>
         </div>
 
@@ -73,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
               activeTab === 'home' ? 'text-[#7d5700] border-b-2 border-[#7d5700] pb-0.5' : 'text-[#4b4640] hover:text-[#1d1b15]'
             }`}
           >
-            Shop Clothes
+            {t.navHome}
           </button>
           <button
             onClick={() => onNavigateTab('categories')}
@@ -81,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
               activeTab === 'categories' ? 'text-[#7d5700] border-b-2 border-[#7d5700] pb-0.5' : 'text-[#4b4640] hover:text-[#1d1b15]'
             }`}
           >
-            Categories
+            {t.navCategories}
           </button>
           <button
             onClick={() => onNavigateTab('wishlist')}
@@ -89,10 +124,10 @@ export const Header: React.FC<HeaderProps> = ({
               activeTab === 'wishlist' ? 'text-[#7d5700] border-b-2 border-[#7d5700] pb-0.5' : 'text-[#4b4640] hover:text-[#1d1b15]'
             }`}
           >
-            <span>Wishlist</span>
+            <span>{t.navWishlist}</span>
             {wishlistCount > 0 && (
               <span className="text-[10px] bg-[#7d5700] text-white px-1.5 py-0.2 rounded-full">
-                {wishlistCount}
+                {formatNumber(wishlistCount)}
               </span>
             )}
           </button>
@@ -102,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
               activeTab === 'account' ? 'text-[#7d5700] border-b-2 border-[#7d5700] pb-0.5' : 'text-[#4b4640] hover:text-[#1d1b15]'
             }`}
           >
-            Orders & Tracking
+            {t.navOrders}
           </button>
         </nav>
 
@@ -111,7 +146,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-search-btn"
             onClick={onOpenSearch}
-            aria-label="Search Collection"
+            aria-label={t.searchLabel}
+            title={t.searchLabel}
             className="w-10 h-10 flex items-center justify-center text-[#1d1b15] hover:text-[#7d5700] active:scale-95 transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[22px]">search</span>
@@ -121,7 +157,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-wishlist-btn"
             onClick={() => onNavigateTab('wishlist')}
-            aria-label={`Wishlist (${wishlistCount} items)`}
+            aria-label={`${t.wishlistLabel} (${wishlistCount})`}
+            title={t.wishlistLabel}
             className="w-10 h-10 relative flex items-center justify-center text-[#1d1b15] hover:text-[#7d5700] active:scale-95 transition-all cursor-pointer"
           >
             <span
@@ -132,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
             {wishlistCount > 0 && (
               <span className="absolute top-1.5 right-1.5 min-w-[15px] h-3.5 px-1 rounded-full bg-[#7d5700] text-[#ffffff] text-[8px] font-bold flex items-center justify-center leading-none shadow-sm">
-                {wishlistCount}
+                {formatNumber(wishlistCount)}
               </span>
             )}
           </button>
@@ -141,13 +178,14 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-cart-btn"
             onClick={() => onNavigateTab('cart')}
-            aria-label={`Shopping Bag (${cartCount} items)`}
+            aria-label={`${t.cartLabel} (${cartCount})`}
+            title={t.cartLabel}
             className="w-10 h-10 relative flex items-center justify-center text-[#1d1b15] hover:text-[#7d5700] active:scale-95 transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
             {cartCount > 0 && (
               <span className="absolute top-1.5 right-1.5 min-w-[15px] h-3.5 px-1 rounded-full bg-[#7d5700] text-[#ffffff] text-[8px] font-bold flex items-center justify-center leading-none shadow-[0_2px_4px_rgba(125,87,0,0.3)] animate-pulse">
-                {cartCount}
+                {formatNumber(cartCount)}
               </span>
             )}
           </button>
@@ -156,7 +194,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-account-btn"
             onClick={() => onNavigateTab('account')}
-            aria-label="Client Account"
+            aria-label={t.accountLabel}
+            title={t.accountLabel}
             className="w-8 h-8 rounded-full bg-[#1d1b19] flex items-center justify-center ml-1 text-white hover:bg-[#7d5700] active:scale-95 transition-all shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[17px]">person</span>

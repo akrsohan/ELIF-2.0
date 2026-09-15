@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TabType } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface BottomFooterProps {
   onNavigateTab: (tab: TabType, categoryFilter?: string) => void;
@@ -10,46 +11,73 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
   onNavigateTab,
   onShowToast,
 }) => {
+  const { language, t } = useLanguage();
   const [activePolicyModal, setActivePolicyModal] = useState<string | null>(null);
 
   const policyContent: Record<string, { title: string; subtitle: string; details: string[] }> = {
     privacy: {
-      title: 'Privacy Policy (প্রাইভেসি পলিসি)',
-      subtitle: 'Data Protection & Security Guidelines',
-      details: [
-        'আমরা গ্রাহকের নাম, ফোন নম্বর এবং ডেলিভারি ঠিকানা শুধুমাত্র কুরিয়ার ও অর্ডার প্রসেসিংয়ের জন্য সংগ্রহ করি।',
-        'বিকাশ ও অনলাইন পেমেন্টের যাবতীয় তথ্য সর্বোচ্চ ব্যাংকিং গ্রেড এনক্রিপশনে সুরক্ষিত থাকে।',
-        'আমরা কখনোই কোনো তৃতীয় পক্ষের কাছে আপনার ব্যক্তিগত তথ্য বা ফোন নম্বর বিক্রয় বা শেয়ার করি না।',
-        'আপনি যেকোনো সময় আপনার অর্ডার হিস্ট্রি বা অ্যাকাউন্ট তথ্য মুছে ফেলার আবেদন করতে পারেন।'
-      ]
+      title: language === 'bn' ? 'প্রাইভেসি পলিসি' : 'Privacy Policy',
+      subtitle: language === 'bn' ? 'ব্যক্তিগত তথ্যের সুরক্ষা নীতিমালা' : 'Data Protection & Security Guidelines',
+      details: language === 'bn'
+        ? [
+            'আমরা গ্রাহকের নাম, ফোন নম্বর এবং ডেলিভারি ঠিকানা শুধুমাত্র কুরিয়ার ও অর্ডার প্রসেসিংয়ের জন্য সংগ্রহ করি।',
+            'বিকাশ ও অনলাইন পেমেন্টের যাবতীয় তথ্য সর্বোচ্চ ব্যাংকিং গ্রেড এনক্রিপশনে সুরক্ষিত থাকে।',
+            'আমরা কখনোই কোনো তৃতীয় পক্ষের কাছে আপনার ব্যক্তিগত তথ্য বা ফোন নম্বর বিক্রয় বা শেয়ার করি না।',
+            'আপনি যেকোনো সময় আপনার অর্ডার হিস্ট্রি বা অ্যাকাউন্ট তথ্য মুছে ফেলার আবেদন করতে পারেন।'
+          ]
+        : [
+            'We collect customer names, phone numbers, and delivery addresses solely for order processing and secure courier dispatch.',
+            'All payment data via bKash, card, or COD is handled with strict encrypted protocol security.',
+            'We will never sell or distribute your private contact details to any third-party advertisers.',
+            'You may request deletion or updates to your client history and delivery records at any time.'
+          ]
     },
     terms: {
-      title: 'Terms of Service (ব্যবহারের শর্তাবলী)',
-      subtitle: 'ELIF Studio Bangladesh Commercial Terms',
-      details: [
-        'অর্ডার নিশ্চিতকরণের পর ঢাকায় ২৪-৪৮ ঘণ্টার মধ্যে এবং ঢাকার বাইরে ২-৩ কার্যদিবসে ডেলিভারি সম্পন্ন হয়।',
-        'ক্যাশ অন ডেলিভারির ক্ষেত্রে ডেলিভারিম্যানের সামনে পার্সেল চেক করে গ্রহণ করার সম্পূর্ণ অধিকার রয়েছে।',
-        'উৎপাদন বা ফেব্রিকের কোনো ত্রুটি থাকলে ডেলিভারি পাওয়ার সাথে সাথে গ্রাহক সেবা নম্বরে অবগত করার অনুরোধ করা হচ্ছে।',
-        'প্রাইস ও ভ্যাট সম্পর্কিত সকল তথ্য ইনভয়েসে স্পষ্টভাবে উল্লেখ থাকবে।'
-      ]
+      title: language === 'bn' ? 'ব্যবহারের শর্তাবলী' : 'Terms of Service',
+      subtitle: language === 'bn' ? 'এলিক অঁতেলিয়ে বাণিজ্যিক নীতিমালা' : 'ELIF Studio Commercial Terms',
+      details: language === 'bn'
+        ? [
+            'অর্ডার নিশ্চিতকরণের পর ঢাকায় ২৪-৪৮ ঘণ্টার মধ্যে এবং ঢাকার বাইরে ২-৩ কার্যদিবসে ডেলিভারি সম্পন্ন হয়।',
+            'ক্যাশ অন ডেলিভারির ক্ষেত্রে ডেলিভারিম্যানের সামনে পার্সেল চেক করে গ্রহণ করার সম্পূর্ণ অধিকার রয়েছে।',
+            'উৎপাদন বা ফেব্রিকের কোনো ত্রুটি থাকলে ডেলিভারি পাওয়ার সাথে সাথে গ্রাহক সেবা নম্বরে অবগত করার অনুরোধ করা হচ্ছে।',
+            'প্রাইস ও ভ্যাট সম্পর্কিত সকল তথ্য ইনভয়েসে স্পষ্টভাবে উল্লেখ থাকবে।'
+          ]
+        : [
+            'Orders within Dhaka are delivered in 24-48 hours; nationwide delivery takes 2-3 working days.',
+            'For Cash on Delivery, clients have the right to inspect package contents at doorstep upon receipt.',
+            'Any manufacturing or fabric defect should be communicated immediately to our Dhaka concierge.',
+            'Item prices, delivery fees, and VAT details are clearly itemized on official printed invoices.'
+          ]
     },
     cookies: {
-      title: 'Cookie Policy (কুকিজ পলিসি)',
-      subtitle: 'Session Management & Preferences',
-      details: [
-        'আমরা শুধুমাত্র ইউজার সেশন (যেমন: কার্ট আইটেম, উইশলিস্ট এবং ভাষা পছন্দ) মনে রাখার জন্য প্রয়োজনীয় ফাংশনাল কুকিজ ব্যবহার করি।',
-        'কোনো প্রকার থার্ড-পার্টি ট্র্যাকিং কুকি গ্রাহকের অনুমতি ব্যতীত ইনস্টল করা হয় না।',
-        'আপনি ব্রাউজারের যেকোনো সময় ক্যাশ ও কুকিজ ক্লিয়ার করতে পারবেন।'
-      ]
+      title: language === 'bn' ? 'কুকিজ পলিসি' : 'Cookie Policy',
+      subtitle: language === 'bn' ? 'ইউজার সেশন ও প্রাধিকার' : 'Session Management & Preferences',
+      details: language === 'bn'
+        ? [
+            'আমরা শুধুমাত্র ইউজার সেশন (যেমন: কার্ট আইটেম, উইশলিস্ট এবং ভাষা পছন্দ) মনে রাখার জন্য প্রয়োজনীয় ফাংশনাল কুকিজ ব্যবহার করি।',
+            'কোনো প্রকার থার্ড-পার্টি ট্র্যাকিং কুকি গ্রাহকের অনুমতি ব্যতীত ইনস্টল করা হয় না।',
+            'আপনি ব্রাউজারের যেকোনো সময় ক্যাশ ও কুকিজ ক্লিয়ার করতে পারবেন।'
+          ]
+        : [
+            'We utilize only functional session storage to retain your shopping bag, wishlist, and preferred language selection.',
+            'No invasive tracking cookies are installed without direct user consent.',
+            'You can freely clear local cache and cookie preferences from your browser at any time.'
+          ]
     },
     returns: {
-      title: 'Return & Refund Policy (রিটার্ন ও এক্সচেঞ্জ)',
-      subtitle: '7-Day Easy Exchange Guarantee',
-      details: [
-        'পোশাকের সাইজ বা ফিটিং না মিললে ৭ দিনের মধ্যে বিনামূল্যে এক্সচেঞ্জ সুবিধা উপভোগ করুন।',
-        'পণ্য অবশ্যই অবিকৃত, ধোয়া ছাড়া এবং মূল ট্যাগযুক্ত অবস্থায় থাকতে হবে।',
-        'ক্যাশ অন ডেলিভারিতে কোনো ভুল বা ক্ষতিগ্রস্ত প্রোডাক্ট পেলে সাথে সাথেই রিটার্ন করতে পারবেন, কোনো বাড়তি চার্জ নেওয়া হবে না।'
-      ]
+      title: language === 'bn' ? 'রিটার্ন ও এক্সচেঞ্জ পলিসি' : 'Return & Refund Policy',
+      subtitle: language === 'bn' ? '৭ দিনের সহজ এক্সচেঞ্জ সুবিধা' : '7-Day Easy Exchange Guarantee',
+      details: language === 'bn'
+        ? [
+            'পোশাকের সাইজ বা ফিটিং না মিললে ৭ দিনের মধ্যে বিনামূল্যে এক্সচেঞ্জ সুবিধা উপভোগ করুন।',
+            'পণ্য অবশ্যই অবিকৃত, ধোয়া ছাড়া এবং মূল ট্যাগযুক্ত অবস্থায় থাকতে হবে।',
+            'ক্যাশ অন ডেলিভারিতে কোনো ভুল বা ক্ষতিগ্রস্ত প্রোডাক্ট পেলে সাথে সাথেই রিটার্ন করতে পারবেন, কোনো বাড়তি চার্জ নেওয়া হবে না।'
+          ]
+        : [
+            'If sizes or silhouettes require exchange, enjoy our 7-day hassle-free replacement service.',
+            'Garments must remain unworn, unwashed, with original atelier tags and packaging intact.',
+            'Any transit defect reported upon doorstep inspection qualifies for immediate return with zero additional courier fee.'
+          ]
     }
   };
 
@@ -61,21 +89,23 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
           <div className="flex items-center gap-2 text-white">
             <span className="font-display tracking-widest text-[16px] text-[#ffc55f]">ELIF</span>
             <span className="text-[#878380]">•</span>
-            <span className="text-[#cec5bd]">Dhaka Flagship Atelier</span>
+            <span className="text-[#cec5bd]">
+              {language === 'bn' ? 'ঢাকা ফ্ল্যাগশিপ অঁতেলিয়ে' : 'Dhaka Flagship Atelier'}
+            </span>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[11px] text-[#cec5bd]">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#2e7d32]" />
-              ক্যাশ অন ডেলিভারি (COD)
+              {t.trustCod}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#ffc55f]" />
-              বিকাশ ও নগদ পেমেন্ট
+              {language === 'bn' ? 'বিকাশ ও নগদ পেমেন্ট' : 'bKash & Cards Accepted'}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#2e7d32]" />
-              ২৪-৪৮ ঘণ্টায় ডেলিভারি
+              {language === 'bn' ? '২৪-৪৮ ঘণ্টায় ডেলিভারি' : '24-48h Delivery'}
             </span>
           </div>
         </div>
@@ -87,7 +117,9 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
         <div className="flex flex-col gap-3">
           <p className="font-display text-[18px] text-white tracking-wide">ELIF STUDIO</p>
           <p className="text-[#a8a199] leading-relaxed text-[12px]">
-            হ্যান্ডলুম রাজশাহী সিল্ক, প্রিমিয়াম উল ও কটন থেকে তৈরি আভিজাত্যপূর্ণ পোশাক।
+            {language === 'bn'
+              ? 'হ্যান্ডলুম রাজশাহী সিল্ক, প্রিমিয়াম উল ও কটন থেকে তৈরি আভিজাত্যপূর্ণ পোশাক।'
+              : 'Artisanal outerwear, pure Rajshahi silk, and refined essentials tailored in Dhaka and Paris.'}
           </p>
           <div className="text-[11px] text-[#cec5bd] flex flex-col gap-1 mt-1">
             <p className="flex items-center gap-1.5">
@@ -96,7 +128,9 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
             </p>
             <p className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px] text-[#ffc55f]">call</span>
-              <span>+880 1700-889922 (10 AM - 9 PM)</span>
+              <a href="tel:+8801995513269" className="hover:text-white transition-colors">
+                +880 1995-513269 ({language === 'bn' ? 'সকাল ১০টা - রাত ১০টা' : '10 AM - 10 PM'})
+              </a>
             </p>
             <p className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px] text-[#ffc55f]">mail</span>
@@ -108,7 +142,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
         {/* Col 2: Quick Shop Navigation */}
         <div className="flex flex-col gap-2.5">
           <p className="font-semibold text-white uppercase tracking-wider text-[11px] text-[#ffc55f]">
-            Shop Clothing (পোশাক)
+            {language === 'bn' ? 'পোশাক কালেকশন' : 'Shop Clothing'}
           </p>
           <ul className="flex flex-col gap-2 text-[#cec5bd]">
             <li>
@@ -116,7 +150,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => onNavigateTab('home')}
                 className="hover:text-white transition-colors cursor-pointer text-left"
               >
-                All Clothing (সকল পোশাক)
+                {language === 'bn' ? 'সকল পোশাক' : 'All Clothing'}
               </button>
             </li>
             <li>
@@ -124,7 +158,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => onNavigateTab('categories', 'Outerwear & Trench')}
                 className="hover:text-white transition-colors cursor-pointer text-left"
               >
-                Coats & Outerwear
+                {language === 'bn' ? 'কোট ও ওভারওয়্যার' : 'Coats & Outerwear'}
               </button>
             </li>
             <li>
@@ -132,7 +166,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => onNavigateTab('categories', 'Fine Knitwear')}
                 className="hover:text-white transition-colors cursor-pointer text-left"
               >
-                Cashmere & Knitwear
+                {language === 'bn' ? 'কাশ্মীরি নিটওয়্যার' : 'Cashmere & Knitwear'}
               </button>
             </li>
             <li>
@@ -140,7 +174,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => onNavigateTab('categories', 'Bengal Silk & Shirting')}
                 className="hover:text-white transition-colors cursor-pointer text-left"
               >
-                Rajshahi Silk & Shirts
+                {language === 'bn' ? 'রাজশাহী সিল্ক ও শার্ট' : 'Rajshahi Silk & Shirts'}
               </button>
             </li>
             <li>
@@ -148,7 +182,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => onNavigateTab('categories', 'Tailored Trousers')}
                 className="hover:text-white transition-colors cursor-pointer text-left"
               >
-                Tailored Trousers
+                {language === 'bn' ? 'টেইলর্ড ট্রাউজার্স' : 'Tailored Trousers'}
               </button>
             </li>
           </ul>
@@ -157,7 +191,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
         {/* Col 3: Customer Care & Policies */}
         <div className="flex flex-col gap-2.5">
           <p className="font-semibold text-white uppercase tracking-wider text-[11px] text-[#ffc55f]">
-            Policies & Rights (পলিসি ও শর্তাবলী)
+            {language === 'bn' ? 'পলিসি ও শর্তাবলী' : 'Policies & Rights'}
           </p>
           <ul className="flex flex-col gap-2 text-[#cec5bd]">
             <li>
@@ -165,7 +199,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => setActivePolicyModal('privacy')}
                 className="hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5"
               >
-                <span>Privacy Policy (প্রাইভেসি পলিসি)</span>
+                <span>{language === 'bn' ? 'প্রাইভেসি পলিসি' : 'Privacy Policy'}</span>
               </button>
             </li>
             <li>
@@ -173,7 +207,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => setActivePolicyModal('terms')}
                 className="hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5"
               >
-                <span>Terms of Service (ব্যবহারের শর্ত)</span>
+                <span>{language === 'bn' ? 'ব্যবহারের শর্তাবলী' : 'Terms of Service'}</span>
               </button>
             </li>
             <li>
@@ -181,7 +215,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => setActivePolicyModal('cookies')}
                 className="hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5"
               >
-                <span>Cookie Policy & Settings (কুকিজ পলিসি)</span>
+                <span>{language === 'bn' ? 'কুকিজ পলিসি' : 'Cookie Policy & Settings'}</span>
               </button>
             </li>
             <li>
@@ -189,7 +223,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => setActivePolicyModal('returns')}
                 className="hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5"
               >
-                <span>Return & Exchange Policy (৭ দিনের রিটার্ন)</span>
+                <span>{language === 'bn' ? '৭ দিনের রিটার্ন ও এক্সচেঞ্জ' : 'Return & Exchange Policy'}</span>
               </button>
             </li>
             <li>
@@ -197,7 +231,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => onNavigateTab('account')}
                 className="hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5"
               >
-                <span>Track Delivery (ডেলিভারি ট্র্যাকিং)</span>
+                <span>{language === 'bn' ? 'ডেলিভারি ট্র্যাকিং' : 'Track Delivery'}</span>
               </button>
             </li>
           </ul>
@@ -206,17 +240,19 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
         {/* Col 4: Social Media & Payment Badges */}
         <div className="flex flex-col gap-3">
           <p className="font-semibold text-white uppercase tracking-wider text-[11px] text-[#ffc55f]">
-            Connect & Follow (সোশ্যাল মিডিয়া)
+            {language === 'bn' ? 'সোশ্যাল মিডিয়া' : 'Connect & Follow'}
           </p>
           <p className="text-[11px] text-[#a8a199]">
-            নতুন কালেকশন ও স্টাইলিং আপডেটের জন্য আমাদের সোশ্যাল মিডিয়া ফলো করুন:
+            {language === 'bn'
+              ? 'নতুন কালেকশন ও স্টাইলিং আপডেটের জন্য আমাদের সোশ্যাল মিডিয়া ফলো করুন:'
+              : 'Follow our atelier updates and runway previews across our official channels:'}
           </p>
 
           {/* Social Icons with Official Brand Colors on Hover */}
           <div className="flex items-center gap-2.5 pt-1">
             {/* Facebook (Official Blue #1877F2) */}
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/share/19TmHushxi/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
@@ -230,7 +266,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
 
             {/* Instagram (Official Brand Gradient) */}
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/elif_rekha?stkn=MTZxY2R6cGJxdWMwMw=="
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -258,11 +294,11 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
 
             {/* WhatsApp / Chat Concierge (Official Green #25D366) */}
             <a
-              href="https://wa.me/8801700889922"
+              href="https://wa.me/8801995513269"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp Concierge"
-              title="WhatsApp / Live Chat"
+              title="WhatsApp: +880 1995-513269"
               className="w-9 h-9 rounded-lg bg-[#2b2724] hover:bg-[#25D366] text-white flex items-center justify-center transition-all duration-300 cursor-pointer transform hover:scale-110 hover:shadow-[0_4px_14px_rgba(37,211,102,0.45)]"
             >
               <span className="material-symbols-outlined text-[18px]">chat</span>
@@ -272,7 +308,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
           {/* Payment Badges */}
           <div className="pt-2">
             <span className="text-[10px] text-[#878380] uppercase tracking-wider block mb-1.5">
-              নিরাপদ পেমেন্ট মেথড
+              {language === 'bn' ? 'নিরাপদ পেমেন্ট মেথড' : 'Secure Payment Methods'}
             </span>
             <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
               <span className="bg-[#e2136e] text-white px-2 py-0.5 rounded">bKash</span>
@@ -289,7 +325,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
       <div className="border-t border-[#2b2724] bg-[#121110] px-4 py-4 text-[11px] text-[#878380]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <p>
-            © {new Date().getFullYear()} <strong className="text-white">ELIF Dhaka Studio Ltd.</strong> সর্বস্বত্ব সংরক্ষিত (All rights reserved).
+            © {new Date().getFullYear()} <strong className="text-white">ELIF Dhaka Studio Ltd.</strong> {language === 'bn' ? 'সর্বস্বত্ব সংরক্ষিত' : 'All rights reserved'}.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[11px]">
@@ -297,28 +333,28 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
               onClick={() => setActivePolicyModal('privacy')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Privacy
+              {language === 'bn' ? 'প্রাইভেসি' : 'Privacy'}
             </button>
             <span>•</span>
             <button
               onClick={() => setActivePolicyModal('terms')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Terms & Conditions
+              {language === 'bn' ? 'শর্তাবলী' : 'Terms & Conditions'}
             </button>
             <span>•</span>
             <button
               onClick={() => setActivePolicyModal('cookies')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Cookies Policy
+              {language === 'bn' ? 'কুকিজ পলিসি' : 'Cookies Policy'}
             </button>
             <span>•</span>
             <button
               onClick={() => setActivePolicyModal('returns')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Returns
+              {language === 'bn' ? 'রিটার্ন' : 'Returns'}
             </button>
           </div>
         </div>
@@ -365,7 +401,7 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
                 onClick={() => setActivePolicyModal(null)}
                 className="px-5 py-2 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg cursor-pointer hover:bg-[#7d5700] transition-colors"
               >
-                Close (বন্ধ করুন)
+                {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
               </button>
             </div>
           </div>

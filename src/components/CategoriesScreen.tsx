@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CATEGORIES, PRODUCTS } from '../data/catalog';
 import { Product } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CategoriesScreenProps {
   initialCategory?: string;
@@ -19,11 +20,21 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
   onOpenProductDetail,
   onShowToast,
 }) => {
+  const { language, t, localizeCategory, localizeProduct, formatPrice, formatNumber } =
+    useLanguage();
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory || 'All');
   const [selectedMaterial, setSelectedMaterial] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
-  const materials = ['All', 'Baby Alpaca', 'Cashmere', 'Raw Silk', 'Virgin Wool', 'Calfskin', 'Belgian Linen'];
+  const materials = [
+    { id: 'All', label: t.categoryAll },
+    { id: 'Alpaca', label: language === 'bn' ? 'আলপাকা উল' : 'Alpaca Wool' },
+    { id: 'Cashmere', label: language === 'bn' ? 'কাশ্মীরি উল' : 'Cashmere' },
+    { id: 'Silk', label: language === 'bn' ? 'রাজশাহী সিল্ক' : 'Raw Silk' },
+    { id: 'Wool', label: language === 'bn' ? 'ভার্জিন উল' : 'Virgin Wool' },
+    { id: 'Leather', label: language === 'bn' ? 'প্রিমিয়াম লেদার' : 'Calfskin Leather' },
+    { id: 'Cotton', label: language === 'bn' ? 'অর্গানিক কটন' : 'Organic Cotton' },
+  ];
 
   const filteredProducts = PRODUCTS.filter((p) => {
     const matchesCategory =
@@ -48,13 +59,15 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
       {/* Screen Title */}
       <div className="mb-5">
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700]">
-          Haute Catalog
+          {language === 'bn' ? 'অঁতেলিয়ে ক্যাটালগ' : 'Haute Catalog'}
         </span>
-        <h1 className="font-display text-[28px] sm:text-[32px] text-[#1d1b15] tracking-tight">
-          Curated Departments
+        <h1 className="font-display text-[26px] sm:text-[30px] text-[#1d1b15] tracking-tight">
+          {language === 'bn' ? 'পোশাকের বিভাগসমূহ' : 'Curated Departments'}
         </h1>
-        <p className="text-[13px] text-[#4b4640] max-w-[360px] mt-1">
-          Explore architectural cuts, heritage textiles, and timeless silhouettes.
+        <p className="text-[13px] text-[#4b4640] max-w-[420px] mt-1">
+          {language === 'bn'
+            ? 'রাজশাহী সিল্ক, কাশ্মীরি নিটওয়্যার ও ট্রাউজার্সের প্রিমিয়াম কালেকশন অন্বেষণ করুন।'
+            : 'Explore architectural cuts, heritage textiles, and timeless silhouettes.'}
         </p>
       </div>
 
@@ -65,6 +78,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
       >
         {['All', ...CATEGORIES.map((c) => c.name)].map((catName) => {
           const isSelected = activeCategory === catName;
+          const displayLabel = catName === 'All' ? t.categoryAll : localizeCategory(catName);
           return (
             <button
               key={catName}
@@ -75,7 +89,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
                   : 'bg-[#f3ede3] text-[#1d1b15] hover:bg-[#ede7dd]'
               }`}
             >
-              {catName}
+              {displayLabel}
             </button>
           );
         })}
@@ -87,19 +101,19 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
         {/* Textile Dropdown / Pills */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700] shrink-0">
-            Textile:
+            {language === 'bn' ? 'ফেব্রিক:' : 'Textile:'}
           </span>
-          {materials.slice(0, 5).map((mat) => (
+          {materials.slice(0, 6).map((mat) => (
             <button
-              key={mat}
-              onClick={() => setSelectedMaterial(mat)}
+              key={mat.id}
+              onClick={() => setSelectedMaterial(mat.id)}
               className={`shrink-0 text-[10px] uppercase font-semibold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
-                selectedMaterial === mat
+                selectedMaterial === mat.id
                   ? 'bg-[#ffc55f] text-[#755100] border-[#ffc55f]'
                   : 'bg-white text-[#4b4640] border-[#cec5bd] hover:border-[#7d5700]'
               }`}
             >
-              {mat}
+              {mat.label}
             </button>
           ))}
           <div className="w-1 shrink-0" aria-hidden="true" />
@@ -108,16 +122,16 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
         {/* Sort selector */}
         <div className="flex items-center gap-1 ml-auto">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#4b4640]">
-            Sort:
+            {t.sortBy}:
           </span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="bg-white text-[#1d1b15] text-[11px] font-semibold py-1.5 px-2 rounded-lg border border-[#cec5bd] focus:outline-none focus:ring-1 focus:ring-[#7d5700] cursor-pointer"
           >
-            <option value="featured">Editorial Curation</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
+            <option value="featured">{t.sortFeatured}</option>
+            <option value="price-asc">{t.sortPriceLow}</option>
+            <option value="price-desc">{t.sortPriceHigh}</option>
           </select>
         </div>
       </div>
@@ -125,7 +139,19 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
       {/* Product Grid (PC Responsive 4 Columns) */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-10">
         {filteredProducts.map((product) => {
+          const localized = localizeProduct(product);
           const isWishlisted = wishlistIds.includes(product.id);
+          const tagLabel =
+            product.tag === 'Best Seller'
+              ? t.tagBestSeller
+              : product.tag === 'Limited'
+              ? t.tagLimited
+              : product.tag === 'New'
+              ? t.tagNew
+              : product.tag === 'Archive'
+              ? t.tagArchive
+              : product.tag;
+
           return (
             <div
               key={product.id}
@@ -142,7 +168,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
 
                 <button
                   onClick={() => onToggleWishlist(product.id)}
-                  aria-label={`Toggle wishlist for ${product.name}`}
+                  aria-label={`Toggle wishlist for ${localized.name}`}
                   className={`absolute top-2 right-2 w-9 h-9 rounded-full bg-[#fff9ee]/85 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform shadow-sm cursor-pointer ${
                     isWishlisted ? 'text-[#7d5700]' : 'text-[#1d1b15]'
                   }`}
@@ -165,7 +191,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
                         : 'bg-[#1d1b19]/85 text-white backdrop-blur-sm'
                     }`}
                   >
-                    {product.tag}
+                    {tagLabel}
                   </span>
                 )}
               </div>
@@ -175,16 +201,15 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
                   onClick={() => onOpenProductDetail(product)}
                   className="text-[14px] font-semibold text-[#1d1b15] truncate cursor-pointer hover:text-[#7d5700] transition-colors"
                 >
-                  {product.name}
+                  {localized.name}
                 </h3>
                 <p className="text-[11px] text-[#4b4640] mb-2 line-clamp-1">
-                  {product.subtitle}
+                  {localized.subtitle}
                 </p>
 
                 <div className="flex items-center justify-between mt-auto pt-1 border-t border-[#e8e2d8]/80">
                   <span className="text-[15px] font-semibold text-[#1d1b15]">
-                    {product.currency}
-                    {product.price.toLocaleString()}
+                    {formatPrice(product.price)}
                   </span>
 
                   <button
@@ -193,10 +218,10 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
                       onOpenProductDetail(product);
                     }}
                     className="h-8 px-2.5 rounded-lg bg-[#1d1b19] text-white flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer hover:bg-[#34302c] text-[10px] font-semibold uppercase tracking-wider"
-                    aria-label={`View details for ${product.name}`}
+                    aria-label={`View details for ${localized.name}`}
                   >
                     <span className="material-symbols-outlined text-[15px]">visibility</span>
-                    <span>Details</span>
+                    <span>{t.viewDetails}</span>
                   </button>
                 </div>
               </div>
@@ -208,19 +233,21 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
       {filteredProducts.length === 0 && (
         <div className="py-16 text-center bg-[#f3ede3] rounded-xl border border-[#e8e2d8] p-6">
           <p className="font-display text-[20px] text-[#1d1b15] mb-2">
-            No pieces match this filter
+            {t.noResults}
           </p>
           <p className="text-[13px] text-[#4b4640] mb-4">
-            Try resetting your material or category selection.
+            {language === 'bn'
+              ? 'অন্য কোনো ফেব্রিক বা বিভাগ নির্বাচন করে পুনরায় চেষ্টা করুন।'
+              : 'Try resetting your material or category selection.'}
           </p>
           <button
             onClick={() => {
               setActiveCategory('All');
               setSelectedMaterial('All');
             }}
-            className="h-10 px-5 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider"
+            className="h-10 px-5 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider cursor-pointer"
           >
-            Reset Filters
+            {language === 'bn' ? 'ফিল্টার রিসেট করুন' : 'Reset Filters'}
           </button>
         </div>
       )}

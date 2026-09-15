@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PRODUCTS } from '../data/catalog';
 import { Product } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -13,28 +14,36 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   onSelectProduct,
 }) => {
+  const { language, t, localizeProduct, formatPrice } = useLanguage();
   const [query, setQuery] = useState('');
 
   if (!isOpen) return null;
 
-  const quickKeywords = [
-    'Cocoon Coat',
-    'Cashmere',
-    'Turtleneck',
-    'Travertine Bag',
-    'Wool Trouser',
-    'Silk Shirt',
-    'Ankle Boots',
-  ];
+  const quickKeywords =
+    language === 'bn'
+      ? ['কোকুন কোট', 'কাশ্মীরি শাল', 'টার্টলনেক', 'ট্রেভারটাইন ব্যাগ', 'সিল্ক শার্ট', 'বুটস']
+      : [
+          'Cocoon Coat',
+          'Cashmere',
+          'Turtleneck',
+          'Travertine Bag',
+          'Wool Trouser',
+          'Silk Shirt',
+          'Ankle Boots',
+        ];
 
   const searchResults = query.trim()
     ? PRODUCTS.filter((p) => {
         const q = query.toLowerCase();
+        const loc = localizeProduct(p);
         return (
           p.name.toLowerCase().includes(q) ||
           p.subtitle.toLowerCase().includes(q) ||
           p.category.toLowerCase().includes(q) ||
-          p.fabric.toLowerCase().includes(q)
+          p.fabric.toLowerCase().includes(q) ||
+          loc.name.toLowerCase().includes(q) ||
+          loc.subtitle.toLowerCase().includes(q) ||
+          loc.category.toLowerCase().includes(q)
         );
       })
     : [];
@@ -57,7 +66,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by silhouette, garment, or textile..."
+              placeholder={t.searchPlaceholder}
               className="w-full h-12 pl-10 pr-10 rounded-xl bg-[#f3ede3] border border-[#cec5bd] text-[#1d1b15] text-[14px] placeholder:text-[#4b4640]/60 focus:outline-none focus:ring-1 focus:ring-[#7d5700]"
             />
             {query && (
@@ -74,14 +83,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             onClick={onClose}
             className="px-3 h-12 text-[12px] font-semibold uppercase tracking-wider text-[#1d1b15] hover:text-[#7d5700] cursor-pointer active:scale-95 transition-all"
           >
-            Cancel
+            {language === 'bn' ? 'বাতিল' : 'Cancel'}
           </button>
         </div>
 
         {/* Quick keywords */}
         <div className="max-w-2xl mx-auto flex items-center gap-1.5 overflow-x-auto pt-3 pb-1 no-scrollbar">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700] shrink-0">
-            Suggested:
+            {language === 'bn' ? 'পরামর্শ:' : 'Suggested:'}
           </span>
           {quickKeywords.map((kw) => (
             <button
@@ -104,54 +113,60 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           {query.trim() ? (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-[#4b4640] mb-3">
-                Found {searchResults.length}{' '}
-                {searchResults.length === 1 ? 'match' : 'matches'} for "{query}"
+                {language === 'bn'
+                  ? `"${query}" এর জন্য ${searchResults.length}টি ফলাফল পাওয়া গেছে`
+                  : `Found ${searchResults.length} ${searchResults.length === 1 ? 'match' : 'matches'} for "${query}"`}
               </p>
 
               {searchResults.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {searchResults.map((p) => (
-                    <div
-                      key={p.id}
-                      onClick={() => {
-                        onSelectProduct(p);
-                        onClose();
-                      }}
-                      className="flex items-center gap-3 p-3 bg-[#f3ede3] rounded-xl border border-[#e8e2d8] hover:border-[#7d5700] transition-all cursor-pointer shadow-sm"
-                    >
-                      <img
-                        src={p.image}
-                        alt={p.alt}
-                        className="w-16 h-20 object-cover rounded-lg bg-[#ede7dd]"
-                      />
-                      <div className="min-w-0">
-                        <h4 className="text-[14px] font-semibold text-[#1d1b15] truncate">
-                          {p.name}
-                        </h4>
-                        <p className="text-[11px] text-[#4b4640] truncate">
-                          {p.subtitle}
-                        </p>
-                        <p className="text-[14px] font-semibold text-[#7d5700] mt-1">
-                          {p.currency}{p.price.toLocaleString()}
-                        </p>
+                  {searchResults.map((p) => {
+                    const locProduct = localizeProduct(p);
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          onSelectProduct(p);
+                          onClose();
+                        }}
+                        className="flex items-center gap-3 p-3 bg-[#f3ede3] rounded-xl border border-[#e8e2d8] hover:border-[#7d5700] transition-all cursor-pointer shadow-sm"
+                      >
+                        <img
+                          src={p.image}
+                          alt={locProduct.name}
+                          className="w-16 h-20 object-cover rounded-lg bg-[#ede7dd]"
+                        />
+                        <div className="min-w-0">
+                          <h4 className="text-[14px] font-semibold text-[#1d1b15] truncate">
+                            {locProduct.name}
+                          </h4>
+                          <p className="text-[11px] text-[#4b4640] truncate">
+                            {locProduct.subtitle}
+                          </p>
+                          <p className="text-[14px] font-semibold text-[#7d5700] mt-1">
+                            {formatPrice(p.price)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="py-12 text-center bg-[#f3ede3] rounded-xl p-6 border border-[#e8e2d8]">
                   <p className="font-display text-[18px] text-[#1d1b15]">
-                    No pieces matched your search
+                    {language === 'bn' ? 'কোনো পোশাক খুঁজে পাওয়া যায়নি' : 'No pieces matched your search'}
                   </p>
                   <p className="text-[12px] text-[#4b4640] mt-1">
-                    Try searching for "Alpaca", "Turtleneck", or "Trench".
+                    {language === 'bn' ? '"শাল", "কোট", অথবা "সিল্ক" লিখে অনুসন্ধান করুন।' : 'Try searching for "Alpaca", "Turtleneck", or "Trench".'}
                   </p>
                 </div>
               )}
             </div>
           ) : (
             <div className="py-8 text-center text-[#4b4640] text-[13px]">
-              Type a garment or textile name to search the Autumn Solace ’25 collection.
+              {language === 'bn'
+                ? 'পোশাকের ধরন বা ম্যাটেরিয়ালের নাম দিয়ে কালেকশন অনুসন্ধান করুন।'
+                : 'Type a garment or textile name to search the Autumn Solace ’25 collection.'}
             </div>
           )}
         </div>
