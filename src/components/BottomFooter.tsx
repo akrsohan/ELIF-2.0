@@ -506,12 +506,18 @@ export const BottomFooter: React.FC<BottomFooterProps> = ({
             </p>
 
             <div className="flex flex-col gap-2.5">
-              {/* Option 1: WhatsApp Message */}
+              {/* Option 1: WhatsApp Message (Direct Mobile App & Web) */}
               <a
-                href="https://wa.me/8801995513269?text=Hello%20ELIF%20Studio%2C%20I%20would%20like%20to%20inquire%20about%20your%20products."
+                href="https://api.whatsapp.com/send?phone=8801995513269&text=Hello%20ELIF%20Studio%2C%20I%20would%20like%20to%20inquire%20about%20your%20products."
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setIsPhoneModalOpen(false)}
+                onClick={() => {
+                  // If on mobile device, directly invoke the WhatsApp native scheme
+                  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    window.location.href = "whatsapp://send?phone=8801995513269&text=Hello%20ELIF%20Studio%2C%20I%20would%20like%20to%20inquire%20about%20your%20products.";
+                  }
+                  setIsPhoneModalOpen(false);
+                }}
                 className="flex items-center gap-3.5 p-3.5 rounded-xl bg-[#25D366]/10 border border-[#25D366]/35 hover:bg-[#25D366]/20 transition-all text-left group cursor-pointer"
               >
                 <div className="w-11 h-11 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
