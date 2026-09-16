@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { BottomFooter } from './components/BottomFooter';
 import { HomeScreen } from './components/HomeScreen';
@@ -14,6 +14,82 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { INITIAL_CART, PRODUCTS } from './data/catalog';
 import { CartItem, Product, TabType } from './types';
 import { useLanguage } from './context/LanguageContext';
+import { AdminLayout } from './admin/AdminLayout';
+import { AdminLoginView } from './admin/views/AdminLoginView';
+import { AdminUser, AdminView } from './admin/types';
+import { DEMO_ADMIN_USERS } from './admin/data/adminDemoData';
+import { signOutAdmin } from './admin/services/adminAuthService';
+
+const VALID_ADMIN_VIEWS: Record<string, AdminView> = {
+  dashboard: 'dashboard',
+  products: 'products',
+  'products/new': 'product-new',
+  'product-new': 'product-new',
+  'product-edit': 'product-edit',
+  categories: 'categories',
+  collections: 'collections',
+  inventory: 'inventory',
+  orders: 'orders',
+  'order-detail': 'order-detail',
+  returns: 'returns',
+  coupons: 'coupons',
+  promotions: 'promotions',
+  customers: 'customers',
+  'customer-detail': 'customer-detail',
+  reviews: 'reviews',
+  'wishlist-insights': 'wishlist-insights',
+  atelier: 'fittings',
+  fittings: 'fittings',
+  tailoring: 'tailoring',
+  homepage: 'homepage-cms',
+  'homepage-cms': 'homepage-cms',
+  cms: 'homepage-cms',
+  banners: 'banners',
+  lookbook: 'lookbook',
+  newsletter: 'newsletter',
+  delivery: 'delivery',
+  payments: 'payments',
+  operations: 'delivery',
+  analytics: 'analytics-sales',
+  'analytics-sales': 'analytics-sales',
+  'analytics-products': 'analytics-products',
+  'analytics-customers': 'analytics-customers',
+  'admin-users': 'admin-users',
+  users: 'admin-users',
+  roles: 'roles',
+  'activity-logs': 'activity-logs',
+  logs: 'activity-logs',
+  settings: 'settings',
+};
+
+function parseCurrentRoute(): { isAdmin: boolean; isLogin: boolean; subview: AdminView } {
+  const path = window.location.pathname.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+
+  const isPathAdmin = path.startsWith('/admin');
+  const isHashAdmin = hash.startsWith('#admin') || hash.startsWith('#/admin');
+
+  if (!isPathAdmin && !isHashAdmin) {
+    return { isAdmin: false, isLogin: false, subview: 'dashboard' };
+  }
+
+  // Determine subview
+  let cleanSegment = '';
+  if (isPathAdmin) {
+    cleanSegment = path.replace(/^\/admin\/?/, '').split('?')[0].replace(/\/$/, '');
+  } else if (isHashAdmin) {
+    cleanSegment = hash.replace(/^#\/?admin\/?/, '').split('?')[0].replace(/\/$/, '');
+  }
+
+  const isLogin = cleanSegment === 'login';
+  const matchedView = VALID_ADMIN_VIEWS[cleanSegment] || 'dashboard';
+
+  return {
+    isAdmin: true,
+    isLogin,
+    subview: matchedView,
+  };
+}
 
 export default function App() {
   const { language, localizeProduct } = useLanguage();
@@ -21,6 +97,41 @@ export default function App() {
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
   const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART);
   const [wishlistIds, setWishlistIds] = useState<string[]>(['prod-1', 'prod-2']);
+
+  // Admin Portal State
+  const initialRoute = parseCurrentRoute();
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(initialRoute.isAdmin);
+  const [adminSubview, setAdminSubview] = useState<AdminView>(initialRoute.subview);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('elif_admin_auth') === 'true';
+  });
+  const [adminUser, setAdminUser] = useState<AdminUser>(() => {
+    const saved = localStorage.getItem('elif_admin_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return DEMO_ADMIN_USERS[0];
+      }
+    }
+    return DEMO_ADMIN_USERS[0];
+  });
+
+  // Sync URL changes (popstate & hashchange)
+  const syncRoute = useCallback(() => {
+    const { isAdmin, subview } = parseCurrentRoute();
+    setIsAdminMode(isAdmin);
+    setAdminSubview(subview);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('popstate', syncRoute);
+    window.addEventListener('hashchange', syncRoute);
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+      window.removeEventListener('hashchange', syncRoute);
+    };
+  }, [syncRoute]);
 
   // Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -45,8 +156,10 @@ export default function App() {
 
   // Scroll to top when changing tabs
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [activeTab]);
+    if (!isAdminMode) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab, isAdminMode]);
 
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -155,8 +268,81 @@ export default function App() {
     0
   );
 
+  // Admin Portal Handlers
+  const handleAdminLogin = (user: AdminUser) => {
+    setIsAdminAuthenticated(true);
+    setAdminUser(user);
+    localStorage.setItem('elif_admin_auth', 'true');
+    localStorage.setItem('elif_admin_user', JSON.stringify(user));
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState(null, '', '/admin/dashboard');
+    } else {
+      window.location.hash = '#admin/dashboard';
+    }
+    setAdminSubview('dashboard');
+  };
+
+  const handleAdminLogout = async () => {
+    await signOutAdmin();
+    setIsAdminAuthenticated(false);
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState(null, '', '/admin/login');
+    } else {
+      window.location.hash = '#admin/login';
+    }
+  };
+
+  const handleExitAdmin = () => {
+    setIsAdminMode(false);
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState(null, '', '/');
+    } else {
+      window.location.hash = '';
+    }
+  };
+
+  const handleAdminViewChange = (view: AdminView) => {
+    setAdminSubview(view);
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState(null, '', `/admin/${view}`);
+    } else {
+      window.location.hash = `#admin/${view}`;
+    }
+  };
+
+  const handleOpenAdminFromStore = () => {
+    setIsAdminMode(true);
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState(null, '', '/admin/dashboard');
+    } else {
+      window.location.hash = '#admin/dashboard';
+    }
+  };
+
+  // If in Admin Mode, render the full admin portal or authentication screen
+  if (isAdminMode) {
+    const route = parseCurrentRoute();
+    if (!isAdminAuthenticated || route.isLogin) {
+      return (
+        <AdminLoginView
+          onLoginSuccess={handleAdminLogin}
+          onExitToStore={handleExitAdmin}
+        />
+      );
+    }
+    return (
+      <AdminLayout
+        currentUser={adminUser}
+        initialView={adminSubview}
+        onViewChange={handleAdminViewChange}
+        onExitAdmin={handleExitAdmin}
+        onLogout={handleAdminLogout}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#fff9ee] text-[#1d1b15] font-sans antialiased flex flex-col justify-between selection:bg-[#ffdeaa] selection:text-[#271900]">
+    <div className="min-h-screen bg-transparent text-[#19241a] font-sans antialiased flex flex-col justify-between selection:bg-[#a0d797]/40 selection:text-[#19241a]">
       {/* Fixed Luxury Header */}
       <Header
         cartCount={totalCartCount}
@@ -165,6 +351,7 @@ export default function App() {
         onOpenMenu={() => setIsMenuOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
         onNavigateTab={handleNavigateTab}
+        onOpenAdmin={handleOpenAdminFromStore}
       />
 
       {/* Main View Area with Responsive Mobile/Tablet/Desktop Framing */}
@@ -188,6 +375,7 @@ export default function App() {
             onToggleWishlist={handleToggleWishlist}
             onQuickAddToCart={handleQuickAddToCart}
             onOpenProductDetail={(prod) => setSelectedProduct(prod)}
+            onNavigateTab={handleNavigateTab}
             onShowToast={showToast}
           />
         )}
@@ -199,7 +387,6 @@ export default function App() {
             onQuickAddToCart={handleQuickAddToCart}
             onOpenProductDetail={(prod) => setSelectedProduct(prod)}
             onNavigateTab={handleNavigateTab}
-            onShowToast={showToast}
           />
         )}
 
@@ -208,31 +395,54 @@ export default function App() {
             cartItems={cartItems}
             onUpdateQuantity={handleUpdateCartQuantity}
             onRemoveItem={handleRemoveCartItem}
-            onOpenCheckout={() => setIsCheckoutOpen(true)}
+            onProceedCheckout={() => setIsCheckoutOpen(true)}
             onNavigateTab={handleNavigateTab}
-            onShowToast={showToast}
           />
         )}
 
         {activeTab === 'account' && (
-          <AccountScreen onShowToast={showToast} />
+          <AccountScreen
+            onNavigateTab={handleNavigateTab}
+            onShowToast={showToast}
+            onOpenStory={() => setIsStoryOpen(true)}
+            onOpenAdmin={handleOpenAdminFromStore}
+          />
         )}
       </main>
 
-      {/* Bottom Footer Navbar with Copyrights, Policies, Cookies, Social Media */}
+      {/* Persistent Bottom Navigation & Atelier Footer */}
       <BottomFooter
         onNavigateTab={handleNavigateTab}
         onShowToast={showToast}
+        onOpenAdmin={handleOpenAdminFromStore}
       />
 
-      {/* Modals & Overlays */}
+      {/* Floating Admin Portal Quick Access Switcher Button (Always Visible) */}
+      <button
+        type="button"
+        id="floating-admin-portal-btn"
+        onClick={handleOpenAdminFromStore}
+        title="Open ELIF Admin Atelier Portal"
+        className="fixed bottom-20 left-4 z-40 px-3.5 py-2 rounded-full bg-[#18281b] hover:bg-[#253d29] text-[#faf7eb] text-[11px] font-bold tracking-wide shadow-2xl border border-[#3f804b]/60 flex items-center gap-2 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-md group"
+      >
+        <div className="w-5 h-5 rounded-full bg-[#2d6636] flex items-center justify-center text-white text-[12px] group-hover:bg-[#387e44]">
+          <span className="material-symbols-outlined text-[13px] text-[#a0d797]">
+            admin_panel_settings
+          </span>
+        </div>
+        <span>Admin Portal</span>
+        <span className="text-[9px] bg-[#2d6636] text-[#a0d797] font-extrabold px-1.5 py-0.2 rounded-full uppercase">
+          Staff
+        </span>
+      </button>
+
+      {/* Modals & Slide-overs */}
       <ProductDetailModal
         product={selectedProduct}
-        isOpen={!!selectedProduct}
-        isWishlisted={selectedProduct ? wishlistIds.includes(selectedProduct.id) : false}
         onClose={() => setSelectedProduct(null)}
-        onAddToCart={handleAddToCartWithOptions}
+        isWishlisted={selectedProduct ? wishlistIds.includes(selectedProduct.id) : false}
         onToggleWishlist={handleToggleWishlist}
+        onAddToCart={handleAddToCartWithOptions}
         onDirectBuy={handleDirectBuy}
         onShowToast={showToast}
       />
@@ -240,7 +450,13 @@ export default function App() {
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        onSelectProduct={(prod) => setSelectedProduct(prod)}
+        onSelectProduct={(prod) => {
+          setSelectedProduct(prod);
+          setIsSearchOpen(false);
+        }}
+        wishlistIds={wishlistIds}
+        onToggleWishlist={handleToggleWishlist}
+        onQuickAddToCart={handleQuickAddToCart}
       />
 
       <SideMenuDrawer
@@ -248,34 +464,43 @@ export default function App() {
         onClose={() => setIsMenuOpen(false)}
         onNavigateTab={handleNavigateTab}
         onShowToast={showToast}
+        onOpenAdmin={() => {
+          setIsMenuOpen(false);
+          handleOpenAdminFromStore();
+        }}
       />
 
       <AtelierStoryModal
         isOpen={isStoryOpen}
         onClose={() => setIsStoryOpen(false)}
-        onExploreCollection={() => handleNavigateTab('categories')}
+        onExploreCollection={() => {
+          setIsStoryOpen(false);
+          handleNavigateTab('categories');
+        }}
       />
 
       <CheckoutModal
         isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
         cartItems={cartItems}
         totalAmount={totalCartAmount}
-        onClose={() => setIsCheckoutOpen(false)}
-        onClearCart={() => setCartItems([])}
+        onOrderSuccess={() => {
+          setCartItems([]);
+          setIsCheckoutOpen(false);
+          handleNavigateTab('account');
+        }}
         onShowToast={showToast}
-        onNavigateToAccount={() => handleNavigateTab('account')}
       />
 
       {/* Floating Toast Notification */}
       {toast && (
-        <div
-          id="toast-notification"
-          className="fixed top-20 inset-x-4 max-w-sm mx-auto z-50 bg-[#1d1b19] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 border border-[#cec5bd]/40 animate-fadeIn"
-        >
-          <span className="material-symbols-outlined text-[#ffc55f] text-[18px]">
-            info
-          </span>
-          <span className="text-[12px] font-medium leading-tight">{toast}</span>
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
+          <div className="bg-[#19241a] text-[#f7f5ee] px-5 py-3 rounded-full text-[13px] font-medium shadow-xl border border-[#2d402f]/40 flex items-center gap-2.5 backdrop-blur-md">
+            <span className="material-symbols-outlined text-[18px] text-[#a0d797]">
+              check_circle
+            </span>
+            <span>{toast}</span>
+          </div>
         </div>
       )}
     </div>

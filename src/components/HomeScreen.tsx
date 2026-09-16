@@ -49,30 +49,59 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   });
 
   return (
-    <div className="flex flex-col w-full selection:bg-[#ffdeaa] selection:text-[#271900]">
-      {/* 1. TOP HERO BANNER & TRUST BAR (Visible on Tablet & PC, hidden on mobile) */}
-      <div className="hidden md:block px-3 sm:px-4 mb-6">
+    <div className="flex flex-col w-full selection:bg-[#d6edd2] selection:text-[#18281b]">
+      {/* 1. TOP HERO BANNER & TRUST BAR (Tablet & PC Expanded Hero) */}
+      <div className="hidden md:block px-3 sm:px-4 mb-8">
         {/* Luxury Editorial Showcase Banner on Tablet & PC */}
-        <div className="relative w-full rounded-2xl overflow-hidden bg-[#1d1b19] text-white p-5 sm:p-7 lg:p-9 shadow-md border border-[#3e3833] flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div className="max-w-xl z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#ffc55f]">
+        <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-[#e5f3e2] via-[#eef7ec] to-[#dcefe0] text-[#0f2113] p-6 sm:p-8 lg:p-10 shadow-[0_8px_30px_rgba(24,40,27,0.06)] border border-[#b8dab2] flex flex-col lg:flex-row items-center justify-between gap-8">
+          {/* Subtle Ambient Background Decorative Glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#cbe8c4]/40 rounded-full blur-3xl pointer-events-none -z-0" />
+          <div className="absolute bottom-0 left-10 w-72 h-72 bg-[#dfefe0]/60 rounded-full blur-2xl pointer-events-none -z-0" />
+
+          {/* Left Content Area */}
+          <div className="max-w-2xl z-10">
+            {/* Top Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-[12px] font-extrabold uppercase tracking-[0.16em] text-[#0f2113] bg-[#ffffff]/90 backdrop-blur-md px-3.5 py-1 rounded-full border border-[#aed2a7] shadow-xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34a853] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1e7e34]"></span>
+                </span>
                 {language === 'bn' ? 'ঢাকা ফ্ল্যাগশিপ অঁতেলিয়ে' : 'Dhaka Flagship Atelier'}
               </span>
-              <span className="text-[#878380]">•</span>
-              <span className="text-[10px] sm:text-[11px] text-[#cec5bd] uppercase tracking-wider">
-                {language === 'bn' ? 'অটাম সোলাস ’২৫' : 'Autumn Solace ’25'}
+              <span className="text-[#88aa8d] font-bold">•</span>
+              <span className="text-[11px] sm:text-[12px] text-[#1b4e25] uppercase tracking-[0.18em] font-black bg-[#d6edd2]/80 px-3 py-1 rounded-full border border-[#bedeb8]">
+                {language === 'bn' ? 'অটাম সোলাস ’২৫ কালেকশন' : 'Autumn Solace ’25 Collection'}
               </span>
             </div>
-            <h1 className="font-display text-[24px] sm:text-[32px] lg:text-[38px] leading-tight font-medium text-white mb-2.5">
-              {language === 'bn' ? 'বাঙালি ঐতিহ্য ও আধুনিক টেইলরিংয়ের মেলবন্ধন' : 'Refined Bangladeshi Craft & Modern Tailoring'}
-            </h1>
-            <p className="text-[12px] sm:text-[13px] text-[#cec5bd] leading-relaxed mb-4">
+
+            {/* Main Headline */}
+            <h1 className="font-display font-extrabold text-[30px] sm:text-[38px] lg:text-[45px] leading-[1.14] tracking-[-0.03em] text-[#0b1b0e] mb-3.5">
               {language === 'bn'
-                ? 'রাজশাহী সিল্ক, কাশ্মীরি উল ও বেলজিয়ান লিনেনে বোনা প্রিমিয়াম পোশাক। ক্যাশ অন ডেলিভারি (COD) এবং ঢাকা সিটিতে ২৪-৪৮ ঘণ্টায় এক্সপ্রেস হোম ডেলিভারি সুবিধা।'
-                : 'Pure silhouettes marrying Bengal raw mulberry silks, fine alpaca, and unbleached European wool. Supported by doorstep Cash on Delivery and 24h Dhaka express dispatch.'}
+                ? 'বাঙালি ঐতিহ্য ও আধুনিক টেইলরিংয়ের মেলবন্ধন'
+                : 'Refined Bangladeshi Craft & Modern Tailoring'}
+            </h1>
+
+            {/* Description Subtitle */}
+            <p className="text-[14px] sm:text-[15.5px] text-[#1c3c22] leading-relaxed mb-6 font-bold">
+              {language === 'bn' ? (
+                <>
+                  <span className="font-black text-[#0b1b0e]">রাজশাহী র সিল্ক</span>, কাশ্মীরি উল ও বেলজিয়ান লিনেনের নিখুঁত কারুকাজ। সারাদেশে{' '}
+                  <span className="font-black text-[#0b1b0e]">ক্যাশ অন ডেলিভারি (COD)</span> এবং ঢাকায়{' '}
+                  <span className="font-black text-[#0b1b0e]">২৪-৪৮ ঘণ্টায় এক্সপ্রেস হোম ডেলিভারি</span>।
+                </>
+              ) : (
+                <>
+                  Pure silhouettes marrying{' '}
+                  <span className="font-black text-[#0b1b0e]">Bengal raw mulberry silks</span>, fine alpaca, and unbleached European wool. Supported by doorstep{' '}
+                  <span className="font-black text-[#0b1b0e]">Cash on Delivery</span> and{' '}
+                  <span className="font-black text-[#0b1b0e]">24h Dhaka express dispatch</span>.
+                </>
+              )}
             </p>
-            <div className="flex flex-wrap items-center gap-3">
+
+            {/* Action Buttons & Quick Trust Assurance */}
+            <div className="flex flex-wrap items-center gap-3.5 mb-4">
               <button
                 type="button"
                 onClick={() => {
@@ -80,72 +109,119 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   const el = document.getElementById('catalog-grid-section');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="h-9 sm:h-10 px-4 sm:px-5 rounded-xl bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-semibold text-[11px] sm:text-[12px] uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all shadow-md active:scale-95"
+                className="h-11 px-6 rounded-xl bg-[#0f2113] hover:bg-[#1f4726] text-white font-black text-[12px] uppercase tracking-wider flex items-center gap-2.5 cursor-pointer transition-all shadow-[0_4px_14px_rgba(15,33,19,0.25)] hover:shadow-lg active:scale-95 group"
               >
                 <span>{language === 'bn' ? 'পোশাক কালেকশন দেখুন' : 'Explore Silhouettes'}</span>
-                <span className="material-symbols-outlined text-[17px]">arrow_downward</span>
+                <span className="material-symbols-outlined text-[18px] group-hover:translate-y-0.5 transition-transform">
+                  arrow_downward
+                </span>
               </button>
               {onOpenStory && (
                 <button
                   type="button"
                   onClick={onOpenStory}
-                  className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-[11px] sm:text-[12px] uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all border border-white/20"
+                  className="h-11 px-5 rounded-xl bg-white/95 hover:bg-white text-[#0f2113] font-black text-[12px] uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all border border-[#afd4a8] shadow-xs hover:shadow-md active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-[16px]">auto_stories</span>
+                  <span className="material-symbols-outlined text-[18px] text-[#1c642c]">auto_stories</span>
                   <span>{language === 'bn' ? 'অঁতেলিয়ে ডসিয়ার' : 'Atelier Dossier'}</span>
                 </button>
               )}
             </div>
+
+            {/* Micro Provenance Tag */}
+            <div className="flex flex-wrap items-center gap-4 text-[11.5px] font-black text-[#1c4422] pt-1">
+              <span className="flex items-center gap-1.5">
+                <span className="text-[#f59e0b]">★</span>
+                <span>4.9/5 Rating (1,400+ Dhaka Clients)</span>
+              </span>
+              <span className="text-[#88aa8d]">•</span>
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px] text-[#1c642c]">verified</span>
+                <span>100% Handcrafted Certified Silks</span>
+              </span>
+            </div>
           </div>
 
-          {/* Trust Highlights Grid (2 cols on mobile, 4 cols on PC) */}
-          <div className="w-full lg:w-auto grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2.5 z-10 shrink-0">
-            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
-              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
-                <span className="material-symbols-outlined text-[17px]">local_shipping</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustDelivery}</span>
+          {/* Trust Highlights 2x2 Grid (Elevated Cards with Crisp Icons & High Contrast) */}
+          <div className="w-full lg:w-[380px] grid grid-cols-2 gap-3 z-10 shrink-0">
+            {/* Card 1: Nationwide Delivery */}
+            <div className="group bg-white/95 hover:bg-white backdrop-blur-md p-4 rounded-2xl border border-[#badbb3] hover:border-[#1c642c] shadow-[0_2px_10px_rgba(20,40,24,0.04)] hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#e2f2df] group-hover:bg-[#0f2113] group-hover:text-white text-[#1c642c] flex items-center justify-center transition-all shadow-2xs shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#1c642c]">
+                    {t.trustDelivery}
+                  </span>
+                </div>
+                <p className="text-[13.5px] font-black text-[#0c1a0e] leading-snug">
+                  {language === 'bn' ? 'ঢাকা ২৪-৪৮ ঘণ্টায়' : '24–48h in Dhaka'}
+                </p>
+                <p className="text-[11.5px] text-[#2c5231] font-bold mt-0.5">
+                  Pathao / Steadfast
+                </p>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
-                {language === 'bn' ? 'ঢাকা ২৪-৪৮ ঘণ্টায়' : '24-48h in Dhaka'}
-              </p>
-              <p className="text-[10px] text-[#a8a199]">Pathao / Steadfast</p>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
-              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
-                <span className="material-symbols-outlined text-[17px]">payments</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustCod}</span>
+            {/* Card 2: COD & bKash */}
+            <div className="group bg-white/95 hover:bg-white backdrop-blur-md p-4 rounded-2xl border border-[#badbb3] hover:border-[#1c642c] shadow-[0_2px_10px_rgba(20,40,24,0.04)] hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#e2f2df] group-hover:bg-[#0f2113] group-hover:text-white text-[#1c642c] flex items-center justify-center transition-all shadow-2xs shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">payments</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#1c642c]">
+                    {t.trustCod}
+                  </span>
+                </div>
+                <p className="text-[13.5px] font-black text-[#0c1a0e] leading-snug">
+                  {language === 'bn' ? 'পণ্য দেখে পেমেন্ট' : 'Inspect Doorstep'}
+                </p>
+                <p className="text-[11.5px] text-[#2c5231] font-bold mt-0.5">
+                  {language === 'bn' ? 'ক্যাশ অন ডেলিভারি ও বিকাশ' : 'COD & bKash Option'}
+                </p>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
-                {language === 'bn' ? 'পণ্য দেখে পেমেন্ট' : 'Inspect Doorstep'}
-              </p>
-              <p className="text-[10px] text-[#a8a199]">
-                {language === 'bn' ? 'সারাদেশে হোম ডেলিভারি' : 'Nationwide Service'}
-              </p>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
-              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
-                <span className="material-symbols-outlined text-[17px]">sync</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustReturn}</span>
+            {/* Card 3: Free Exchange */}
+            <div className="group bg-white/95 hover:bg-white backdrop-blur-md p-4 rounded-2xl border border-[#badbb3] hover:border-[#1c642c] shadow-[0_2px_10px_rgba(20,40,24,0.04)] hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#e2f2df] group-hover:bg-[#0f2113] group-hover:text-white text-[#1c642c] flex items-center justify-center transition-all shadow-2xs shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">published_with_changes</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#1c642c]">
+                    {t.trustReturn}
+                  </span>
+                </div>
+                <p className="text-[13.5px] font-black text-[#0c1a0e] leading-snug">
+                  {language === 'bn' ? 'ফ্রি সাইজ এক্সচেঞ্জ' : 'Complimentary Swap'}
+                </p>
+                <p className="text-[11.5px] text-[#2c5231] font-bold mt-0.5">
+                  {language === 'bn' ? '৭ দিনের সহজ এক্সচেঞ্জ' : '7-Day Easy Exchange'}
+                </p>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
-                {language === 'bn' ? 'ফ্রি সাইজ এক্সচেঞ্জ' : 'Hassle-Free Exchange'}
-              </p>
-              <p className="text-[10px] text-[#a8a199]">
-                {language === 'bn' ? 'সহজ এক্সচেঞ্জ পলিসি' : 'Easy Exchange Policy'}
-              </p>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10">
-              <div className="flex items-center gap-1.5 text-[#ffc55f] mb-1">
-                <span className="material-symbols-outlined text-[17px]">verified</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">{t.trustAuthentic}</span>
+            {/* Card 4: 100% Certified Silk */}
+            <div className="group bg-white/95 hover:bg-white backdrop-blur-md p-4 rounded-2xl border border-[#badbb3] hover:border-[#1c642c] shadow-[0_2px_10px_rgba(20,40,24,0.04)] hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#e2f2df] group-hover:bg-[#0f2113] group-hover:text-white text-[#1c642c] flex items-center justify-center transition-all shadow-2xs shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">verified</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#1c642c]">
+                    {t.trustAuthentic}
+                  </span>
+                </div>
+                <p className="text-[13.5px] font-black text-[#0c1a0e] leading-snug">
+                  {language === 'bn' ? 'খাঁটি ও সার্টিফাইড' : '100% Certified Silk'}
+                </p>
+                <p className="text-[11.5px] text-[#2c5231] font-bold mt-0.5">
+                  OEKO-TEX Standard
+                </p>
               </div>
-              <p className="text-[11px] sm:text-[12px] text-white font-semibold">
-                {language === 'bn' ? 'খাঁটি ও সার্টিফাইড' : '100% Certified Silk'}
-              </p>
-              <p className="text-[10px] text-[#a8a199]">OEKO-TEX Standard</p>
             </div>
           </div>
         </div>
@@ -154,20 +230,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* 2. CATALOG HEADER */}
       <div className="px-4 mb-4">
         <div className="mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7d5700]">
+          <span className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.22em] text-[#1b5e28]">
             {t.collectionEyebrow}
           </span>
-          <h1 className="font-display text-[26px] sm:text-[32px] text-[#1d1b15] tracking-tight leading-tight">
+          <h2 className="font-display font-black text-[28px] sm:text-[36px] text-[#0a180d] tracking-[-0.02em] leading-tight mt-0.5">
             {t.catalogHeading}
-          </h1>
-          <p className="text-[12.5px] sm:text-[13.5px] text-[#5c544d] leading-relaxed mt-0.5">
+          </h2>
+          <p className="text-[13px] sm:text-[14.5px] text-[#1c3821] leading-relaxed mt-0.5 font-bold">
             {t.catalogTagline}
           </p>
         </div>
 
         {/* Category Filter Chips */}
         <div
-          className="flex items-center gap-1.5 overflow-x-auto pb-2 scroll-smooth no-scrollbar"
+          className="flex items-center gap-2 overflow-x-auto pb-2 scroll-smooth no-scrollbar"
           style={{ scrollPaddingLeft: '1rem', scrollPaddingRight: '1rem' }}
         >
           {categories.map((cat) => {
@@ -176,10 +252,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
-                className={`shrink-0 h-8 px-3 rounded-full text-[11px] font-semibold uppercase tracking-wider flex items-center transition-all cursor-pointer ${
+                className={`shrink-0 h-8.5 px-3.5 rounded-full text-[11.5px] font-black uppercase tracking-wider flex items-center transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#1d1b19] text-white shadow-sm'
-                    : 'bg-[#f3ede3] text-[#1d1b15] hover:bg-[#ede7dd]'
+                    ? 'bg-[#0f2113] text-white shadow-sm border border-[#0f2113]'
+                    : 'bg-[#eaf3e7] text-[#0f2113] hover:bg-[#dcefe0] border border-[#c4e0c0]'
                 }`}
               >
                 {cat.label}
@@ -189,16 +265,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* Sort Controls */}
-        <div className="flex items-center justify-between pt-2 text-[11px] text-[#4b4640] border-t border-[#e8e2d8]/80 mt-2">
+        <div className="flex items-center justify-between pt-2.5 text-[12px] text-[#1c3821] font-bold border-t border-[#d1e5cd] mt-2">
           <span>
             {formatNumber(filteredProducts.length)} {t.showingItems}
           </span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[#7d766f]">{t.sortBy}:</span>
+            <span className="text-[#305335] font-bold">{t.sortBy}:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-[#f3ede3] border border-[#cec5bd] rounded-md px-2 py-1 text-[11px] font-medium text-[#1d1b15] focus:outline-none cursor-pointer"
+              className="bg-[#eaf3e7] border border-[#bedec0] rounded-md px-2.5 py-1 text-[11.5px] font-black text-[#0f2113] focus:outline-none cursor-pointer"
             >
               <option value="featured">{t.sortFeatured}</option>
               <option value="price-asc">{t.sortPriceLow}</option>
@@ -211,12 +287,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* 3. PRIMARY CLOTHING PRODUCT GRID */}
       <section id="catalog-grid-section" className="w-full px-3 sm:px-4 mb-12">
         {filteredProducts.length === 0 ? (
-          <div className="py-16 text-center bg-[#f3ede3] rounded-xl border border-[#e8e2d8]">
-            <span className="material-symbols-outlined text-[36px] text-[#7d766f] mb-2">
+          <div className="py-16 text-center bg-[#f1f6ee] rounded-xl border border-[#d6e5d2]">
+            <span className="material-symbols-outlined text-[36px] text-[#5c725f] mb-2">
               checkroom
             </span>
-            <p className="text-[15px] font-semibold text-[#1d1b15]">{t.noResults}</p>
-            <p className="text-[12px] text-[#4b4640] mt-1">
+            <p className="text-[15px] font-semibold text-[#18281b]">{t.noResults}</p>
+            <p className="text-[12px] text-[#3a4d3d] mt-1">
               {language === 'bn'
                 ? 'অন্য কোনো কি-ওয়ার্ড দিয়ে খুঁজুন অথবা "সব কালেকশন" সিলেক্ট করুন।'
                 : 'Try searching with another keyword or select "All Clothing".'}
@@ -225,7 +301,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               onClick={() => {
                 setSelectedCategory('All');
               }}
-              className="mt-3 px-4 py-1.5 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider cursor-pointer"
+              className="mt-3 px-4 py-1.5 rounded-lg bg-[#2d6636] text-white text-[11px] font-semibold uppercase tracking-wider cursor-pointer"
             >
               {language === 'bn' ? 'ফিল্টার রিসেট করুন' : 'Reset Filters'}
             </button>
@@ -250,12 +326,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <div
                   key={product.id}
                   onClick={() => onOpenProductDetail(product)}
-                  className="group flex flex-col bg-[#f3ede3] rounded-xl overflow-hidden shadow-sm transition-all duration-300 border border-[#e8e2d8] hover:shadow-md cursor-pointer"
+                  className="group flex flex-col bg-[#f1f6ee] rounded-xl overflow-hidden shadow-xs transition-all duration-300 border border-[#d6e5d2] hover:shadow-md cursor-pointer hover:border-[#2d6636]/50"
                 >
                   {/* Image & Wishlist Container */}
                   <div
                     onClick={() => onOpenProductDetail(product)}
-                    className="relative aspect-[3/4] w-full overflow-hidden bg-[#ede7dd] cursor-pointer"
+                    className="relative aspect-[3/4] w-full overflow-hidden bg-[#e7f0e3] cursor-pointer"
                   >
                     <img
                       className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-500"
@@ -272,8 +348,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         onToggleWishlist(product.id);
                       }}
                       aria-label={`${t.wishlistLabel}: ${localized.name}`}
-                      className={`absolute top-2 right-2 w-9 h-9 rounded-full bg-[#fff9ee]/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform shadow-sm cursor-pointer ${
-                        isWishlisted ? 'text-[#7d5700]' : 'text-[#1d1b15]'
+                      className={`absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform shadow-sm cursor-pointer ${
+                        isWishlisted ? 'text-[#2d6636]' : 'text-[#18281b]'
                       }`}
                     >
                       <span
@@ -291,10 +367,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       <span
                         className={`absolute bottom-2 left-2 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${
                           product.tag === 'Best Seller'
-                            ? 'bg-[#ffc55f] text-[#755100]'
+                            ? 'bg-[#d6edd2] text-[#15381a] border border-[#bce4b6]'
                             : product.tag === 'Limited'
-                            ? 'bg-[#7d5700] text-white'
-                            : 'bg-[#1d1b19]/85 backdrop-blur-sm text-white'
+                            ? 'bg-[#2d6636] text-white'
+                            : 'bg-[#18281b]/85 backdrop-blur-sm text-white'
                         }`}
                       >
                         {tagLabel}
@@ -303,31 +379,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
 
                   {/* Product Details & Actions */}
-                  <div className="p-3 flex flex-col flex-1 justify-between">
+                  <div className="p-3.5 flex flex-col flex-1 justify-between bg-white/40">
                     <div>
-                      <div className="flex items-center justify-between text-[10px] text-[#7d5700] uppercase tracking-wider font-semibold mb-0.5">
+                      <div className="flex items-center justify-between text-[10.5px] text-[#1b5e28] uppercase tracking-wider font-black mb-1">
                         <span>{localized.category}</span>
-                        <span className="text-[#2e7d32] font-medium">COD</span>
+                        <span className="text-[#15461e] font-black bg-[#d6edd2] px-1.5 py-0.2 rounded-sm text-[9px]">COD AVAILABLE</span>
                       </div>
 
                       <h3
                         onClick={() => onOpenProductDetail(product)}
-                        className="text-[14px] sm:text-[15px] font-semibold text-[#1d1b15] leading-snug cursor-pointer hover:text-[#7d5700] transition-colors line-clamp-1"
+                        className="font-display font-black text-[15.5px] sm:text-[16.5px] text-[#0a180d] leading-snug cursor-pointer hover:text-[#1b5e28] transition-colors line-clamp-1"
                       >
                         {localized.name}
                       </h3>
 
-                      <p className="text-[11px] text-[#4b4640] mt-0.5 line-clamp-1">
+                      <p className="text-[12px] text-[#224027] mt-0.5 line-clamp-1 font-bold">
                         {localized.subtitle}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-[#cec5bd]/50 mt-2 flex items-center justify-between">
+                    <div className="pt-3 border-t border-[#cee2cb] mt-2.5 flex items-center justify-between">
                       <div>
-                        <span className="text-[9px] text-[#7d766f] block uppercase tracking-wider leading-none">
+                        <span className="text-[9.5px] text-[#305335] block uppercase tracking-wider leading-none font-black">
                           {language === 'bn' ? 'মূল্য' : 'Price'}
                         </span>
-                        <span className="text-[15px] sm:text-[16px] font-bold text-[#1d1b15] font-display">
+                        <span className="text-[16px] sm:text-[17px] font-black text-[#09150c] tracking-tight">
                           {formatPrice(product.price)}
                         </span>
                       </div>
@@ -339,9 +415,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                           onOpenProductDetail(product);
                         }}
                         aria-label={`View details for ${localized.name}`}
-                        className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-[#1d1b19] text-white hover:bg-[#34302c] font-semibold text-[10px] sm:text-[11px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
+                        className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-lg bg-[#0f2113] text-white hover:bg-[#1b5e28] font-black text-[10.5px] sm:text-[11.5px] uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-[15px]">visibility</span>
+                        <span className="material-symbols-outlined text-[16px]">visibility</span>
                         <span>{t.viewDetails}</span>
                       </button>
                     </div>
@@ -354,30 +430,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </section>
 
       {/* 4. CLEAN TRUST & ASSURANCE FOOTER */}
-      <div className="w-full px-4 pb-6">
-        <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+      <div className="w-full px-4 pb-8">
+        <div className="bg-[#eaf3e7] rounded-2xl p-5 border border-[#badbb3] grid grid-cols-1 sm:grid-cols-3 gap-4 text-center shadow-xs">
           <div className="flex flex-col items-center">
-            <span className="material-symbols-outlined text-[20px] text-[#7d5700] mb-1">
-              local_shipping
-            </span>
-            <p className="text-[12px] font-bold text-[#1d1b15]">{t.trustDelivery}</p>
-            <p className="text-[10px] text-[#4b4640]">{t.trustDeliverySub}</p>
+            <div className="w-9 h-9 rounded-xl bg-white text-[#1b5e28] flex items-center justify-center mb-1.5 shadow-2xs border border-[#badbb3]">
+              <span className="material-symbols-outlined text-[20px]">local_shipping</span>
+            </div>
+            <p className="text-[13px] font-black text-[#0a180d]">{t.trustDelivery}</p>
+            <p className="text-[11px] text-[#224027] font-bold">{t.trustDeliverySub}</p>
           </div>
 
-          <div className="flex flex-col items-center border-t sm:border-t-0 sm:border-l sm:border-r border-[#e8e2d8] pt-2 sm:pt-0">
-            <span className="material-symbols-outlined text-[20px] text-[#2e7d32] mb-1">
-              payments
-            </span>
-            <p className="text-[12px] font-bold text-[#1d1b15]">{t.trustCod}</p>
-            <p className="text-[10px] text-[#4b4640]">{t.trustCodSub}</p>
+          <div className="flex flex-col items-center border-t sm:border-t-0 sm:border-l sm:border-r border-[#c4e0c0] pt-3 sm:pt-0">
+            <div className="w-9 h-9 rounded-xl bg-white text-[#1b5e28] flex items-center justify-center mb-1.5 shadow-2xs border border-[#badbb3]">
+              <span className="material-symbols-outlined text-[20px]">payments</span>
+            </div>
+            <p className="text-[13px] font-black text-[#0a180d]">{t.trustCod}</p>
+            <p className="text-[11px] text-[#224027] font-bold">{t.trustCodSub}</p>
           </div>
 
-          <div className="flex flex-col items-center border-t sm:border-t-0 border-[#e8e2d8] pt-2 sm:pt-0">
-            <span className="material-symbols-outlined text-[20px] text-[#7d5700] mb-1">
-              published_with_changes
-            </span>
-            <p className="text-[12px] font-bold text-[#1d1b15]">{t.trustReturn}</p>
-            <p className="text-[10px] text-[#4b4640]">{t.trustReturnSub}</p>
+          <div className="flex flex-col items-center border-t sm:border-t-0 border-[#c4e0c0] pt-3 sm:pt-0">
+            <div className="w-9 h-9 rounded-xl bg-white text-[#1b5e28] flex items-center justify-center mb-1.5 shadow-2xs border border-[#badbb3]">
+              <span className="material-symbols-outlined text-[20px]">published_with_changes</span>
+            </div>
+            <p className="text-[13px] font-black text-[#0a180d]">{t.trustReturn}</p>
+            <p className="text-[11px] text-[#224027] font-bold">{t.trustReturnSub}</p>
           </div>
         </div>
       </div>

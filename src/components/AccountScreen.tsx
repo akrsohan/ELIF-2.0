@@ -14,9 +14,15 @@ import {
 
 interface AccountScreenProps {
   onShowToast: (message: string) => void;
+  onNavigateTab?: (tab: any) => void;
+  onOpenStory?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => {
+export const AccountScreen: React.FC<AccountScreenProps> = ({
+  onShowToast,
+  onOpenAdmin,
+}) => {
   const { language, t, formatPrice } = useLanguage();
   const [activeTab, setActiveTab] = useState<'orders' | 'appointments' | 'salon'>('orders');
 
@@ -176,14 +182,14 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
   };
 
   return (
-    <div className="flex flex-col w-full px-4 pt-2 pb-24 selection:bg-[#ffdeaa]">
+    <div className="flex flex-col w-full px-4 pt-2 pb-24 selection:bg-[#d6edd2] selection:text-[#18281b]">
       {/* 1. Supabase Backend Connection Banner */}
-      <div className="mb-4 bg-[#1d1b19] rounded-xl p-3.5 border border-[#3e3833] text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="mb-4 bg-[#18281b] rounded-xl p-3.5 border border-[#2e4030] text-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="relative flex items-center justify-center">
             <span
               className={`w-2.5 h-2.5 rounded-full ${
-                dbStatus.connected ? 'bg-[#4caf50]' : 'bg-[#ff9800]'
+                dbStatus.connected ? 'bg-[#4caf50]' : 'bg-[#d6edd2]'
               }`}
             />
             {dbStatus.connected && (
@@ -198,8 +204,8 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
               <span
                 className={`text-[11px] font-medium px-2 py-0.2 rounded-md ${
                   dbStatus.connected
-                    ? 'bg-[#2e7d32]/30 text-[#81c784] border border-[#2e7d32]/50'
-                    : 'bg-[#ff9800]/20 text-[#ffb74d] border border-[#ff9800]/40'
+                    ? 'bg-[#2d6636]/50 text-[#d6edd2] border border-[#2d6636]'
+                    : 'bg-[#d6edd2]/20 text-[#d6edd2] border border-[#d6edd2]/40'
                 }`}
               >
                 {dbStatus.connected
@@ -211,7 +217,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   : 'Connecting'}
               </span>
             </div>
-            <p className="text-[10px] text-[#cec5bd] mt-0.5 font-mono">
+            <p className="text-[10px] text-[#c8dac4] mt-0.5 font-mono">
               xypyegletikcmwfjcgdq.supabase.co • REST v1 & PostgreSQL
             </p>
           </div>
@@ -220,31 +226,41 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
+            onClick={onOpenAdmin}
+            className="px-3 py-1.5 rounded-lg bg-[#2d6636] hover:bg-[#387e44] text-[#faf7eb] text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer border border-[#3f804b] shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[15px] text-[#a0d797]">
+              admin_panel_settings
+            </span>
+            <span>{language === 'bn' ? 'অ্যাডমিন পোর্টাল' : 'Atelier Admin Portal'}</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setShowSqlModal(true)}
-            className="px-2.5 py-1 rounded-lg bg-[#2b2724] hover:bg-[#3e3833] text-[#ffc55f] text-[10px] font-semibold uppercase tracking-wider border border-[#ffc55f]/40 transition-colors flex items-center gap-1 cursor-pointer"
+            className="px-2.5 py-1.5 rounded-lg bg-[#233525] hover:bg-[#2e4530] text-[#d6edd2] text-[10px] font-semibold uppercase tracking-wider border border-[#d6edd2]/40 transition-colors flex items-center gap-1 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[14px]">database</span>
-            <span>{language === 'bn' ? 'SQL স্কিমা ভিউ' : 'View SQL Schema'}</span>
+            <span>{language === 'bn' ? 'SQL স্কিমা' : 'SQL Schema'}</span>
           </button>
         </div>
       </div>
 
       {/* 2. Client Profile Header */}
-      <div className="bg-[#f3ede3] rounded-xl p-5 border border-[#e8e2d8] shadow-sm mb-5">
+      <div className="bg-[#f1f6ee] rounded-xl p-5 border border-[#d6e5d2] shadow-xs mb-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-[#1d1b19] text-white flex items-center justify-center font-display text-[22px] shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-[#18281b] text-white flex items-center justify-center font-display text-[22px] shadow-xs">
             FA
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-[22px] text-[#1d1b15]">
+              <h1 className="font-display text-[22px] text-[#18281b]">
                 {language === 'bn' ? 'ফারহানা আহমেদ' : 'Farhana Ahmed'}
               </h1>
-              <span className="bg-[#ffc55f] text-[#755100] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-[#d6edd2] text-[#18281b] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#c8dac4]">
                 VIP Dhaka
               </span>
             </div>
-            <p className="text-[12px] text-[#4b4640]">
+            <p className="text-[12px] text-[#3a4d3d]">
               {language === 'bn'
                 ? 'মেম্বার নং ৮৪৯২ • গুলশান ও বনানী প্যাট্রন'
                 : 'Member N° 8492 • Gulshan & Banani Patron'}
@@ -252,30 +268,30 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-[#e8e2d8] text-center">
+        <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-[#d6e5d2] text-center">
           <div>
-            <span className="text-[10px] uppercase tracking-wider text-[#4b4640] block">
+            <span className="text-[10px] uppercase tracking-wider text-[#3a4d3d] block">
               {language === 'bn' ? 'ক্লাব টিয়ার' : 'Tier'}
             </span>
-            <span className="text-[13px] font-semibold text-[#1d1b15]">Haute Privilege</span>
+            <span className="text-[13px] font-semibold text-[#18281b]">Haute Privilege</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase tracking-wider text-[#4b4640] block">
+            <span className="text-[10px] uppercase tracking-wider text-[#3a4d3d] block">
               {language === 'bn' ? 'অঁতেলিয়ে' : 'Atelier'}
             </span>
-            <span className="text-[13px] font-semibold text-[#1d1b15]">Dhaka Flagship</span>
+            <span className="text-[13px] font-semibold text-[#18281b]">Dhaka Flagship</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase tracking-wider text-[#4b4640] block">
+            <span className="text-[10px] uppercase tracking-wider text-[#3a4d3d] block">
               {language === 'bn' ? 'স্টাইলিস্ট' : 'Stylist'}
             </span>
-            <span className="text-[13px] font-semibold text-[#1d1b15]">Nusrat J.</span>
+            <span className="text-[13px] font-semibold text-[#18281b]">Nusrat J.</span>
           </div>
         </div>
       </div>
 
       {/* 3. Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#cec5bd]/60 mb-5 overflow-x-auto no-scrollbar whitespace-nowrap">
+      <div className="flex items-center gap-2 border-b border-[#bdd0b8]/60 mb-5 overflow-x-auto no-scrollbar whitespace-nowrap">
         {[
           { id: 'orders', label: language === 'bn' ? 'অর্ডার ও লাইভ ট্র্যাকিং' : 'Orders & Live Tracking' },
           { id: 'appointments', label: language === 'bn' ? 'সেলুন ফিটিং' : 'Salon Fittings' },
@@ -286,8 +302,8 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
             onClick={() => setActiveTab(tab.id as any)}
             className={`shrink-0 pb-2.5 px-2 text-[12px] font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
               activeTab === tab.id
-                ? 'border-[#7d5700] text-[#1d1b15]'
-                : 'border-transparent text-[#4b4640] hover:text-[#1d1b15]'
+                ? 'border-[#2e5b33] text-[#19241a]'
+                : 'border-transparent text-[#3c4b3e] hover:text-[#19241a]'
             }`}
           >
             {tab.label}
@@ -299,11 +315,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
       {activeTab === 'orders' && (
         <div className="space-y-4">
           {/* Real-time Order Search / Tracking Bar */}
-          <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700] block mb-1">
+          <div className="bg-[#eaf1e5] rounded-xl p-4 border border-[#d2e0cb]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2e5b33] block mb-1">
               {language === 'bn' ? 'সুপাবেস লাইভ অর্ডার ট্র্যাকার' : 'Supabase Live Order Tracker'}
             </span>
-            <p className="text-[12px] text-[#4b4640] mb-3">
+            <p className="text-[12px] text-[#3c4b3e] mb-3">
               {language === 'bn'
                 ? 'আপনার অর্ডার নম্বর (যেমন: EL-BD9104) বা মোবাইল নম্বর দিয়ে সরাসরি ডাটাবেসে খুঁজুন:'
                 : 'Search our live atelier database by Order ID (e.g. EL-BD9104) or phone number:'}
@@ -311,7 +327,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
 
             <form onSubmit={handleTrackOrder} className="flex gap-2">
               <div className="relative flex-1">
-                <span className="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#7d766f]">
+                <span className="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#556958]">
                   search
                 </span>
                 <input
@@ -319,13 +335,13 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   value={trackingQuery}
                   onChange={(e) => setTrackingQuery(e.target.value)}
                   placeholder={language === 'bn' ? 'অর্ডার নম্বর বা ফোন লিখুন...' : 'e.g. EL-BD9104 or 01711...'}
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg pl-9 pr-3 py-2 text-[12px] text-[#1d1b15] placeholder-[#7d766f] focus:outline-none focus:border-[#7d5700]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg pl-9 pr-3 py-2 text-[12px] text-[#19241a] placeholder-[#556958] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isSearching}
-                className="px-4 py-2 bg-[#1d1b19] text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#7d5700] disabled:opacity-50 transition-colors cursor-pointer shrink-0"
+                className="px-4 py-2 bg-[#19241a] text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-[#2e5b33] disabled:opacity-50 transition-colors cursor-pointer shrink-0"
               >
                 {isSearching ? '...' : language === 'bn' ? 'ট্র্যাক করুন' : 'Track'}
               </button>
@@ -333,21 +349,21 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
 
             {/* Display Search Results if searched */}
             {searchResults && (
-              <div className="mt-4 pt-3 border-t border-[#cec5bd]/60">
+              <div className="mt-4 pt-3 border-t border-[#bdd0b8]/60">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold text-[#1d1b15]">
+                  <span className="text-[11px] font-bold text-[#19241a]">
                     {language === 'bn' ? 'অনুসন্ধানের ফলাফল:' : 'Tracking Search Results:'}
                   </span>
                   <button
                     onClick={() => setSearchResults(null)}
-                    className="text-[10px] text-[#7d5700] hover:underline cursor-pointer"
+                    className="text-[10px] text-[#2e5b33] hover:underline cursor-pointer"
                   >
                     {language === 'bn' ? 'বন্ধ করুন' : 'Clear'}
                   </button>
                 </div>
 
                 {searchResults.orders.length === 0 ? (
-                  <p className="text-[12px] text-[#7d766f] italic">
+                  <p className="text-[12px] text-[#556958] italic">
                     {language === 'bn'
                       ? 'কোনো অর্ডার রেকর্ড পাওয়া যায়নি।'
                       : 'No order matched your search query.'}
@@ -357,17 +373,17 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                     {searchResults.orders.map((ord) => (
                       <div
                         key={ord.order_number}
-                        className="p-3 bg-white rounded-lg border border-[#cec5bd] shadow-sm space-y-2"
+                        className="p-3 bg-white rounded-lg border border-[#bdd0b8] shadow-sm space-y-2"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-[13px] text-[#7d5700]">
+                          <span className="font-mono font-bold text-[13px] text-[#2e5b33]">
                             #{ord.order_number}
                           </span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f5e9] text-[#2e7d32] uppercase">
                             {ord.order_status || 'placed'}
                           </span>
                         </div>
-                        <div className="text-[11px] text-[#4b4640] space-y-0.5">
+                        <div className="text-[11px] text-[#3c4b3e] space-y-0.5">
                           <p>
                             <strong>{language === 'bn' ? 'গ্রাহক:' : 'Customer:'}</strong> {ord.customer_name} ({ord.phone})
                           </p>
@@ -379,7 +395,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                             {ord.payment_method.toUpperCase()})
                           </p>
                           {ord.items && ord.items.length > 0 && (
-                            <p className="text-[#7d5700]">
+                            <p className="text-[#2e5b33]">
                               <strong>{language === 'bn' ? 'পোশাক:' : 'Items:'}</strong>{' '}
                               {ord.items.map((i: any) => `${i.name} (${i.size}) x${i.quantity}`).join(', ')}
                             </p>
@@ -394,20 +410,20 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           </div>
 
           {/* Active Order Card */}
-          <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] shadow-sm">
-            <div className="flex items-center justify-between pb-2 border-b border-[#e8e2d8]">
+          <div className="bg-[#eaf1e5] rounded-xl p-4 border border-[#d2e0cb] shadow-sm">
+            <div className="flex items-center justify-between pb-2 border-b border-[#d2e0cb]">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2e5b33]">
                   {language === 'bn' ? 'বর্তমান অর্ডার' : 'Active Consignment'}
                 </span>
-                <p className="text-[14px] font-semibold text-[#1d1b15]">Order #EL-BD9042</p>
+                <p className="text-[14px] font-semibold text-[#19241a]">Order #EL-BD9042</p>
               </div>
-              <span className="bg-[#e8e2d8] text-[#1d1b15] text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-[#e0ebd9] text-[#19241a] text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider border border-[#d2e0cb]">
                 {language === 'bn' ? 'পথে আছে (পাঠাও / স্টিডফাস্ট)' : 'In Transit (Pathao / Steadfast)'}
               </span>
             </div>
 
-            <p className="text-[12px] text-[#4b4640] mt-3">
+            <p className="text-[12px] text-[#3c4b3e] mt-3">
               {language === 'bn'
                 ? 'আনুমানিক পৌঁছানোর সময়: আগামীকাল দুপুর ২টার মধ্যে • বনানী / গুলশান ২, ঢাকা'
                 : 'Delivery estimated: Tomorrow by 14:00 • Banani / Gulshan 2, Dhaka'}
@@ -425,13 +441,13 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   <div
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-[12px] mb-1 ${
                       step.done
-                        ? 'bg-[#7d5700] text-white'
-                        : 'bg-[#ede7dd] text-[#7d766f]'
+                        ? 'bg-[#2e5b33] text-white'
+                        : 'bg-[#e0ebd9] text-[#556958]'
                     }`}
                   >
                     {step.done ? '✓' : idx + 1}
                   </div>
-                  <span className="text-[9px] text-[#4b4640] max-w-[55px] leading-tight">
+                  <span className="text-[9px] text-[#3c4b3e] max-w-[55px] leading-tight">
                     {step.label}
                   </span>
                 </div>
@@ -446,7 +462,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                     : 'Steadfast / Pathao Live Tracking #PT-889104: Courier assigned at Gulshan-2 Hub.'
                 )
               }
-              className="w-full h-10 rounded-lg bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#ede7dd] transition-colors cursor-pointer"
+              className="w-full h-10 rounded-lg bg-[#ffffff] border border-[#bdd0b8] text-[#19241a] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#e0ebd9] transition-colors cursor-pointer"
             >
               {language === 'bn' ? 'লাইভ কুরিয়ার ট্র্যাক করুন (বাংলাদেশ)' : 'Track Courier Live (Bangladesh)'}
             </button>
@@ -455,9 +471,9 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           {/* Database Synced Orders List */}
           {orders.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-[13px] font-bold text-[#1d1b15] flex items-center justify-between">
+              <h3 className="text-[13px] font-bold text-[#19241a] flex items-center justify-between">
                 <span>{language === 'bn' ? 'সাম্প্রতিক সংরক্ষিত অর্ডারসমূহ' : 'Recent Synced Orders'}</span>
-                <span className="text-[10px] text-[#7d5700] font-normal">
+                <span className="text-[10px] text-[#2e5b33] font-normal">
                   {orders.length} {language === 'bn' ? 'টি অর্ডার' : 'orders'}
                 </span>
               </h3>
@@ -465,14 +481,14 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
               {orders.map((ord) => (
                 <div
                   key={ord.order_number}
-                  className="bg-[#f3ede3] rounded-xl p-3.5 border border-[#e8e2d8] space-y-2 shadow-xs"
+                  className="bg-[#eaf1e5] rounded-xl p-3.5 border border-[#d2e0cb] space-y-2 shadow-xs"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[13px] font-mono font-bold text-[#7d5700]">
+                      <p className="text-[13px] font-mono font-bold text-[#2e5b33]">
                         #{ord.order_number}
                       </p>
-                      <p className="text-[11px] text-[#4b4640]">
+                      <p className="text-[11px] text-[#3c4b3e]">
                         {new Date(ord.created_at).toLocaleDateString(
                           language === 'bn' ? 'bn-BD' : 'en-US',
                           { day: 'numeric', month: 'short', year: 'numeric' }
@@ -480,7 +496,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[13px] font-bold text-[#1d1b15]">
+                      <p className="text-[13px] font-bold text-[#19241a]">
                         {formatPrice(ord.total_amount)}
                       </p>
                       <span className="text-[9px] uppercase font-bold text-[#2e7d32] bg-[#e8f5e9] px-2 py-0.5 rounded">
@@ -489,12 +505,12 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-[#4b4640]">
+                  <p className="text-[11px] text-[#3c4b3e]">
                     {ord.delivery_address}, {ord.district} • Pathao / Steadfast
                   </p>
 
                   {ord.items && ord.items.length > 0 && (
-                    <div className="pt-2 border-t border-[#e8e2d8] text-[11px] text-[#1d1b15]">
+                    <div className="pt-2 border-t border-[#d2e0cb] text-[11px] text-[#19241a]">
                       {ord.items.map((it, idx) => (
                         <div key={idx} className="flex justify-between py-0.5">
                           <span>
@@ -511,17 +527,17 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           )}
 
           {/* Past Order Demo */}
-          <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] opacity-90">
+          <div className="bg-[#eaf1e5] rounded-xl p-4 border border-[#d2e0cb] opacity-90">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[13px] font-semibold text-[#1d1b15]">Order #EL-BD8812</p>
-                <p className="text-[11px] text-[#4b4640]">
+                <p className="text-[13px] font-semibold text-[#19241a]">Order #EL-BD8812</p>
+                <p className="text-[11px] text-[#3c4b3e]">
                   {language === 'bn'
                     ? 'ঐতিহ্যবাহী জামদানি ও সিল্ক এডিশন • ৳১৪,৫০০'
                     : 'Heritage Jamdani & Silk Edition • ৳14,500'}
                 </p>
               </div>
-              <span className="text-[11px] text-[#7d5700] font-semibold">
+              <span className="text-[11px] text-[#2e5b33] font-semibold">
                 {language === 'bn' ? 'ডেলিভার্ড • COD সম্পন্ন' : 'Delivered • COD Paid'}
               </span>
             </div>
@@ -536,18 +552,18 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           {appointments.map((apt, index) => (
             <div
               key={index}
-              className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] shadow-sm"
+              className="bg-[#eaf1e5] rounded-xl p-4 border border-[#d2e0cb] shadow-sm"
             >
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#2e5b33]">
                 {language === 'bn' ? 'আসন্ন প্রাইভেট ফিটিং সেশন' : 'Upcoming Private Fitting'}
               </span>
-              <h3 className="font-display text-[18px] text-[#1d1b15] mt-0.5">
+              <h3 className="font-display text-[18px] text-[#19241a] mt-0.5">
                 {apt.sessionType}
               </h3>
-              <p className="text-[12px] text-[#4b4640] mt-1">
+              <p className="text-[12px] text-[#3c4b3e] mt-1">
                 {apt.date} {apt.time ? `• ${apt.time}` : ''} • {apt.location}
               </p>
-              <p className="text-[11px] text-[#7d5700] mt-1">
+              <p className="text-[11px] text-[#2e5b33] mt-1">
                 {language === 'bn'
                   ? 'নির্ধারিত মাস্টার টেইলর: ওস্তাদ কবির হোসেন'
                   : 'Assigned Master Tailor: Ustad Kabir Hossain'}
@@ -562,7 +578,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                         : 'Fitting confirmed with Dhaka Atelier Concierge.'
                     )
                   }
-                  className="flex-1 h-10 bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#7d5700] active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 h-10 bg-[#19241a] text-white text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#2e5b33] active:scale-95 transition-all cursor-pointer"
                 >
                   {language === 'bn' ? 'নিশ্চিত করুন' : 'Confirm'}
                 </button>
@@ -574,7 +590,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                         : 'Reschedule request sent to Nusrat J.'
                     )
                   }
-                  className="h-10 px-4 bg-[#ffffff] border border-[#cec5bd] text-[#1d1b15] text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#ede7dd] active:scale-95 transition-all cursor-pointer"
+                  className="h-10 px-4 bg-[#ffffff] border border-[#bdd0b8] text-[#19241a] text-[11px] font-semibold uppercase tracking-wider rounded-lg hover:bg-[#e0ebd9] active:scale-95 transition-all cursor-pointer"
                 >
                   {language === 'bn' ? 'সময় পরিবর্তন' : 'Reschedule'}
                 </button>
@@ -585,7 +601,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           {/* Book New Appointment Button */}
           <button
             onClick={() => setShowBookingModal(true)}
-            className="w-full h-11 rounded-lg border border-[#7d5700] text-[#7d5700] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#ffc55f]/10 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            className="w-full h-11 rounded-lg border border-[#2d6636] text-[#2d6636] text-[11px] font-semibold uppercase tracking-wider hover:bg-[#d6edd2]/40 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
             <span className="material-symbols-outlined text-[16px]">calendar_add_on</span>
             <span>
@@ -599,15 +615,15 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
 
       {/* 6. Tab Content: Measurements & Tailoring Profile */}
       {activeTab === 'salon' && (
-        <div className="bg-[#f3ede3] rounded-xl p-4 border border-[#e8e2d8] space-y-4">
+        <div className="bg-[#f1f6ee] rounded-xl p-4 border border-[#d6e5d2] space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-display text-[18px] text-[#1d1b15]">
+              <h3 className="font-display text-[18px] text-[#18281b]">
                 {language === 'bn'
                   ? 'টেইলরিং প্রোফাইল ও সিলুয়েট নোটস'
                   : 'Tailoring Profile & Silhouette Notes'}
               </h3>
-              <p className="text-[12px] text-[#4b4640]">
+              <p className="text-[12px] text-[#3a4d3d]">
                 {language === 'bn'
                   ? 'সুপাবেস ক্লাউডে সংরক্ষিত (Master Tailor Cloud Profile)'
                   : 'Stored securely in Supabase for customized drape alterations.'}
@@ -615,7 +631,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
             </div>
             <button
               onClick={() => setIsEditingMeasurements(!isEditingMeasurements)}
-              className="text-[11px] text-[#7d5700] font-semibold hover:underline cursor-pointer"
+              className="text-[11px] text-[#2d6636] font-semibold hover:underline cursor-pointer"
             >
               {isEditingMeasurements
                 ? language === 'bn' ? 'বাতিল' : 'Cancel'
@@ -625,35 +641,35 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
 
           {!isEditingMeasurements ? (
             <div className="grid grid-cols-2 gap-2 pt-2 text-[12px]">
-              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-                <span className="text-[10px] text-[#4b4640] uppercase block">
+              <div className="p-2.5 bg-white rounded-lg border border-[#d2e0cb]">
+                <span className="text-[10px] text-[#3c4b3e] uppercase block">
                   {language === 'bn' ? 'ট্রেঞ্চ ও কোট সাইজ' : 'Trench & Coat Size'}
                 </span>
-                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.trenchSize}</span>
+                <span className="font-semibold text-[#19241a]">{tailoringProfile.trenchSize}</span>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-                <span className="text-[10px] text-[#4b4640] uppercase block">
+              <div className="p-2.5 bg-white rounded-lg border border-[#d2e0cb]">
+                <span className="text-[10px] text-[#3c4b3e] uppercase block">
                   {language === 'bn' ? 'নিটওয়্যার সাইজ' : 'Knitwear Size'}
                 </span>
-                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.knitwearSize}</span>
+                <span className="font-semibold text-[#19241a]">{tailoringProfile.knitwearSize}</span>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-                <span className="text-[10px] text-[#4b4640] uppercase block">
+              <div className="p-2.5 bg-white rounded-lg border border-[#d2e0cb]">
+                <span className="text-[10px] text-[#3c4b3e] uppercase block">
                   {language === 'bn' ? 'ট্রাউজার ঝুল (ইনসিম)' : 'Trouser Inseam'}
                 </span>
-                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.trouserInseam}</span>
+                <span className="font-semibold text-[#19241a]">{tailoringProfile.trouserInseam}</span>
               </div>
-              <div className="p-2.5 bg-white rounded-lg border border-[#e8e2d8]">
-                <span className="text-[10px] text-[#4b4640] uppercase block">
+              <div className="p-2.5 bg-white rounded-lg border border-[#d2e0cb]">
+                <span className="text-[10px] text-[#3c4b3e] uppercase block">
                   {language === 'bn' ? 'ফাইবার সেনসিটিভিটি' : 'Fibers & Notes'}
                 </span>
-                <span className="font-semibold text-[#1d1b15]">{tailoringProfile.notes}</span>
+                <span className="font-semibold text-[#19241a]">{tailoringProfile.notes}</span>
               </div>
             </div>
           ) : (
             <div className="space-y-3 pt-2 text-[12px]">
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'ট্রেঞ্চ ও কোট সাইজ' : 'Trench & Coat Size'}
                 </label>
                 <input
@@ -662,11 +678,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   onChange={(e) =>
                     setTailoringProfile({ ...tailoringProfile, trenchSize: e.target.value })
                   }
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-1.5 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'নিটওয়্যার সাইজ' : 'Knitwear Size'}
                 </label>
                 <input
@@ -675,11 +691,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   onChange={(e) =>
                     setTailoringProfile({ ...tailoringProfile, knitwearSize: e.target.value })
                   }
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-1.5 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'ট্রাউজার ঝুল (ইনসিম)' : 'Trouser Inseam'}
                 </label>
                 <input
@@ -688,11 +704,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   onChange={(e) =>
                     setTailoringProfile({ ...tailoringProfile, trouserInseam: e.target.value })
                   }
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-1.5 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'ফ্যাব্রিক পছন্দ ও সংবেদনশীলতা' : 'Fibers & Atelier Notes'}
                 </label>
                 <textarea
@@ -701,7 +717,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   onChange={(e) =>
                     setTailoringProfile({ ...tailoringProfile, notes: e.target.value })
                   }
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-1.5 text-[12px] text-[#1d1b15] focus:outline-none focus:border-[#7d5700]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-1.5 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
 
@@ -709,7 +725,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                 type="button"
                 onClick={handleSaveMeasurements}
                 disabled={isSavingMeasurements}
-                className="w-full h-10 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] transition-colors cursor-pointer"
+                className="w-full h-10 rounded-lg bg-[#19241a] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#2e5b33] transition-colors cursor-pointer"
               >
                 {isSavingMeasurements
                   ? 'Saving to Supabase...'
@@ -729,21 +745,21 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           onClick={() => setShowBookingModal(false)}
         >
           <div
-            className="w-full max-w-md bg-[#fff9ee] rounded-2xl p-5 shadow-2xl border border-[#e8e2d8] flex flex-col gap-3"
+            className="w-full max-w-md bg-[#fcfdfa] rounded-2xl p-5 shadow-2xl border border-[#d2e0cb] flex flex-col gap-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-[#e8e2d8] pb-3">
+            <div className="flex items-center justify-between border-b border-[#d2e0cb] pb-3">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7d5700]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2e5b33]">
                   {language === 'bn' ? 'প্রাইভেট অ্যাপয়েন্টমেন্ট' : 'Private Salon Reservation'}
                 </span>
-                <h3 className="font-display text-[18px] text-[#1d1b15]">
+                <h3 className="font-display text-[18px] text-[#19241a]">
                   {language === 'bn' ? 'ঢাকা অঁতেলিয়ে ফিটিং বুকিং' : 'Book Dhaka Atelier Session'}
                 </h3>
               </div>
               <button
                 onClick={() => setShowBookingModal(false)}
-                className="w-8 h-8 rounded-full bg-[#f3ede3] flex items-center justify-center text-[#1d1b15] hover:bg-[#ede7dd] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#eaf1e5] flex items-center justify-center text-[#19241a] hover:bg-[#e0ebd9] cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
@@ -751,7 +767,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
 
             <form onSubmit={handleBookAppointment} className="space-y-3 text-[12px]">
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'ক্লায়েন্টের নাম' : 'Client Name'}
                 </label>
                 <input
@@ -761,12 +777,12 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                     setBookingForm({ ...bookingForm, clientName: e.target.value })
                   }
                   required
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-2 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'মোবাইল নম্বর' : 'Phone Number'}
                 </label>
                 <input
@@ -776,12 +792,12 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                     setBookingForm({ ...bookingForm, phone: e.target.value })
                   }
                   required
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-2 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'ফিটিং ধরন' : 'Fitting Session Type'}
                 </label>
                 <select
@@ -789,7 +805,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   onChange={(e) =>
                     setBookingForm({ ...bookingForm, sessionType: e.target.value })
                   }
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-2 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 >
                   <option value="Bespoke Outerwear & Trench Fitting">
                     Bespoke Outerwear & Trench Fitting
@@ -808,7 +824,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                     {language === 'bn' ? 'পছন্দের দিন' : 'Date'}
                   </label>
                   <input
@@ -818,11 +834,11 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                       setBookingForm({ ...bookingForm, date: e.target.value })
                     }
                     placeholder="e.g. Next Friday"
-                    className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                    className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-2 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                  <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                     {language === 'bn' ? 'সময়' : 'Time'}
                   </label>
                   <input
@@ -832,13 +848,13 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                       setBookingForm({ ...bookingForm, time: e.target.value })
                     }
                     placeholder="e.g. 16:30"
-                    className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                    className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-2 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] uppercase font-bold text-[#4b4640] block mb-1">
+                <label className="text-[10px] uppercase font-bold text-[#3c4b3e] block mb-1">
                   {language === 'bn' ? 'অঁতেলিয়ে ব্রাঞ্চ' : 'Atelier Branch'}
                 </label>
                 <select
@@ -846,7 +862,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
                   onChange={(e) =>
                     setBookingForm({ ...bookingForm, location: e.target.value })
                   }
-                  className="w-full bg-white border border-[#cec5bd] rounded-lg px-3 py-2 text-[12px] text-[#1d1b15]"
+                  className="w-full bg-white border border-[#bdd0b8] rounded-lg px-3 py-2 text-[12px] text-[#19241a] focus:outline-none focus:border-[#2e5b33]"
                 >
                   <option value="Gulshan 2 Flagship Atelier">Gulshan 2 Flagship Atelier</option>
                   <option value="Banani Road 11 Private Suite">Banani Road 11 Private Suite</option>
@@ -856,7 +872,7 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
               <button
                 type="submit"
                 disabled={isSubmittingBooking}
-                className="w-full h-11 rounded-lg bg-[#1d1b19] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#7d5700] transition-colors cursor-pointer mt-2"
+                className="w-full h-11 rounded-lg bg-[#19241a] text-white text-[11px] font-semibold uppercase tracking-wider hover:bg-[#2e5b33] transition-colors cursor-pointer mt-2"
               >
                 {isSubmittingBooking
                   ? 'Saving to Supabase...'
@@ -876,12 +892,12 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
           onClick={() => setShowSqlModal(false)}
         >
           <div
-            className="w-full max-w-2xl bg-[#1d1b19] text-[#e8e2d8] rounded-2xl p-5 shadow-2xl border border-[#3e3833] flex flex-col max-h-[85vh] overflow-hidden"
+            className="w-full max-w-2xl bg-[#19241a] text-[#e0ebd9] rounded-2xl p-5 shadow-2xl border border-[#2e4030] flex flex-col max-h-[85vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-[#3e3833] pb-3 mb-3 shrink-0">
+            <div className="flex items-center justify-between border-b border-[#2e4030] pb-3 mb-3 shrink-0">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ffc55f]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#d6edd2]">
                   Supabase Project: xypyegletikcmwfjcgdq
                 </span>
                 <h3 className="font-display text-[18px] text-white">
@@ -890,30 +906,30 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({ onShowToast }) => 
               </div>
               <button
                 onClick={() => setShowSqlModal(false)}
-                className="w-8 h-8 rounded-full bg-[#2b2724] flex items-center justify-center text-white hover:bg-[#3e3833] cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#233525] flex items-center justify-center text-white hover:bg-[#2e4030] cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            <p className="text-[12px] text-[#cec5bd] mb-3 leading-relaxed shrink-0">
+            <p className="text-[12px] text-[#c8dac4] mb-3 leading-relaxed shrink-0">
               {language === 'bn'
                 ? 'আপনার Supabase Dashboard-এর SQL Editor-এ নিচের স্ক্রিপ্টটি রান করলেই orders, appointments, newsletter, এবং tailoring_profiles টেবিল তৈরি এবং RLS পারমিশন স্বয়ংক্রিয়ভাবে সেট হয়ে যাবে।'
                 : 'Run this complete SQL script in your Supabase Project > SQL Editor to initialize orders, appointments, newsletter, and tailoring tables with proper RLS policies.'}
             </p>
 
-            <div className="relative flex-1 bg-[#121110] rounded-xl p-3 border border-[#2b2724] overflow-y-auto font-mono text-[11px] text-[#a5d6a7]">
+            <div className="relative flex-1 bg-[#101911] rounded-xl p-3 border border-[#233525] overflow-y-auto font-mono text-[11px] text-[#d6edd2]">
               <pre className="whitespace-pre-wrap">{SUPABASE_SQL_SETUP_SCRIPT}</pre>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-[#3e3833] flex items-center justify-between shrink-0">
-              <span className="text-[11px] text-[#878380]">
+            <div className="mt-4 pt-3 border-t border-[#2e4030] flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-[#c8dac4]">
                 {copiedSql ? '✓ Copied to clipboard!' : 'One-click copy for Supabase SQL Editor'}
               </span>
               <button
                 type="button"
                 onClick={handleCopySql}
-                className="px-4 py-2 rounded-lg bg-[#ffc55f] text-[#755100] hover:bg-[#ffdeaa] font-bold text-[11px] uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 rounded-lg bg-[#2d6636] text-[#ffffff] hover:bg-[#397d44] font-bold text-[11px] uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 border border-[#3f804b]"
               >
                 <span className="material-symbols-outlined text-[15px]">content_copy</span>
                 <span>{copiedSql ? (language === 'bn' ? 'কপি হয়েছে' : 'Copied!') : (language === 'bn' ? 'SQL কপি করুন' : 'Copy SQL Script')}</span>

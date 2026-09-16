@@ -1,40 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: 'Bodoni Moda', serif;
-  --font-headline: 'Bodoni Moda', serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-headline: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Noto Serif Bengali', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  --color-surface: #fff9ee;
-  --color-surface-dim: #dfd9cf;
-  --color-surface-bright: #fff9ee;
+  --color-surface: #faf7ed;
+  --color-surface-dim: #ece8db;
+  --color-surface-bright: #fdfdf5;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f9f3e9;
-  --color-surface-container: #f3ede3;
-  --color-surface-container-high: #ede7dd;
-  --color-surface-container-highest: #e8e2d8;
-  --color-on-surface: #1d1b15;
-  --color-on-surface-variant: #4b4640;
-  --color-inverse-surface: #33302a;
-  --color-inverse-on-surface: #f6f0e6;
-  --color-outline: #7d766f;
-  --color-outline-variant: #cec5bd;
-  --color-surface-tint: #615e5b;
-  --color-primary: #1d1b19;
+  --color-surface-container-low: #f7f9f4;
+  --color-surface-container: #f1f6ee;
+  --color-surface-container-high: #e7f0e3;
+  --color-surface-container-highest: #dde8d8;
+  --color-on-surface: #18281b;
+  --color-on-surface-variant: #3a4d3d;
+  --color-inverse-surface: #1e2e21;
+  --color-inverse-on-surface: #f7faf5;
+  --color-outline: #5c725f;
+  --color-outline-variant: #c8dac4;
+  --color-surface-tint: #2d6636;
+  --color-primary: #18281b;
   --color-on-primary: #ffffff;
-  --color-primary-container: #1d1b19;
-  --color-on-primary-container: #878380;
-  --color-secondary: #7d5700;
+  --color-primary-container: #eaf3e7;
+  --color-on-primary-container: #1b3d22;
+  --color-secondary: #2d6636;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #ffc55f;
-  --color-on-secondary-container: #755100;
-  --color-secondary-fixed: #ffdeaa;
-  --color-secondary-fixed-dim: #f5bd58;
-  --color-tertiary: #1d1b19;
+  --color-secondary-container: #d6edd2;
+  --color-on-secondary-container: #15381a;
+  --color-secondary-fixed: #e2f4df;
+  --color-secondary-fixed-dim: #bce4b6;
+  --color-tertiary: #18281b;
   --color-on-tertiary: #ffffff;
-  --color-background: #fff9ee;
-  --color-on-background: #1d1b15;
-  --color-surface-variant: #e8e2d8;
+  --color-background: #faf7ed;
+  --color-on-background: #18281b;
+  --color-surface-variant: #e2ecd9;
 }
 
 @layer base {
@@ -45,9 +47,15 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    background-color: #fff9ee;
-    color: #1d1b15;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #faf7eb;
+    background-image: url('/textures/linen-texture.svg');
+    background-repeat: repeat;
+    color: #111d13;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -56,10 +64,47 @@
     max-width: 100vw;
     overflow-x: hidden;
     min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 500;
   }
   
   .font-display {
-    font-family: 'Bodoni Moda', serif !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+
+  .font-heading {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+
+  .font-sans, .font-body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+
+  /* Global Enhanced Font Weights for High-Contrast Crisp Readability */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: #0c180e;
+    letter-spacing: -0.015em;
+  }
+
+  .font-normal {
+    font-weight: 500 !important;
+  }
+
+  .font-medium {
+    font-weight: 600 !important;
+  }
+
+  .font-semibold {
+    font-weight: 700 !important;
+  }
+
+  .font-bold {
+    font-weight: 800 !important;
+  }
+
+  .font-extrabold {
+    font-weight: 900 !important;
   }
 }
 
