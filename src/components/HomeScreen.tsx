@@ -50,9 +50,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="flex flex-col w-full selection:bg-[#d6edd2] selection:text-[#18281b]">
-      {/* 1. TOP HERO BANNER & TRUST BAR (Tablet & PC Expanded Hero) */}
+      {/* Luxury Editorial Showcase Banner on Tablet & PC */}
       <div className="hidden md:block px-3 sm:px-4 mb-8">
-        {/* Luxury Editorial Showcase Banner on Tablet & PC */}
         <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-[#e5f3e2] via-[#eef7ec] to-[#dcefe0] text-[#0f2113] p-6 sm:p-8 lg:p-10 shadow-[0_8px_30px_rgba(24,40,27,0.06)] border border-[#b8dab2] flex flex-col lg:flex-row items-center justify-between gap-8">
           {/* Subtle Ambient Background Decorative Glow */}
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#cbe8c4]/40 rounded-full blur-3xl pointer-events-none -z-0" />
@@ -228,9 +227,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* 2. CATALOG HEADER */}
-      <div className="px-4 mb-4">
+      <div className="px-3 sm:px-4 pt-2 sm:pt-0 mb-4">
         <div className="mb-3">
-          <span className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.22em] text-[#1b5e28]">
+          <span className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.22em] text-[#1b5e28] block">
             {t.collectionEyebrow}
           </span>
           <h2 className="font-display font-black text-[28px] sm:text-[36px] text-[#0a180d] tracking-[-0.02em] leading-tight mt-0.5">
@@ -379,31 +378,33 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
 
                   {/* Product Details & Actions */}
-                  <div className="p-3.5 flex flex-col flex-1 justify-between bg-white/40">
+                  <div className="p-2.5 sm:p-3.5 flex flex-col flex-1 justify-between bg-white/50">
                     <div>
-                      <div className="flex items-center justify-between text-[10.5px] text-[#1b5e28] uppercase tracking-wider font-black mb-1">
-                        <span>{localized.category}</span>
-                        <span className="text-[#15461e] font-black bg-[#d6edd2] px-1.5 py-0.2 rounded-sm text-[9px]">COD AVAILABLE</span>
+                      <div className="flex items-center justify-between gap-1 text-[9.5px] sm:text-[10.5px] text-[#1b5e28] uppercase tracking-wider font-black mb-1">
+                        <span className="truncate">{localized.category}</span>
+                        <span className="shrink-0 text-[#15461e] font-black bg-[#d6edd2] px-1 py-0.2 rounded-xs text-[8.5px] sm:text-[9px]">
+                          COD
+                        </span>
                       </div>
 
                       <h3
                         onClick={() => onOpenProductDetail(product)}
-                        className="font-display font-black text-[15.5px] sm:text-[16.5px] text-[#0a180d] leading-snug cursor-pointer hover:text-[#1b5e28] transition-colors line-clamp-1"
+                        className="font-display font-black text-[14px] sm:text-[16px] text-[#0a180d] leading-snug cursor-pointer hover:text-[#1b5e28] transition-colors line-clamp-1"
                       >
                         {localized.name}
                       </h3>
 
-                      <p className="text-[12px] text-[#224027] mt-0.5 line-clamp-1 font-bold">
+                      <p className="text-[11px] sm:text-[12px] text-[#224027] mt-0.5 line-clamp-1 font-bold">
                         {localized.subtitle}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-[#cee2cb] mt-2.5 flex items-center justify-between">
-                      <div>
-                        <span className="text-[9.5px] text-[#305335] block uppercase tracking-wider leading-none font-black">
+                    <div className="pt-2 sm:pt-2.5 border-t border-[#cee2cb] mt-2 flex items-center justify-between gap-1">
+                      <div className="min-w-0">
+                        <span className="text-[8.5px] sm:text-[9.5px] text-[#305335] block uppercase tracking-wider leading-none font-black">
                           {language === 'bn' ? 'মূল্য' : 'Price'}
                         </span>
-                        <span className="text-[16px] sm:text-[17px] font-black text-[#09150c] tracking-tight">
+                        <span className="text-[14px] sm:text-[16.5px] font-black text-[#09150c] tracking-tight block truncate">
                           {formatPrice(product.price)}
                         </span>
                       </div>
@@ -415,10 +416,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                           onOpenProductDetail(product);
                         }}
                         aria-label={`View details for ${localized.name}`}
-                        className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-lg bg-[#0f2113] text-white hover:bg-[#1b5e28] font-black text-[10.5px] sm:text-[11.5px] uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-all shadow-xs cursor-pointer"
+                        className="h-7.5 sm:h-8.5 px-2 sm:px-3 rounded-lg bg-[#0f2113] text-white hover:bg-[#1b5e28] font-black text-[9.5px] sm:text-[11px] uppercase tracking-wider flex items-center gap-1 active:scale-95 transition-all shadow-2xs shrink-0 cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-[16px]">visibility</span>
-                        <span>{t.viewDetails}</span>
+                        <span className="material-symbols-outlined text-[14px] sm:text-[16px]">visibility</span>
+                        <span className="hidden xs:inline">{t.viewDetails}</span>
+                        <span className="xs:hidden">{language === 'bn' ? 'দেখুন' : 'View'}</span>
                       </button>
                     </div>
                   </div>

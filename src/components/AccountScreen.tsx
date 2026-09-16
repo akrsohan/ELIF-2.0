@@ -16,12 +16,10 @@ interface AccountScreenProps {
   onShowToast: (message: string) => void;
   onNavigateTab?: (tab: any) => void;
   onOpenStory?: () => void;
-  onOpenAdmin?: () => void;
 }
 
 export const AccountScreen: React.FC<AccountScreenProps> = ({
   onShowToast,
-  onOpenAdmin,
 }) => {
   const { language, t, formatPrice } = useLanguage();
   const [activeTab, setActiveTab] = useState<'orders' | 'appointments' | 'salon'>('orders');
@@ -224,16 +222,6 @@ export const AccountScreen: React.FC<AccountScreenProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={onOpenAdmin}
-            className="px-3 py-1.5 rounded-lg bg-[#2d6636] hover:bg-[#387e44] text-[#faf7eb] text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer border border-[#3f804b] shadow-xs"
-          >
-            <span className="material-symbols-outlined text-[15px] text-[#a0d797]">
-              admin_panel_settings
-            </span>
-            <span>{language === 'bn' ? 'অ্যাডমিন পোর্টাল' : 'Atelier Admin Portal'}</span>
-          </button>
           <button
             type="button"
             onClick={() => setShowSqlModal(true)}

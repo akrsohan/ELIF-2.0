@@ -35,17 +35,17 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full px-4 pt-2 pb-16 selection:bg-[#d6edd2] selection:text-[#18281b]">
+    <div className="flex flex-col w-full px-2 sm:px-4 pt-1 sm:pt-2 pb-16 selection:bg-[#d6edd2] selection:text-[#18281b]">
       {/* Header */}
-      <div className="flex items-baseline justify-between mb-4">
+      <div className="flex items-baseline justify-between mb-4 px-1 sm:px-0">
         <div>
-          <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#2d6636]">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2d6636] block">
             {language === 'bn' ? 'ব্যক্তিগত পছন্দতালিকা' : 'Personal Archive'}
           </span>
-          <h1 className="font-display font-medium text-[26px] sm:text-[32px] text-[#18281b] tracking-[-0.015em]">
+          <h1 className="font-display font-black text-[24px] sm:text-[32px] text-[#18281b] tracking-[-0.015em] mt-0.5">
             {t.wishlistTitle}
           </h1>
-          <p className="text-[13px] text-[#3a4d3d] mt-0.5 font-normal">
+          <p className="text-[12.5px] sm:text-[13px] text-[#3a4d3d] mt-0.5 font-bold">
             {formatNumber(wishlistedProducts.length)} {t.wishlistCountText}
           </p>
         </div>
@@ -53,26 +53,26 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
         {wishlistedProducts.length > 0 && (
           <button
             onClick={handleAddAllToBag}
-            className="text-[11px] font-medium uppercase tracking-wider text-[#2d6636] hover:underline cursor-pointer"
+            className="text-[10.5px] sm:text-[11px] font-black uppercase tracking-wider text-[#2d6636] hover:underline cursor-pointer bg-[#eaf3e7] px-2.5 py-1 rounded-lg border border-[#bedec0]"
           >
-            {language === 'bn' ? 'সব ব্যাগে যুক্ত করুন' : 'Move All To Bag'}
+            {language === 'bn' ? 'সব ব্যাগে নিন' : 'Move All To Bag'}
           </button>
         )}
       </div>
 
       {/* Wishlist Items List (PC Responsive Grid) */}
       {wishlistedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5 mb-10 px-1 sm:px-0">
           {wishlistedProducts.map((product) => {
             const localized = localizeProduct(product);
             return (
               <div
                 key={product.id}
-                className="flex bg-[#f1f6ee] rounded-xl p-3 shadow-xs border border-[#d6e5d2] gap-3 relative hover:shadow-md hover:border-[#2d6636]/40 transition-all"
+                className="flex bg-[#f1f6ee] rounded-2xl p-2.5 sm:p-3 shadow-xs border border-[#d6e5d2] gap-2.5 sm:gap-3 relative hover:shadow-md hover:border-[#2d6636]/40 transition-all"
               >
                 <div
                   onClick={() => onOpenProductDetail(product)}
-                  className="w-20 sm:w-24 h-28 sm:h-32 shrink-0 rounded-lg overflow-hidden bg-[#e7f0e3] cursor-pointer"
+                  className="w-20 sm:w-24 h-26 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-[#e7f0e3] cursor-pointer"
                 >
                   <img
                     className="w-full h-full object-cover"
@@ -86,7 +86,7 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
                     <div className="flex items-start justify-between gap-1">
                       <h3
                         onClick={() => onOpenProductDetail(product)}
-                        className="font-display font-medium text-[15px] sm:text-[16px] text-[#18281b] truncate cursor-pointer hover:text-[#2d6636] transition-colors"
+                        className="font-display font-black text-[14px] sm:text-[16px] text-[#18281b] truncate cursor-pointer hover:text-[#2d6636] transition-colors"
                       >
                         {localized.name}
                       </h3>
@@ -95,24 +95,24 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
                         className="text-[#3a4d3d] hover:text-[#ba1a1a] p-1 cursor-pointer transition-colors active:scale-90"
                         aria-label="Remove from wishlist"
                       >
-                        <span className="material-symbols-outlined text-[18px]">close</span>
+                        <span className="material-symbols-outlined text-[17px]">close</span>
                       </button>
                     </div>
 
-                    <p className="text-[12px] text-[#3a4d3d] truncate mt-0.5 font-normal">
+                    <p className="text-[11px] sm:text-[12px] text-[#3a4d3d] truncate mt-0.5 font-bold">
                       {localized.subtitle}
                     </p>
-                    <p className="text-[15px] font-semibold text-[#18281b] mt-1">
+                    <p className="text-[14px] sm:text-[15px] font-black text-[#18281b] mt-1">
                       {formatPrice(product.price)}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2">
+                  <div className="flex items-center gap-1.5 pt-1.5">
                     <button
                       onClick={() => onOpenProductDetail(product)}
-                      className="flex-1 h-9 rounded-lg bg-[#18281b] text-white text-[11px] font-medium uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform hover:bg-[#2d6636] cursor-pointer"
+                      className="flex-1 h-8 sm:h-9 rounded-lg bg-[#0f2113] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform hover:bg-[#2d6636] cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[15px]">visibility</span>
+                      <span className="material-symbols-outlined text-[14px]">visibility</span>
                       <span>{t.viewDetails}</span>
                     </button>
                   </div>

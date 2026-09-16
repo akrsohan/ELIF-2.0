@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 interface ProductDetailModalProps {
   product: Product | null;
-  isOpen: boolean;
+  isOpen?: boolean;
   isWishlisted: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, size: string, color: string) => void;
@@ -15,7 +15,7 @@ interface ProductDetailModalProps {
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
-  isOpen,
+  isOpen = true,
   isWishlisted,
   onClose,
   onAddToCart,
@@ -44,7 +44,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }
   }, [product]);
 
-  if (!isOpen || !product) return null;
+  if (!product || isOpen === false) return null;
 
   const localizedProduct = localizeProduct(product);
 

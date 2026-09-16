@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
 import { PRODUCTS } from '../data/catalog';
-import { Product } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useStore } from '../context/StoreContext';
+import { getProductSlug } from '../utils/slug';
 
-interface SearchModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelectProduct: (product: Product) => void;
-}
-
-export const SearchModal: React.FC<SearchModalProps> = ({
-  isOpen,
-  onClose,
-  onSelectProduct,
-}) => {
+export const SearchModal: React.FC = () => {
+  const navigate = useNavigate();
   const { language, t, localizeProduct, formatPrice } = useLanguage();
+  const { isSearchOpen, setSearchOpen } = useStore();
   const [query, setQuery] = useState('');
 
-  if (!isOpen) return null;
+  if (!isSearchOpen) return null;
+
+  const onClose = () => setSearchOpen(false);
 
   const quickKeywords =
     language === 'bn'
@@ -48,6 +45,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       })
     : [];
 
+  const handleSelect = (product: any) => {
+    const slug = getProductSlug(product);
+    onClose();
+    navigate(`/product/${slug}`);
+  };
+
   return (
     <div
       onClick={onClose}
@@ -59,9 +62,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       >
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="flex-1 relative flex items-center">
-            <span className="material-symbols-outlined absolute left-3 text-[#2d6636] text-[20px]">
-              search
-            </span>
+            <Search className="absolute left-3 text-[#2d6636] w-5 h-5 stroke-[2]" />
             <input
               autoFocus
               value={query}
@@ -71,15 +72,17 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             />
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery('')}
                 className="absolute right-3 text-[#3a4d3d] hover:text-[#18281b] p-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <X className="w-5 h-5" />
               </button>
             )}
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             className="px-3 h-12 text-[12px] font-semibold uppercase tracking-wider text-[#18281b] hover:text-[#2d6636] cursor-pointer active:scale-95 transition-all"
           >
@@ -95,6 +98,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           {quickKeywords.map((kw) => (
             <button
               key={kw}
+              type="button"
               onClick={() => setQuery(kw)}
               className="text-[11px] px-2.5 py-1 rounded-full bg-[#f1f6ee] border border-[#d6e5d2] text-[#18281b] hover:bg-[#d6edd2] hover:border-[#bce4b6] transition-colors shrink-0 cursor-pointer"
             >
@@ -125,25 +129,22 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     return (
                       <div
                         key={p.id}
-                        onClick={() => {
-                          onSelectProduct(p);
-                          onClose();
-                        }}
-                        className="flex items-center gap-3 p-3 bg-[#f1f6ee] rounded-xl border border-[#d6e5d2] hover:border-[#2d6636] transition-all cursor-pointer shadow-xs"
+                        onClick={() => handleSelect(p)}
+                        className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#bedec0] hover:border-[#2d6636] transition-all cursor-pointer shadow-xs"
                       >
                         <img
                           src={p.image}
                           alt={locProduct.name}
                           className="w-16 h-20 object-cover rounded-lg bg-[#e7f0e3]"
                         />
-                        <div className="min-w-0">
-                          <h4 className="text-[14px] font-semibold text-[#18281b] truncate">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-[14px] font-black text-[#18281b] truncate">
                             {locProduct.name}
                           </h4>
                           <p className="text-[11px] text-[#3a4d3d] truncate">
                             {locProduct.subtitle}
                           </p>
-                          <p className="text-[14px] font-semibold text-[#2d6636] mt-1">
+                          <p className="text-[13px] font-black text-[#2d6636] mt-1">
                             {formatPrice(p.price)}
                           </p>
                         </div>
@@ -152,21 +153,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   })}
                 </div>
               ) : (
-                <div className="py-12 text-center bg-[#f1f6ee] rounded-xl p-6 border border-[#d6e5d2]">
-                  <p className="font-display text-[18px] text-[#18281b]">
-                    {language === 'bn' ? 'কোনো পোশাক খুঁজে পাওয়া যায়নি' : 'No pieces matched your search'}
-                  </p>
-                  <p className="text-[12px] text-[#3a4d3d] mt-1">
-                    {language === 'bn' ? '"শাল", "কোট", অথবা "সিল্ক" লিখে অনুসন্ধান করুন।' : 'Try searching for "Alpaca", "Turtleneck", or "Trench".'}
+                <div className="py-12 text-center bg-[#f1f6ee] rounded-xl border border-[#d6e5d2]">
+                  <p className="text-[13px] text-[#3a4d3d]">
+                    {language === 'bn'
+                      ? 'কোনো ম্যাচিং পোশাক পাওয়া যায়নি।'
+                      : 'No silhouettes matched your search query.'}
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="py-8 text-center text-[#3a4d3d] text-[13px]">
+            <div className="text-center py-12 text-[#3a4d3d]/60 text-[13px]">
               {language === 'bn'
-                ? 'পোশাকের ধরন বা ম্যাটেরিয়ালের নাম দিয়ে কালেকশন অনুসন্ধান করুন।'
-                : 'Type a garment or textile name to search the Autumn Solace ’25 collection.'}
+                ? 'অনুসন্ধান করতে পোশাক বা ফেব্রিকের নাম টাইপ করুন'
+                : 'Type to discover silhouettes, silks, and cashmere...'}
             </div>
           )}
         </div>

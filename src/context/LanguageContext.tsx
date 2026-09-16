@@ -190,7 +190,7 @@ export interface Translations {
 const TRANSLATIONS: Record<Language, Translations> = {
   bn: {
     // Announcements & Ribbon
-    announcement: '🇧🇩 সারা বাংলাদেশে হোম ডেলিভারি • ক্যাশ অন ডেলিভারি ও বিকাশ • ঢাকা ২৪ ঘণ্টা এক্সপ্রেস',
+    announcement: '🇧🇩 সারা বাংলাদেশে হোম ডেলিভারি',
     announcementNationwide: 'সারা দেশে ডেলিভারি',
     announcementCod: 'ক্যাশ অন ডেলিভারি ও বিকাশ',
     announcementExpress: 'ঢাকা ২৪ ঘণ্টা এক্সপ্রেস',
@@ -373,7 +373,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
   },
   en: {
     // Announcements & Ribbon
-    announcement: '🇧🇩 Nationwide Delivery in Bangladesh • Cash on Delivery & bKash • Dhaka 24h Express',
+    announcement: '🇧🇩 Nationwide Delivery in Bangladesh',
     announcementNationwide: 'Nationwide Delivery',
     announcementCod: 'Cash on Delivery & bKash',
     announcementExpress: 'Dhaka 24h Express',

@@ -1,61 +1,50 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { X, ChevronRight, Store, BookOpen, Truck, MessageSquare } from 'lucide-react';
 import { LOGO_URL } from '../data/catalog';
-import { TabType } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useStore } from '../context/StoreContext';
 
-interface SideMenuDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onNavigateTab: (tab: TabType, categoryFilter?: string) => void;
-  onShowToast: (message: string) => void;
-  onOpenAdmin?: () => void;
-}
-
-export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
-  isOpen,
-  onClose,
-  onNavigateTab,
-  onShowToast,
-  onOpenAdmin,
-}) => {
+export const SideMenuDrawer: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
+  const { isMenuOpen, setMenuOpen, showToast } = useStore();
 
-  if (!isOpen) return null;
+  if (!isMenuOpen) return null;
+
+  const onClose = () => setMenuOpen(false);
 
   const collections = [
     {
-      label: language === 'bn' ? 'কালেকশন ০৮: অটাম সোলাস' : 'Collection N° 08: Autumn Solace',
-      tab: 'home',
+      label: language === 'bn' ? 'সকল পোশাক কালেকশন' : 'All Clothing Catalog',
+      to: '/shop',
+    },
+    {
+      label: language === 'bn' ? 'অটাম সোলাস ’২৫ কালেকশন' : 'Collection N° 08: Autumn Solace',
+      to: '/collections/autumn-solace',
     },
     {
       label: language === 'bn' ? 'ওভারওয়্যার ও ট্রেনচ কোট' : 'Outerwear & Trench',
-      tab: 'categories',
-      filter: 'Outerwear',
+      to: '/category/outerwear-trench',
     },
     {
       label: language === 'bn' ? 'কাশ্মীরি নিটওয়্যার ও সোয়েটার' : 'Fine Cashmere Knitwear',
-      tab: 'categories',
-      filter: 'Knitwear',
+      to: '/category/fine-knitwear',
     },
     {
       label: language === 'bn' ? 'লেদার ব্যাগ ও সামগ্রী' : 'Leather Goods & Bags',
-      tab: 'categories',
-      filter: 'Leather',
+      to: '/category/leather-goods',
     },
     {
       label: language === 'bn' ? 'টেইলর্ড ট্রাউজার্স ও প্যান্ট' : 'Tailored Trousers',
-      tab: 'categories',
-      filter: 'Trousers',
+      to: '/category/tailored-trousers',
     },
     {
       label: language === 'bn' ? 'রাজশাহী মালবেরি সিল্ক ও শার্ট' : 'Mulberry Silk & Shirting',
-      tab: 'categories',
-      filter: 'Silk',
+      to: '/category/bengal-silk-shirting',
     },
     {
       label: language === 'bn' ? 'হ্যান্ডমেড লেদার জুতা' : 'Modern Artisanal Footwear',
-      tab: 'categories',
-      filter: 'Footwear',
+      to: '/category/artisanal-footwear',
     },
   ];
 
@@ -71,17 +60,18 @@ export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
         <div>
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-[#d6e5d2]">
-            <div className="flex items-center gap-2">
+            <Link to="/" onClick={onClose} className="flex items-center gap-2">
               <img src={LOGO_URL} alt="ELIF Logo" className="h-7 w-auto object-contain" />
-              <span className="font-display text-[18px] tracking-tight text-[#18281b]">
+              <span className="font-display text-[18px] font-black tracking-tight text-[#18281b]">
                 ELIF
               </span>
-            </div>
+            </Link>
             <button
+              type="button"
               onClick={onClose}
               className="w-9 h-9 rounded-full bg-[#f1f6ee] border border-[#d6e5d2] flex items-center justify-center text-[#18281b] hover:bg-[#e7f0e3] cursor-pointer active:scale-95 transition-all"
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -94,9 +84,9 @@ export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
               <button
                 type="button"
                 onClick={() => setLanguage('bn')}
-                className={`py-1.5 px-3 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                className={`py-1.5 px-3 rounded-xl text-[12px] font-black flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
                   language === 'bn'
-                    ? 'bg-[#18281b] text-[#d6edd2] border-[#18281b] shadow-xs'
+                    ? 'bg-[#0f2113] text-white border-[#0f2113] shadow-xs'
                     : 'bg-[#f1f6ee] text-[#3a4d3d] border-[#d6e5d2] hover:text-[#18281b] hover:bg-[#e7f0e3]'
                 }`}
               >
@@ -105,9 +95,9 @@ export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
               <button
                 type="button"
                 onClick={() => setLanguage('en')}
-                className={`py-1.5 px-3 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                className={`py-1.5 px-3 rounded-xl text-[12px] font-black flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
                   language === 'en'
-                    ? 'bg-[#18281b] text-[#d6edd2] border-[#18281b] shadow-xs'
+                    ? 'bg-[#0f2113] text-white border-[#0f2113] shadow-xs'
                     : 'bg-[#f1f6ee] text-[#3a4d3d] border-[#d6e5d2] hover:text-[#18281b] hover:bg-[#e7f0e3]'
                 }`}
               >
@@ -122,97 +112,63 @@ export const SideMenuDrawer: React.FC<SideMenuDrawerProps> = ({
               {language === 'bn' ? 'নির্বাচিত কালেকশন' : 'Curated Collections'}
             </span>
             {collections.map((item, idx) => (
-              <button
+              <Link
                 key={idx}
-                onClick={() => {
-                  onNavigateTab(item.tab as TabType, item.filter);
-                  onClose();
-                }}
-                className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#18281b] hover:bg-[#f1f6ee] hover:text-[#2d6636] transition-colors flex items-center justify-between cursor-pointer active:scale-[0.99]"
+                to={item.to}
+                onClick={onClose}
+                className="text-left py-2.5 px-3 rounded-xl text-[13.5px] font-bold text-[#18281b] hover:bg-[#eaf3e7] hover:text-[#1b5e28] transition-colors flex items-center justify-between cursor-pointer active:scale-[0.99]"
               >
                 <span>{item.label}</span>
-                <span className="material-symbols-outlined text-[16px] text-[#c8dac4]">
-                  chevron_right
-                </span>
-              </button>
+                <ChevronRight className="w-4 h-4 text-[#91ad95]" />
+              </Link>
             ))}
           </nav>
 
-          <div className="border-t border-[#d6e5d2] pt-4 flex flex-col gap-2">
+          <div className="border-t border-[#d6e5d2] pt-4 flex flex-col gap-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2d6636] px-2 mb-1">
-              {language === 'bn' ? 'ফ্ল্যাগশিপ সেবা' : 'The Flagship & Services'}
+              {language === 'bn' ? 'ফ্ল্যাগশিপ সেবা ও অঁতেলিয়ে' : 'Atelier & Services'}
             </span>
-            <button
-              onClick={() => {
-                onShowToast('Dhaka Atelier: House 42, Road 11, Block D, Banani / Gulshan 2, Dhaka.');
-                onClose();
-              }}
-              className="text-left py-2 px-3 text-[13px] text-[#3a4d3d] hover:text-[#18281b] cursor-pointer flex items-center justify-between rounded-lg hover:bg-[#f1f6ee]"
+            <Link
+              to="/salon"
+              onClick={onClose}
+              className="text-left py-2 px-3 text-[13px] font-medium text-[#3a4d3d] hover:text-[#0f2113] cursor-pointer flex items-center justify-between rounded-xl hover:bg-[#eaf3e7]"
             >
               <span>{language === 'bn' ? 'ঢাকা ফ্ল্যাগশিপ স্যালন (গুলশান ২)' : 'Dhaka Flagship Salon (Gulshan 2)'}</span>
-              <span className="text-[10px] text-[#2d6636] font-semibold bg-[#eef7ec] border border-[#d6e5d2] px-2 py-0.5 rounded">
-                {language === 'bn' ? 'ভিজিট' : 'Visiting'}
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                onShowToast(language === 'bn' ? 'হোয়াটসঅ্যাপ স্টাইলিস্ট: +880 1995-513269 (সকাল ১০টা - রাত ১০টা)' : 'Dhaka WhatsApp Stylist: +880 1995-513269 (Open 10 AM - 10 PM)');
-                window.open('https://wa.me/8801995513269', '_blank');
-                onClose();
-              }}
-              className="text-left py-2 px-3 text-[13px] text-[#3a4d3d] hover:text-[#18281b] cursor-pointer flex items-center justify-between rounded-lg hover:bg-[#f1f6ee]"
+              <Store className="w-4 h-4 text-[#2d6636]" />
+            </Link>
+            <Link
+              to="/atelier"
+              onClick={onClose}
+              className="text-left py-2 px-3 text-[13px] font-medium text-[#3a4d3d] hover:text-[#0f2113] cursor-pointer flex items-center justify-between rounded-xl hover:bg-[#eaf3e7]"
             >
-              <span>{language === 'bn' ? 'হোয়াটসঅ্যাপ পার্সোনাল স্টাইলিস্ট' : 'WhatsApp Personal Stylist'}</span>
-              <span className="text-[10px] text-[#2d6636] font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2d6636] animate-pulse"></span>
-                Online
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                onNavigateTab('account');
-                onClose();
-              }}
-              className="text-left py-2 px-3 text-[13px] text-[#3a4d3d] hover:text-[#18281b] cursor-pointer rounded-lg hover:bg-[#f1f6ee]"
+              <span>{language === 'bn' ? 'অঁতেলিয়ে ডসিয়ার ও টেক্সটাইল' : 'Atelier Dossier & Silks'}</span>
+              <BookOpen className="w-4 h-4 text-[#2d6636]" />
+            </Link>
+            <Link
+              to="/account/orders"
+              onClick={onClose}
+              className="text-left py-2 px-3 text-[13px] font-medium text-[#3a4d3d] hover:text-[#0f2113] cursor-pointer flex items-center justify-between rounded-xl hover:bg-[#eaf3e7]"
             >
-              {language === 'bn' ? 'ভিআইপি কনসিয়ার্জ ও অর্ডার ট্র্যাকিং' : 'VIP Concierge & Client Profile'}
-            </button>
-            <button
-              onClick={() => {
-                onClose();
-                if (onOpenAdmin) onOpenAdmin();
-                else window.location.hash = 'admin';
-              }}
-              className="text-left py-2 px-3 text-[13px] text-[#2d6636] font-semibold hover:text-[#18281b] cursor-pointer rounded-lg hover:bg-[#eaf5e6] flex items-center justify-between"
-            >
-              <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-                <span>{language === 'bn' ? 'অঁতেলিয়ে অ্যাডমিন পোর্টাল' : 'Atelier Admin Portal'}</span>
-              </span>
-              <span className="text-[9px] bg-[#18281b] text-white px-1.5 py-0.5 rounded font-bold">
-                STAFF
-              </span>
-            </button>
+              <span>{language === 'bn' ? 'অর্ডার ও পার্সেল ট্র্যাকিং' : 'Order & Delivery Tracking'}</span>
+              <Truck className="w-4 h-4 text-[#2d6636]" />
+            </Link>
           </div>
         </div>
 
-        {/* Footer controls */}
-        <div className="border-t border-[#d6e5d2] pt-4 text-[12px] text-[#3a4d3d]">
-          <div className="flex items-center justify-between mb-2">
-            <span>{language === 'bn' ? 'মুদ্রা' : 'Currency'}</span>
-            <span className="font-semibold text-[#18281b]">BDT (৳) Taka</span>
-          </div>
-          <div className="flex items-center justify-between mb-2">
-            <span>{language === 'bn' ? 'অঞ্চল' : 'Region'}</span>
-            <span className="font-semibold text-[#18281b]">{language === 'bn' ? 'বাংলাদেশ (৬৪ জেলা)' : 'Bangladesh (All 64 Districts)'}</span>
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-[#2d6636] font-medium">
-            <span>{language === 'bn' ? 'পেমেন্ট মাধ্যম' : 'Payment Modes'}</span>
-            <span>bKash • COD • Cards</span>
-          </div>
-          <p className="text-[10px] uppercase tracking-wider text-[#3a4d3d] mt-3">
-            © 2025 ELIF ATELIER • DHAKA & PARIS
+        {/* Footer info inside drawer */}
+        <div className="pt-4 border-t border-[#d6e5d2] flex flex-col gap-2">
+          <p className="text-[11px] text-[#556b57]">
+            {language === 'bn' ? 'জরুরি প্রয়োজনে বা অর্ডারের জন্য:' : 'Concierge & inquiries:'}
           </p>
+          <a
+            href="https://wa.me/8801995513269"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#0f2113] text-white rounded-xl text-[12px] font-black uppercase tracking-wider hover:bg-[#1b5e28] transition-colors"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>{language === 'bn' ? 'হোয়াটসঅ্যাপে যোগাযোগ' : 'WhatsApp Concierge'}</span>
+          </a>
         </div>
       </div>
     </div>
