@@ -6,47 +6,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 
 export const SideMenuDrawer: React.FC = () => {
-  const { language, setLanguage, t } = useLanguage();
-  const { isMenuOpen, setMenuOpen, showToast } = useStore();
+  const { language, setLanguage, t, localizeCategory } = useLanguage();
+  const { isMenuOpen, setMenuOpen, categories } = useStore();
 
   if (!isMenuOpen) return null;
 
   const onClose = () => setMenuOpen(false);
-
-  const collections = [
-    {
-      label: language === 'bn' ? 'সকল পোশাক কালেকশন' : 'All Clothing Catalog',
-      to: '/shop',
-    },
-    {
-      label: language === 'bn' ? 'অটাম সোলাস ’২৫ কালেকশন' : 'Collection N° 08: Autumn Solace',
-      to: '/collections/autumn-solace',
-    },
-    {
-      label: language === 'bn' ? 'ওভারওয়্যার ও ট্রেনচ কোট' : 'Outerwear & Trench',
-      to: '/category/outerwear-trench',
-    },
-    {
-      label: language === 'bn' ? 'কাশ্মীরি নিটওয়্যার ও সোয়েটার' : 'Fine Cashmere Knitwear',
-      to: '/category/fine-knitwear',
-    },
-    {
-      label: language === 'bn' ? 'লেদার ব্যাগ ও সামগ্রী' : 'Leather Goods & Bags',
-      to: '/category/leather-goods',
-    },
-    {
-      label: language === 'bn' ? 'টেইলর্ড ট্রাউজার্স ও প্যান্ট' : 'Tailored Trousers',
-      to: '/category/tailored-trousers',
-    },
-    {
-      label: language === 'bn' ? 'রাজশাহী মালবেরি সিল্ক ও শার্ট' : 'Mulberry Silk & Shirting',
-      to: '/category/bengal-silk-shirting',
-    },
-    {
-      label: language === 'bn' ? 'হ্যান্ডমেড লেদার জুতা' : 'Modern Artisanal Footwear',
-      to: '/category/artisanal-footwear',
-    },
-  ];
 
   return (
     <div
@@ -109,19 +74,48 @@ export const SideMenuDrawer: React.FC = () => {
           {/* Navigation Items */}
           <nav className="flex flex-col gap-1 py-4">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2d6636] px-2 mb-1">
-              {language === 'bn' ? 'নির্বাচিত কালেকশন' : 'Curated Collections'}
+              {language === 'bn' ? 'পোশাকের বিভাগসমূহ' : 'Departments & Collections'}
             </span>
-            {collections.map((item, idx) => (
+
+            {/* All Products Link */}
+            <Link
+              to="/shop"
+              onClick={onClose}
+              className="text-left py-2.5 px-3 rounded-xl text-[13.5px] font-bold text-[#18281b] hover:bg-[#eaf3e7] hover:text-[#1b5e28] transition-colors flex items-center justify-between cursor-pointer active:scale-[0.99]"
+            >
+              <span>{language === 'bn' ? 'সকল পোশাক ক্যাটালগ' : 'All Clothing Catalog'}</span>
+              <ChevronRight className="w-4 h-4 text-[#91ad95]" />
+            </Link>
+
+            {/* Dynamic Supabase Categories */}
+            {categories.map((cat) => (
               <Link
-                key={idx}
-                to={item.to}
+                key={cat.id}
+                to={`/category/${cat.slug}`}
                 onClick={onClose}
                 className="text-left py-2.5 px-3 rounded-xl text-[13.5px] font-bold text-[#18281b] hover:bg-[#eaf3e7] hover:text-[#1b5e28] transition-colors flex items-center justify-between cursor-pointer active:scale-[0.99]"
               >
-                <span>{item.label}</span>
-                <ChevronRight className="w-4 h-4 text-[#91ad95]" />
+                <span>{localizeCategory(cat.name)}</span>
+                <span className="flex items-center gap-1">
+                  {cat.piecesCount > 0 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#d6edd2] text-[#15461e]">
+                      {cat.piecesCount}
+                    </span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-[#91ad95]" />
+                </span>
               </Link>
             ))}
+
+            {/* Lookbook / Collections */}
+            <Link
+              to="/collections"
+              onClick={onClose}
+              className="text-left py-2.5 px-3 rounded-xl text-[13.5px] font-bold text-[#18281b] hover:bg-[#eaf3e7] hover:text-[#1b5e28] transition-colors flex items-center justify-between cursor-pointer active:scale-[0.99]"
+            >
+              <span>{language === 'bn' ? 'লুকবুক ও কালেকশনস' : 'Lookbook & Collections'}</span>
+              <ChevronRight className="w-4 h-4 text-[#91ad95]" />
+            </Link>
           </nav>
 
           <div className="border-t border-[#d6e5d2] pt-4 flex flex-col gap-1">

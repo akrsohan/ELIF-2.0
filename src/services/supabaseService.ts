@@ -351,14 +351,17 @@ export const fetchCategoriesFromSupabase = async (): Promise<any[]> => {
   if (!isSupabaseConfigured()) return [];
   try {
     const { data, error } = await supabase.from('categories').select('*');
-    if (error || !data) return [];
+    if (error || !data) {
+      console.warn('Supabase categories fetch notice:', error?.message);
+      return [];
+    }
     return data.map((cat: any) => ({
       id: String(cat.id),
-      name: cat.name || 'Category',
-      piecesCount: cat.pieces_count || cat.count || 0,
+      name: cat.name || cat.title || 'Category',
+      piecesCount: Number(cat.pieces_count || cat.count || 0),
       image: cat.image_url || cat.image || '',
-      alt: cat.name || 'Category',
-      slug: cat.slug || cat.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'category',
+      alt: cat.name || cat.title || 'Category',
+      slug: cat.slug || (cat.name || cat.title || 'category').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
     }));
   } catch (err) {
     console.error('Failed to fetch categories:', err);
@@ -557,18 +560,88 @@ ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public insert appointments" ON public.appointments FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public read appointments" ON public.appointments FOR SELECT USING (true);
 
--- 4. Client Tailoring Profiles
-CREATE TABLE IF NOT EXISTS public.tailoring_profiles (
+-- 5. Categories Table (Managed via Admin Portal)
+CREATE TABLE IF NOT EXISTS public.categories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_phone TEXT NOT NULL UNIQUE,
-  client_name TEXT,
-  trench_size TEXT,
-  knitwear_size TEXT,
-  trouser_inseam TEXT,
-  notes TEXT,
-  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  image_url TEXT,
+  pieces_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-ALTER TABLE public.tailoring_profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public insert or update tailoring" ON public.tailoring_profiles FOR ALL USING (true) WITH CHECK (true);
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read categories" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Public insert or update categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
+
+-- 6. Collections Table (Managed via Admin Portal)
+CREATE TABLE IF NOT EXISTS public.collections (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  season TEXT,
+  description TEXT,
+  image_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.collections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read collections" ON public.collections FOR SELECT USING (true);
+CREATE POLICY "Public insert or update collections" ON public.collections FOR ALL USING (true) WITH CHECK (true);
+
+-- 7. Products Table (Managed via Admin Portal)
+CREATE TABLE IF NOT EXISTS public.products (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  category_id UUID REFERENCES public.categories(id) ON DELETE SET NULL,
+  subtitle TEXT,
+  price NUMERIC NOT NULL DEFAULT 0,
+  currency TEXT DEFAULT '৳',
+  tag TEXT,
+  image_url TEXT,
+  alt TEXT,
+  description TEXT,
+  fabric TEXT,
+  origin TEXT DEFAULT 'Dhaka Atelier',
+  stock_count INT DEFAULT 10,
+  sizes TEXT[] DEFAULT ARRAY['38 FR', '40 FR', '42 FR']::TEXT[],
+  colors TEXT[] DEFAULT ARRAY['Natural']::TEXT[],
+  model_stats TEXT,
+  care_instructions TEXT[],
+  features TEXT[],
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Public insert or update products" ON public.products FOR ALL USING (true) WITH CHECK (true);
+
+-- 8. Product Images Table (Multi-image support)
+CREATE TABLE IF NOT EXISTS public.product_images (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  is_primary BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read product_images" ON public.product_images FOR SELECT USING (true);
+CREATE POLICY "Public insert or update product_images" ON public.product_images FOR ALL USING (true) WITH CHECK (true);
+
+-- 9. Product Variants Table (Size / Color / Stock)
+CREATE TABLE IF NOT EXISTS public.product_variants (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+  size TEXT NOT NULL,
+  color TEXT NOT NULL,
+  stock INT DEFAULT 5,
+  price NUMERIC,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read product_variants" ON public.product_variants FOR SELECT USING (true);
+CREATE POLICY "Public insert or update product_variants" ON public.product_variants FOR ALL USING (true) WITH CHECK (true);
 `;

@@ -17,20 +17,18 @@ import { getProductSlug } from '../utils/slug';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { language, t, localizeProduct, formatNumber, formatPrice } = useLanguage();
-  const { products, isLoadingCatalog, wishlistIds, toggleWishlist, setStoryModalOpen } = useStore();
+  const { language, t, localizeProduct, localizeCategory, formatNumber, formatPrice } = useLanguage();
+  const { products, categories, isLoadingCatalog, wishlistIds, toggleWishlist, setStoryModalOpen } = useStore();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
-  const categories = [
-    { key: 'All', label: t.filterAll, count: products.length },
-    { key: 'Outerwear', label: language === 'bn' ? 'ওভারওয়্যার ও জ্যাকেট' : 'Coats & Outerwear' },
-    { key: 'Knitwear', label: language === 'bn' ? 'নিটওয়্যার ও সোয়েটার' : 'Knitwear & Sweaters' },
-    { key: 'Silk & Shirting', label: language === 'bn' ? 'সিল্ক ও শার্ট' : 'Silk & Shirts' },
-    { key: 'Trousers', label: language === 'bn' ? 'ট্রাউজার্স ও প্যান্ট' : 'Pants & Trousers' },
-    { key: 'Leather Goods', label: language === 'bn' ? 'লেদার ব্যাগ ও সামগ্রী' : 'Leather & Bags' },
-    { key: 'Footwear', label: language === 'bn' ? 'হ্যান্ডমেড জুতা' : 'Footwear' },
+  const categoryChips = [
+    { key: 'All', label: t.filterAll },
+    ...categories.map((c) => ({
+      key: c.name,
+      label: localizeCategory(c.name),
+    })),
   ];
 
   const filteredProducts = products.filter((p) => {
@@ -241,7 +239,7 @@ export const HomePage: React.FC = () => {
 
         {/* Category Filter Chips with Link and In-Place filtering */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scroll-smooth no-scrollbar">
-          {categories.map((cat) => {
+          {categoryChips.map((cat) => {
             const isSelected = selectedCategory === cat.key;
             return (
               <button

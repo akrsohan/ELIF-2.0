@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product, CartItem, CategoryCard } from '../types';
-import { CATEGORIES as DEFAULT_CATEGORIES } from '../data/catalog';
-import { CollectionInfo, COLLECTIONS as DEFAULT_COLLECTIONS } from '../utils/slug';
+import { CollectionInfo, COLLECTIONS as DEFAULT_COLLECTIONS, slugify } from '../utils/slug';
 import { useLanguage } from './LanguageContext';
 import {
   fetchProductsFromSupabase,
@@ -50,7 +49,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Dynamic Catalog State from Supabase
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<CategoryCard[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<CategoryCard[]>([]);
   const [collections, setCollections] = useState<CollectionInfo[]>(DEFAULT_COLLECTIONS);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
 
@@ -66,18 +65,40 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setProducts(fetchedProducts);
 
       if (fetchedCats && fetchedCats.length > 0) {
-        setCategories(fetchedCats);
-      } else {
-        // Recalculate pieces count for default categories
-        setCategories(
-          DEFAULT_CATEGORIES.map((cat) => ({
+        // Enriched with dynamic piece counts matching the fetched products
+        const dynamicCats: CategoryCard[] = fetchedCats.map((cat) => {
+          const matchCount = fetchedProducts.filter((p) => {
+            const pCat = p.category.toLowerCase().trim();
+            const cName = cat.name.toLowerCase().trim();
+            const cSlug = cat.slug.toLowerCase().trim();
+            return pCat === cName || pCat === cSlug || pCat.includes(cName) || cName.includes(pCat);
+          }).length;
+          return {
             ...cat,
-            piecesCount: fetchedProducts.filter((p) =>
-              p.category.toLowerCase().includes(cat.slug.toLowerCase()) ||
-              p.category.toLowerCase().includes(cat.name.toLowerCase())
-            ).length,
-          }))
+            piecesCount: cat.piecesCount > 0 ? cat.piecesCount : matchCount,
+          };
+        });
+        setCategories(dynamicCats);
+      } else if (fetchedProducts && fetchedProducts.length > 0) {
+        // If categories table is not populated yet, dynamically generate from the admin's uploaded products
+        const uniqueCatNames = Array.from(
+          new Set(fetchedProducts.map((p) => p.category).filter(Boolean))
         );
+        const derivedCats: CategoryCard[] = uniqueCatNames.map((name, idx) => {
+          const matching = fetchedProducts.filter((p) => p.category === name);
+          return {
+            id: `cat-dynamic-${idx}`,
+            name,
+            piecesCount: matching.length,
+            slug: slugify(name),
+            image: matching[0]?.image || '',
+            alt: name,
+          };
+        });
+        setCategories(derivedCats);
+      } else {
+        // No categories in Supabase
+        setCategories([]);
       }
 
       if (fetchedCols && fetchedCols.length > 0) {
@@ -85,6 +106,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     } catch (err) {
       console.error('Failed to load catalog from Supabase:', err);
+      setCategories([]);
     } finally {
       setIsLoadingCatalog(false);
     }

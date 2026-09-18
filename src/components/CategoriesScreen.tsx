@@ -28,18 +28,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
     useLanguage();
   const { products, categories } = useStore();
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory || 'All');
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
-
-  const materials = [
-    { id: 'All', label: t.categoryAll },
-    { id: 'Alpaca', label: language === 'bn' ? 'আলপাকা উল' : 'Alpaca Wool' },
-    { id: 'Cashmere', label: language === 'bn' ? 'কাশ্মীরি উল' : 'Cashmere' },
-    { id: 'Silk', label: language === 'bn' ? 'রাজশাহী সিল্ক' : 'Raw Silk' },
-    { id: 'Wool', label: language === 'bn' ? 'ভার্জিন উল' : 'Virgin Wool' },
-    { id: 'Leather', label: language === 'bn' ? 'প্রিমিয়াম লেদার' : 'Calfskin Leather' },
-    { id: 'Cotton', label: language === 'bn' ? 'অর্গানিক কটন' : 'Organic Cotton' },
-  ];
 
   const filteredProducts = products.filter((p) => {
     const matchesCategory =
@@ -47,12 +36,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
       p.category.toLowerCase().includes(activeCategory.toLowerCase()) ||
       activeCategory.toLowerCase().includes(p.category.toLowerCase());
 
-    const matchesMaterial =
-      selectedMaterial === 'All' ||
-      p.fabric.toLowerCase().includes(selectedMaterial.toLowerCase()) ||
-      p.subtitle.toLowerCase().includes(selectedMaterial.toLowerCase());
-
-    return matchesCategory && matchesMaterial;
+    return matchesCategory;
   }).sort((a, b) => {
     if (sortBy === 'price-asc') return a.price - b.price;
     if (sortBy === 'price-desc') return b.price - a.price;
@@ -71,57 +55,34 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
         </h1>
         <p className="text-[12.5px] sm:text-[14.5px] text-[#1c3821] max-w-xl mt-1 font-bold leading-relaxed">
           {language === 'bn'
-            ? 'রাজশাহী সিল্ক, কাশ্মীরি নিটওয়্যার ও ট্রাউজার্সের প্রিমিয়াম কালেকশন অন্বেষণ করুন।'
-            : 'Explore architectural cuts, heritage textiles, and timeless silhouettes.'}
+            ? 'আপনার অ্যাডমিন প্যানেল থেকে আপলোড করা সমস্ত কালেকশন ও পোশাক।'
+            : 'Explore architectural cuts and timeless silhouettes.'}
         </p>
       </div>
 
-      {/* Category Pills */}
-      <div
-        className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scroll-smooth no-scrollbar mb-3 sm:mb-4 px-1 sm:px-0"
-        style={{ scrollPaddingLeft: '0.5rem', scrollPaddingRight: '0.5rem' }}
-      >
-        {['All', ...categories.map((c) => c.name)].map((catName) => {
-          const isSelected = activeCategory === catName;
-          const displayLabel = catName === 'All' ? t.categoryAll : localizeCategory(catName);
-          return (
-            <button
-              key={catName}
-              onClick={() => setActiveCategory(catName)}
-              className={`shrink-0 h-8 sm:h-9 px-3 sm:px-4 rounded-full text-[11px] sm:text-[11.5px] font-black uppercase tracking-wider flex items-center transition-all cursor-pointer ${
-                isSelected
-                  ? 'bg-[#0f2113] text-white shadow-sm border border-[#0f2113]'
-                  : 'bg-[#eaf3e7] text-[#0f2113] hover:bg-[#dcefe0] border border-[#c4e0c0]'
-              }`}
-            >
-              {displayLabel}
-            </button>
-          );
-        })}
-        <div className="w-2 shrink-0" aria-hidden="true" />
-      </div>
-
-      {/* Material Sub-filter & Sort Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:p-3 bg-[#f1f6ee] rounded-xl border border-[#d6e5d2] mb-5 mx-1 sm:mx-0">
-        {/* Textile Dropdown / Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-[#2d6636] shrink-0">
-            {language === 'bn' ? 'ফেব্রিক:' : 'Textile:'}
-          </span>
-          {materials.slice(0, 6).map((mat) => (
-            <button
-              key={mat.id}
-              onClick={() => setSelectedMaterial(mat.id)}
-              className={`shrink-0 text-[9.5px] sm:text-[10px] uppercase font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border transition-all cursor-pointer ${
-                selectedMaterial === mat.id
-                  ? 'bg-[#d6edd2] text-[#15381a] border-[#bce4b6]'
-                  : 'bg-white text-[#3a4d3d] border-[#c8dac4] hover:border-[#2d6636]'
-              }`}
-            >
-              {mat.label}
-            </button>
-          ))}
-          <div className="w-1 shrink-0" aria-hidden="true" />
+      {/* Category Pills & Sort Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5 px-1 sm:px-0">
+        <div
+          className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scroll-smooth no-scrollbar"
+          style={{ scrollPaddingLeft: '0.5rem', scrollPaddingRight: '0.5rem' }}
+        >
+          {['All', ...categories.map((c) => c.name)].map((catName) => {
+            const isSelected = activeCategory === catName;
+            const displayLabel = catName === 'All' ? t.categoryAll : localizeCategory(catName);
+            return (
+              <button
+                key={catName}
+                onClick={() => setActiveCategory(catName)}
+                className={`shrink-0 h-8 sm:h-9 px-3.5 sm:px-4 rounded-xl text-[11px] sm:text-[11.5px] font-black uppercase tracking-wider flex items-center transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#0f2113] text-white shadow-sm border border-[#0f2113]'
+                    : 'bg-[#eaf3e7] text-[#0f2113] hover:bg-[#dcefe0] border border-[#c4e0c0]'
+                }`}
+              >
+                {displayLabel}
+              </button>
+            );
+          })}
         </div>
 
         {/* Sort selector */}
@@ -132,7 +93,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-white text-[#18281b] text-[10.5px] sm:text-[11px] font-bold py-1 px-2 rounded-lg border border-[#c8dac4] focus:outline-none cursor-pointer"
+            className="bg-white text-[#18281b] text-[10.5px] sm:text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-[#c8dac4] focus:outline-none cursor-pointer"
           >
             <option value="featured">{t.sortFeatured}</option>
             <option value="price-asc">{t.sortPriceLow}</option>
@@ -274,7 +235,6 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
           <button
             onClick={() => {
               setActiveCategory('All');
-              setSelectedMaterial('All');
             }}
             className="h-10 px-5 rounded-lg bg-[#2d6636] text-white text-[11px] font-semibold uppercase tracking-wider cursor-pointer"
           >

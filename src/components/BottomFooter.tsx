@@ -6,8 +6,8 @@ import { useStore } from '../context/StoreContext';
 import { subscribeNewsletter } from '../services/supabaseService';
 
 export const BottomFooter: React.FC = () => {
-  const { language, t } = useLanguage();
-  const { showToast } = useStore();
+  const { language, t, localizeCategory } = useLanguage();
+  const { showToast, categories } = useStore();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
@@ -106,29 +106,16 @@ export const BottomFooter: React.FC = () => {
           <ul className="flex flex-col gap-2 text-[#c8dac4]">
             <li>
               <Link to="/shop" className="hover:text-white transition-colors cursor-pointer text-left block">
-                {language === 'bn' ? 'সকল পোশাক' : 'All Clothing'}
+                {language === 'bn' ? 'সকল পোশাক ক্যাটালগ' : 'All Clothing'}
               </Link>
             </li>
-            <li>
-              <Link to="/category/outerwear-trench" className="hover:text-white transition-colors cursor-pointer text-left block">
-                {language === 'bn' ? 'কোট ও ওভারওয়্যার' : 'Coats & Outerwear'}
-              </Link>
-            </li>
-            <li>
-              <Link to="/category/fine-knitwear" className="hover:text-white transition-colors cursor-pointer text-left block">
-                {language === 'bn' ? 'কাশ্মীরি নিটওয়্যার' : 'Cashmere & Knitwear'}
-              </Link>
-            </li>
-            <li>
-              <Link to="/category/bengal-silk-shirting" className="hover:text-white transition-colors cursor-pointer text-left block">
-                {language === 'bn' ? 'রাজশাহী সিল্ক ও শার্ট' : 'Rajshahi Silk & Shirts'}
-              </Link>
-            </li>
-            <li>
-              <Link to="/category/tailored-trousers" className="hover:text-white transition-colors cursor-pointer text-left block">
-                {language === 'bn' ? 'টেইলর্ড ট্রাউজার্স' : 'Tailored Trousers'}
-              </Link>
-            </li>
+            {categories.slice(0, 5).map((cat) => (
+              <li key={cat.id}>
+                <Link to={`/category/${cat.slug}`} className="hover:text-white transition-colors cursor-pointer text-left block truncate">
+                  {localizeCategory(cat.name)}
+                </Link>
+              </li>
+            ))}
             <li>
               <Link to="/collections" className="hover:text-white transition-colors cursor-pointer text-left block">
                 {language === 'bn' ? 'লুকবুক ও কালেকশনস' : 'Lookbook & Collections'}

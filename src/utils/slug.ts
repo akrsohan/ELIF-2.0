@@ -58,32 +58,18 @@ export function findProductBySlug(slugOrId: string, productsList: Product[] = []
   });
 }
 
-export const CATEGORY_MAP: Record<string, { name: string; filterKey: string }> = {
-  outerwear: { name: 'Outerwear & Trench', filterKey: 'Outerwear' },
-  knitwear: { name: 'Fine Knitwear', filterKey: 'Knitwear' },
-  leather: { name: 'Leather & Bags', filterKey: 'Leather' },
-  trousers: { name: 'Tailored Trousers', filterKey: 'Trousers' },
-  silk: { name: 'Bengal Silk & Shirting', filterKey: 'Silk' },
-  footwear: { name: 'Modern Footwear', filterKey: 'Footwear' },
-};
-
 export function getCategorySlug(categoryName: string): string {
-  const norm = categoryName.toLowerCase();
-  if (norm.includes('outerwear') || norm.includes('trench') || norm.includes('coat')) return 'outerwear';
-  if (norm.includes('knitwear') || norm.includes('cashmere') || norm.includes('sweater')) return 'knitwear';
-  if (norm.includes('leather') || norm.includes('bag')) return 'leather';
-  if (norm.includes('trouser') || norm.includes('pant')) return 'trousers';
-  if (norm.includes('silk') || norm.includes('shirting') || norm.includes('dress')) return 'silk';
-  if (norm.includes('footwear') || norm.includes('boot') || norm.includes('shoe')) return 'footwear';
+  if (!categoryName) return 'category';
   return slugify(categoryName);
 }
 
-export function findCategoryBySlug(slug: string): CategoryCard | undefined {
+export function findCategoryBySlug(slug: string, categoriesList: CategoryCard[] = []): CategoryCard | undefined {
   if (!slug) return undefined;
   const norm = slug.toLowerCase().trim();
-  const direct = CATEGORIES.find((c) => c.slug.toLowerCase() === norm);
+  const list = categoriesList.length > 0 ? categoriesList : CATEGORIES;
+  const direct = list.find((c) => c.slug.toLowerCase() === norm);
   if (direct) return direct;
-  return CATEGORIES.find((c) => slugify(c.name) === norm);
+  return list.find((c) => slugify(c.name) === norm);
 }
 
 export interface CollectionInfo {
@@ -134,7 +120,7 @@ export const COLLECTIONS: CollectionInfo[] = [
     title: 'ARCHITECTURE OF SILK & LINEN',
     subtitle: 'Master Belgian flax and Rajshahi mulberry fibers sculpted into versatile day-to-evening forms.',
     collectionNumber: 'ATELIER PERMANENT SUITE',
-    image: CATEGORIES[4]?.image || '',
+    image: HERO_SLIDES[0]?.image || '',
     description: 'Unlined tailored linen trench coats, double knife-pleat trousers, and sensual raw silk shirting for timeless tropical luxury.',
     categoryFilter: 'All',
   },
