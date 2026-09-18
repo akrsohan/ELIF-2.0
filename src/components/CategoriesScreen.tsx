@@ -5,6 +5,7 @@ import { Product } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
+import { PriceDisplay } from './PriceDisplay';
 
 interface CategoriesScreenProps {
   initialCategory?: string;
@@ -191,12 +192,13 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
 
                   <div className="pt-2 sm:pt-2.5 border-t border-[#cee2cb] mt-2 flex items-center justify-between gap-1">
                     <div className="min-w-0">
-                      <span className="text-[8.5px] sm:text-[9.5px] text-[#305335] block uppercase tracking-wider leading-none font-black">
-                        {language === 'bn' ? 'মূল্য' : 'Price'}
-                      </span>
-                      <span className="text-[13.5px] sm:text-[16px] font-black text-[#09150c] tracking-tight block truncate">
-                        {formatPrice(product.price)}
-                      </span>
+                      <PriceDisplay
+                        price={product.price}
+                        compareAtPrice={product.compareAtPrice}
+                        size="md"
+                        layout="stacked"
+                        showDiscountBadge={true}
+                      />
                     </div>
 
                     <button

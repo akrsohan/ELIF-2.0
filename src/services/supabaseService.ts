@@ -288,12 +288,28 @@ export function mapSupabaseProductRow(row: any): Product {
   const sizes = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean))) as string[];
   const colors = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean))) as string[];
 
+  const rawCompareAt =
+    row.compare_at_price ??
+    row.compare_price ??
+    row.compareAtPrice ??
+    row.original_price ??
+    row.old_price ??
+    row.mrp ??
+    row.regular_price ??
+    null;
+
+  const compareAtPrice =
+    rawCompareAt !== null && !isNaN(Number(rawCompareAt)) && Number(rawCompareAt) > 0
+      ? Number(rawCompareAt)
+      : undefined;
+
   return {
     id: String(row.id),
     name: row.name || 'Untitled Piece',
     category: row.category || row.category_id || 'Outerwear',
     subtitle: row.subtitle || (row.description ? row.description.slice(0, 45) : ''),
     price: Number(row.price) || 0,
+    compareAtPrice: compareAtPrice,
     currency: row.currency || '৳',
     tag: row.tag || (row.status === 'featured' ? 'Featured' : undefined),
     image: primaryImg,
@@ -597,6 +613,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   category_id UUID REFERENCES public.categories(id) ON DELETE SET NULL,
   subtitle TEXT,
   price NUMERIC NOT NULL DEFAULT 0,
+  compare_at_price NUMERIC,
   currency TEXT DEFAULT '৳',
   tag TEXT,
   image_url TEXT,

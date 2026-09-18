@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { PriceDisplay } from './PriceDisplay';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -253,18 +254,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </h1>
             <p className="text-[13px] text-[#3a4d3d] mt-1 font-normal">{localizedProduct.subtitle}</p>
 
-            {/* Price section */}
-            <div className="flex flex-wrap items-baseline gap-3 mt-3 pb-3 border-b border-[#d6e5d2]">
-              <span className="text-[24px] sm:text-[28px] font-semibold text-[#18281b]">
-                {formatPrice(product.price)}
-              </span>
-              <span className="text-[11px] text-[#3a4d3d] uppercase tracking-wider font-medium">
-                {language === 'bn' ? 'ভ্যাট অন্তর্ভুক্ত' : 'VAT Inclusive'}
-              </span>
-              <span className="text-[11px] text-[#2d6636] font-medium bg-[#eef7ec] px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-[#d6e5d2]">
-                <span className="material-symbols-outlined text-[14px]">local_shipping</span>
-                {t.trustCod}
-              </span>
+            {/* Price section with Compare-at */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-3.5 p-3.5 bg-[#f1f6ee] rounded-2xl border border-[#d6e5d2]">
+              <PriceDisplay
+                price={product.price}
+                compareAtPrice={product.compareAtPrice}
+                size="lg"
+                layout="stacked"
+                showDiscountBadge={true}
+              />
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10.5px] text-[#3a4d3d] uppercase tracking-wider font-semibold bg-white px-2 py-0.5 rounded-md border border-[#c8dac4]">
+                  {language === 'bn' ? 'ভ্যাট অন্তর্ভুক্ত' : 'VAT Inclusive'}
+                </span>
+                <span className="text-[10.5px] text-[#2d6636] font-bold bg-[#eef7ec] px-2 py-0.5 rounded-md flex items-center gap-1 border border-[#d6e5d2]">
+                  <span className="material-symbols-outlined text-[14px]">local_shipping</span>
+                  {t.trustCod}
+                </span>
+              </div>
             </div>
 
             {/* Fast Perks */}

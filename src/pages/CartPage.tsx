@@ -151,9 +151,16 @@ export const CartPage: React.FC = () => {
                         <p className="text-[11.5px] text-[#335639] mt-0.5 font-bold">
                           {item.color} • {language === 'bn' ? 'সাইজ:' : 'Size:'} {item.size}
                         </p>
-                        <p className="text-[14px] sm:text-[16px] font-black text-[#0f2113] mt-1.5">
-                          {formatPrice(item.product.price * item.quantity)}
-                        </p>
+                        <div className="mt-1.5">
+                          {item.product.compareAtPrice && item.product.compareAtPrice > item.product.price && (
+                            <span className="text-[11px] line-through text-[#829985] block font-semibold leading-none mb-0.5">
+                              {formatPrice(item.product.compareAtPrice * item.quantity)}
+                            </span>
+                          )}
+                          <p className="text-[14px] sm:text-[16px] font-black text-[#0f2113]">
+                            {formatPrice(item.product.price * item.quantity)}
+                          </p>
+                        </div>
                       </div>
 
                       {/* Quantity row */}

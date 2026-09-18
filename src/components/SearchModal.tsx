@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
+import { PriceDisplay } from './PriceDisplay';
 
 export const SearchModal: React.FC = () => {
   const navigate = useNavigate();
@@ -136,9 +137,15 @@ export const SearchModal: React.FC = () => {
                           <p className="text-[11px] text-[#3a4d3d] truncate">
                             {locProduct.subtitle}
                           </p>
-                          <p className="text-[13px] font-black text-[#2d6636] mt-1">
-                            {formatPrice(p.price)}
-                          </p>
+                          <div className="mt-1">
+                            <PriceDisplay
+                              price={p.price}
+                              compareAtPrice={p.compareAtPrice}
+                              size="sm"
+                              layout="stacked"
+                              showDiscountBadge={true}
+                            />
+                          </div>
                         </div>
                       </div>
                     );

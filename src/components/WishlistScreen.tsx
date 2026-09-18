@@ -2,6 +2,7 @@ import React from 'react';
 import { Product, TabType } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
+import { PriceDisplay } from './PriceDisplay';
 
 interface WishlistScreenProps {
   wishlistIds: string[];
@@ -122,9 +123,13 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
                   </div>
 
                   <div className="pt-2 border-t border-[#edf4ea] mt-2 flex items-center justify-between">
-                    <span className="font-black text-[13px] text-[#18281b]">
-                      {formatPrice(product.price)}
-                    </span>
+                    <PriceDisplay
+                      price={product.price}
+                      compareAtPrice={product.compareAtPrice}
+                      size="sm"
+                      layout="stacked"
+                      showDiscountBadge={true}
+                    />
                     <button
                       onClick={() => onQuickAddToCart(product)}
                       className="px-2.5 py-1 bg-[#18281b] hover:bg-[#2d6636] text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors cursor-pointer"

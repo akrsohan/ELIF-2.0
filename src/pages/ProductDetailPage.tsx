@@ -18,6 +18,7 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { findProductBySlug, getProductSlug, getCategorySlug } from '../utils/slug';
+import { PriceDisplay } from '../components/PriceDisplay';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -296,12 +297,16 @@ export const ProductDetailPage: React.FC = () => {
               {localizedProduct.subtitle}
             </p>
 
-            {/* Price Tag */}
-            <div className="flex items-baseline gap-3 mt-3.5">
-              <span className="text-[28px] sm:text-[32px] font-black text-[#0a190d] tracking-tight">
-                {formatPrice(product.price)}
-              </span>
-              <span className="text-[12px] font-bold uppercase text-[#1a5327] bg-[#d9eed6] px-2.5 py-0.5 rounded-md border border-[#b2d6ae]">
+            {/* Price Tag with Compare-at display */}
+            <div className="mt-4 p-3.5 bg-[#f2f7ef] rounded-2xl border border-[#c8e2c3] flex items-center justify-between gap-3">
+              <PriceDisplay
+                price={product.price}
+                compareAtPrice={product.compareAtPrice}
+                size="xl"
+                layout="stacked"
+                showDiscountBadge={true}
+              />
+              <span className="text-[11px] font-bold uppercase text-[#1a5327] bg-white px-2.5 py-1 rounded-lg border border-[#b2d6ae] shadow-2xs shrink-0">
                 {language === 'bn' ? 'ভ্যাট অন্তর্ভুক্ত' : 'VAT Included'}
               </span>
             </div>
@@ -622,9 +627,12 @@ export const ProductDetailPage: React.FC = () => {
                       </h3>
                     </div>
                     <div className="mt-2 pt-2 border-t border-[#edf4ea] flex items-center justify-between">
-                      <span className="text-[13px] font-black text-[#0f2113]">
-                        {formatPrice(relProd.price)}
-                      </span>
+                      <PriceDisplay
+                        price={relProd.price}
+                        compareAtPrice={relProd.compareAtPrice}
+                        size="sm"
+                        layout="stacked"
+                      />
                       <span className="text-[10px] font-bold text-[#1b5e28] uppercase">
                         {language === 'bn' ? 'দেখুন →' : 'View →'}
                       </span>

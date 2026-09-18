@@ -6,6 +6,7 @@ export interface Product {
   category: string;
   subtitle: string;
   price: number;
+  compareAtPrice?: number;
   currency: string;
   tag?: 'Limited' | 'Best Seller' | 'New' | 'Archive';
   image: string;

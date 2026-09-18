@@ -4,6 +4,7 @@ import { Heart, ShoppingBag, Eye, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getCategorySlug, getProductSlug } from '../utils/slug';
+import { PriceDisplay } from '../components/PriceDisplay';
 
 export const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -227,13 +228,17 @@ export const CategoryPage: React.FC = () => {
                   </div>
 
                   <div className="pt-2 border-t border-[#edf4ea] flex items-center justify-between gap-1">
-                    <div>
-                      <span className="text-[14px] sm:text-[15px] font-black text-[#0a190d]">
-                        {formatPrice(product.price)}
-                      </span>
+                    <div className="min-w-0">
+                      <PriceDisplay
+                        price={product.price}
+                        compareAtPrice={product.compareAtPrice}
+                        size="md"
+                        layout="stacked"
+                        showDiscountBadge={true}
+                      />
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         type="button"
                         onClick={() => quickAddToCart(product)}

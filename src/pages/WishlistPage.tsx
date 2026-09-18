@@ -4,6 +4,7 @@ import { Heart, ShoppingBag, X, Compass } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
+import { PriceDisplay } from '../components/PriceDisplay';
 
 export const WishlistPage: React.FC = () => {
   const { language, t, localizeProduct, formatPrice, formatNumber } = useLanguage();
@@ -107,9 +108,15 @@ export const WishlistPage: React.FC = () => {
                     <p className="text-[11px] sm:text-[12px] text-[#3a4d3d] truncate mt-0.5 font-bold">
                       {localized.subtitle}
                     </p>
-                    <p className="text-[14px] sm:text-[16px] font-black text-[#18281b] mt-1.5">
-                      {formatPrice(product.price)}
-                    </p>
+                    <div className="mt-1.5">
+                      <PriceDisplay
+                        price={product.price}
+                        compareAtPrice={product.compareAtPrice}
+                        size="md"
+                        layout="stacked"
+                        showDiscountBadge={true}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 pt-2">

@@ -163,9 +163,16 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                           </button>
                         </div>
 
-                        <span className="text-[14px] sm:text-[15px] font-black text-[#18281b]">
-                          {formatPrice(item.product.price * item.quantity)}
-                        </span>
+                        <div className="text-right">
+                          {item.product.compareAtPrice && item.product.compareAtPrice > item.product.price && (
+                            <span className="text-[11px] line-through text-[#829985] block font-semibold leading-none mb-0.5">
+                              {formatPrice(item.product.compareAtPrice * item.quantity)}
+                            </span>
+                          )}
+                          <span className="text-[14px] sm:text-[15px] font-black text-[#18281b]">
+                            {formatPrice(item.product.price * item.quantity)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

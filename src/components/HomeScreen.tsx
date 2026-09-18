@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product, TabType } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
+import { PriceDisplay } from './PriceDisplay';
 
 interface HomeScreenProps {
   wishlistIds: string[];
@@ -213,9 +214,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     </div>
 
                     <div className="pt-3 border-t border-[#edf4ea] mt-3 flex items-center justify-between">
-                      <span className="font-black text-[15px] text-[#0f2113]">
-                        {formatPrice(product.price)}
-                      </span>
+                      <PriceDisplay
+                        price={product.price}
+                        compareAtPrice={product.compareAtPrice}
+                        size="md"
+                        layout="stacked"
+                        showDiscountBadge={true}
+                      />
                       <button
                         type="button"
                         onClick={() => onQuickAddToCart(product)}
