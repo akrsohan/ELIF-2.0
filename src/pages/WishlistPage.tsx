@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { PRODUCTS } from '../data/catalog';
+import { Heart, ShoppingBag, X, Compass } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
 
 export const WishlistPage: React.FC = () => {
   const { language, t, localizeProduct, formatPrice, formatNumber } = useLanguage();
-  const { wishlistIds, toggleWishlist, quickAddToCart, showToast } = useStore();
+  const { products, wishlistIds, toggleWishlist, quickAddToCart, showToast } = useStore();
 
-  const wishlistedProducts = PRODUCTS.filter((p) => wishlistIds.includes(p.id));
+  const wishlistedProducts = products.filter((p) => wishlistIds.includes(p.id));
 
   const handleAddAllToBag = () => {
     wishlistedProducts.forEach((product) => {
@@ -100,7 +100,7 @@ export const WishlistPage: React.FC = () => {
                         className="text-[#3a4d3d] hover:text-[#ba1a1a] p-1 cursor-pointer transition-colors active:scale-90"
                         aria-label="Remove from wishlist"
                       >
-                        <span className="material-symbols-outlined text-[18px]">close</span>
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
 
@@ -118,7 +118,7 @@ export const WishlistPage: React.FC = () => {
                       onClick={() => quickAddToCart(product)}
                       className="flex-1 h-8.5 rounded-xl bg-[#0f2113] text-white text-[10.5px] font-black uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform hover:bg-[#2d6636] cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[15px]">shopping_bag</span>
+                      <ShoppingBag className="w-3.5 h-3.5" />
                       <span>{language === 'bn' ? 'ব্যাগে নিন' : 'Add to Bag'}</span>
                     </button>
                     <Link
@@ -136,7 +136,7 @@ export const WishlistPage: React.FC = () => {
       ) : (
         <div className="py-20 text-center bg-[#f1f6ee] rounded-2xl border border-[#d6e5d2] p-8 flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-[#e7f0e3] flex items-center justify-center text-[#2d6636] mb-4">
-            <span className="material-symbols-outlined text-[32px]">favorite</span>
+            <Heart className="w-8 h-8 text-[#2d6636]" />
           </div>
           <h2 className="font-display font-bold text-[22px] text-[#18281b] mb-2">
             {t.wishlistEmpty}
@@ -148,7 +148,7 @@ export const WishlistPage: React.FC = () => {
             to="/shop"
             className="h-12 px-6 rounded-xl bg-[#0f2113] text-white text-[12px] font-black uppercase tracking-wider active:scale-95 transition-all hover:bg-[#1b5e28] flex items-center gap-2 shadow-sm"
           >
-            <span className="material-symbols-outlined text-[18px]">explore</span>
+            <Compass className="w-4 h-4" />
             <span>{t.exploreCollections}</span>
           </Link>
         </div>

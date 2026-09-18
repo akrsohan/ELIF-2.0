@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Check,
+  ShoppingBag,
+  Truck,
+  Lock,
+  ArrowRight,
+  User,
+  ShieldCheck,
+  CreditCard,
+  Banknote,
+  Package,
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
-import { createOrderInSupabase } from '../services/supabaseService';
+import { createOrderInSupabase, getStoredTailoringProfile } from '../services/supabaseService';
 import { getProductSlug } from '../utils/slug';
 
 export const CheckoutPage: React.FC = () => {
@@ -21,13 +33,21 @@ export const CheckoutPage: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'cod' | 'nagad' | 'card'>('cod');
   const [district, setDistrict] = useState<'Dhaka' | 'Chattogram' | 'Sylhet' | 'Other'>('Dhaka');
 
-  // Customer shipping details
-  const [customerName, setCustomerName] = useState('Farhana Ahmed');
-  const [phone, setPhone] = useState('01711-000000');
-  const [address, setAddress] = useState('House 42, Road 11, Block D, Banani / Gulshan 2, Dhaka - 1213');
+  // Customer shipping details - initialize cleanly
+  const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [city, setCity] = useState('Dhaka');
-  const [postalCode, setPostalCode] = useState('1213');
+  const [postalCode, setPostalCode] = useState('');
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    const profile = getStoredTailoringProfile();
+    if (profile) {
+      if (profile.clientName) setCustomerName(profile.clientName);
+      if (profile.clientPhone) setPhone(profile.clientPhone);
+    }
+  }, []);
 
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -53,10 +73,11 @@ export const CheckoutPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      const formattedAddress = [address.trim(), city, postalCode].filter(Boolean).join(', ');
       const res = await createOrderInSupabase({
         customerName: customerName.trim(),
         phone: phone.trim(),
-        deliveryAddress: `${address.trim()}, ${city} - ${postalCode}`,
+        deliveryAddress: formattedAddress,
         district,
         paymentMethod,
         cartItems,
@@ -97,13 +118,13 @@ export const CheckoutPage: React.FC = () => {
     }
   };
 
-  // If order was just placed, render luxury confirmation screen
+  // If order was just placed, render confirmation screen
   if (orderConfirmed) {
     return (
       <div className="w-full max-w-2xl mx-auto py-12 px-4 selection:bg-[#d6edd2] selection:text-[#18281b]">
         <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-lg border border-[#bedec0] text-center flex flex-col items-center">
           <div className="w-20 h-20 rounded-full bg-[#edf6eb] text-[#1b5e28] flex items-center justify-center mb-5 border border-[#bedec0]">
-            <span className="material-symbols-outlined text-[42px]">verified</span>
+            <ShieldCheck className="w-10 h-10 text-[#1b5e28]" />
           </div>
 
           <span className="text-[11px] font-black uppercase tracking-[0.25em] text-[#1b5e28] bg-[#edf6eb] px-3.5 py-1 rounded-full border border-[#bedec0]">
@@ -146,7 +167,7 @@ export const CheckoutPage: React.FC = () => {
               to={`/account/orders/${orderConfirmed.orderNumber}`}
               className="flex-1 h-13 rounded-2xl bg-[#0f2113] text-white font-black text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#1b5e28] transition-colors shadow-md"
             >
-              <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+              <Truck className="w-4 h-4" />
               <span>{language === 'bn' ? 'অর্ডার ট্র্যাক করুন' : 'Track This Consignment'}</span>
             </Link>
 
@@ -154,7 +175,7 @@ export const CheckoutPage: React.FC = () => {
               to="/shop"
               className="flex-1 h-13 rounded-2xl bg-[#edf6eb] text-[#0f2113] font-black text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 border border-[#bedec0] hover:bg-[#dcefe0] transition-colors"
             >
-              <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
+              <ShoppingBag className="w-4 h-4" />
               <span>{language === 'bn' ? 'আরও কেনাকাটা করুন' : 'Continue Browsing'}</span>
             </Link>
           </div>
@@ -166,8 +187,10 @@ export const CheckoutPage: React.FC = () => {
   // If cart is empty, redirect prompt
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-6">
-        <span className="material-symbols-outlined text-[54px] text-[#2d6636]/60 mb-3">shopping_bag</span>
+      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-6 selection:bg-[#d6edd2] selection:text-[#18281b]">
+        <div className="w-16 h-16 rounded-full bg-[#edf6eb] flex items-center justify-center text-[#1b5e28] mb-3 border border-[#bedec0]">
+          <ShoppingBag className="w-8 h-8" />
+        </div>
         <h1 className="font-display font-black text-[24px] text-[#0f2113] mb-2">
           {language === 'bn' ? 'চেকআউটের জন্য কার্ট খালি' : 'Your Shopping Bag is Empty'}
         </h1>
@@ -221,7 +244,7 @@ export const CheckoutPage: React.FC = () => {
           {/* Recipient Information Card */}
           <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-[#bedec0] flex flex-col gap-4">
             <div className="flex items-center gap-2 pb-3 border-b border-[#edf4ea] text-[#0f2113]">
-              <span className="material-symbols-outlined text-[20px] text-[#1b5e28]">person_pin</span>
+              <User className="w-5 h-5 text-[#1b5e28]" />
               <h2 className="font-display font-black text-[16px] sm:text-[18px]">
                 {language === 'bn' ? '১. গ্রাহক ও ডেলিভারির ঠিকানা' : '1. Recipient & Delivery Address'}
               </h2>
@@ -237,7 +260,7 @@ export const CheckoutPage: React.FC = () => {
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. Farhana Ahmed"
+                  placeholder={language === 'bn' ? 'আপনার নাম লিখুন' : 'Enter your full name'}
                   className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#1b5e28]"
                 />
               </div>
@@ -266,7 +289,7 @@ export const CheckoutPage: React.FC = () => {
                 rows={2}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="House 42, Road 11, Block D, Banani, Dhaka"
+                placeholder={language === 'bn' ? 'বাড়ি নম্বর, রোড নম্বর, এলাকা...' : 'House number, road/street, area...'}
                 className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#1b5e28]"
               />
             </div>
@@ -303,13 +326,13 @@ export const CheckoutPage: React.FC = () => {
 
               <div>
                 <label className="text-[11px] font-black uppercase tracking-wider text-[#0f2113] block mb-1">
-                  {language === 'bn' ? 'পোস্ট কোড' : 'Postal Code'}
+                  {language === 'bn' ? 'পোস্টাল কোড' : 'Postal Code'}
                 </label>
                 <input
                   type="text"
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
-                  placeholder="1213"
+                  placeholder="e.g. 1213"
                   className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#1b5e28]"
                 />
               </div>
@@ -317,13 +340,13 @@ export const CheckoutPage: React.FC = () => {
 
             <div>
               <label className="text-[11px] font-black uppercase tracking-wider text-[#0f2113] block mb-1">
-                {language === 'bn' ? 'ডেলিভারি সংক্রান্ত নির্দেশনা (ঐচ্ছিক)' : 'Delivery Notes / Special Instructions'}
+                {language === 'bn' ? 'অতিরিক্ত নির্দেশনা (ঐচ্ছিক)' : 'Delivery Notes (Optional)'}
               </label>
               <input
                 type="text"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder={language === 'bn' ? 'যেমন: বিকেল ৪টার পর ডেলিভারি করবেন' : 'e.g. Call before arrival or evening delivery'}
+                placeholder={language === 'bn' ? 'বিশেষ সময় বা ডেলিভারি নির্দেশনা...' : 'Special timing or delivery instructions...'}
                 className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#1b5e28]"
               />
             </div>
@@ -332,19 +355,19 @@ export const CheckoutPage: React.FC = () => {
           {/* Payment Method Card */}
           <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-[#bedec0] flex flex-col gap-4">
             <div className="flex items-center gap-2 pb-3 border-b border-[#edf4ea] text-[#0f2113]">
-              <span className="material-symbols-outlined text-[20px] text-[#1b5e28]">payments</span>
+              <Banknote className="w-5 h-5 text-[#1b5e28]" />
               <h2 className="font-display font-black text-[16px] sm:text-[18px]">
-                {language === 'bn' ? '২. পেমেন্ট মেথড নির্বাচন করুন' : '2. Select Payment Method'}
+                {language === 'bn' ? '২. পেমেন্ট মেথড নির্বাচন করুন' : '2. Payment Method'}
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* COD */}
+              {/* Cash On Delivery */}
               <label
-                className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
                   paymentMethod === 'cod'
                     ? 'border-[#0f2113] bg-[#edf6eb] shadow-xs'
-                    : 'border-[#bedec0] bg-white hover:bg-[#edf6eb]/50'
+                    : 'border-[#bedec0] bg-white hover:border-[#badbb3]'
                 }`}
               >
                 <input
@@ -353,26 +376,31 @@ export const CheckoutPage: React.FC = () => {
                   value="cod"
                   checked={paymentMethod === 'cod'}
                   onChange={() => setPaymentMethod('cod')}
-                  className="accent-[#0f2113] mt-0.5"
+                  className="accent-[#1b5e28] mt-1 cursor-pointer"
                 />
-                <div>
-                  <span className="font-black text-[13px] text-[#0f2113] block">
-                    {language === 'bn' ? 'ক্যাশ অন ডেলিভারি (COD)' : 'Cash on Delivery (COD)'}
-                  </span>
-                  <span className="text-[11.5px] text-[#335639] leading-tight block mt-0.5">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-[13px] text-[#0f2113] block">
+                      {language === 'bn' ? 'ক্যাশ অন ডেলিভারি (COD)' : 'Cash on Delivery'}
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-[#1b5e28] bg-[#d6edd2] px-2 py-0.5 rounded">
+                      Popular
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-[#335639] mt-0.5">
                     {language === 'bn'
-                      ? 'পণ্য হাতে পেয়ে দেখে মূল্য পরিশোধ করুন।'
-                      : 'Pay upon delivery at your doorstep.'}
-                  </span>
+                      ? 'পোশাক হাতে পেয়ে চেক করে মূল্য পরিশোধ করুন।'
+                      : 'Pay upon delivery inspection.'}
+                  </p>
                 </div>
               </label>
 
               {/* bKash */}
               <label
-                className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
                   paymentMethod === 'bkash'
-                    ? 'border-[#e2136e] bg-[#fdf2f7] shadow-xs'
-                    : 'border-[#bedec0] bg-white hover:bg-[#fdf2f7]/50'
+                    ? 'border-[#0f2113] bg-[#edf6eb] shadow-xs'
+                    : 'border-[#bedec0] bg-white hover:border-[#badbb3]'
                 }`}
               >
                 <input
@@ -381,26 +409,31 @@ export const CheckoutPage: React.FC = () => {
                   value="bkash"
                   checked={paymentMethod === 'bkash'}
                   onChange={() => setPaymentMethod('bkash')}
-                  className="accent-[#e2136e] mt-0.5"
+                  className="accent-[#1b5e28] mt-1 cursor-pointer"
                 />
-                <div>
-                  <span className="font-black text-[13px] text-[#e2136e] block">
-                    {language === 'bn' ? 'বিকাশ অনলাইন পেমেন্ট' : 'bKash Merchant Pay'}
-                  </span>
-                  <span className="text-[11.5px] text-[#553040] leading-tight block mt-0.5">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-[13px] text-[#0f2113] block">
+                      bKash Merchant Pay
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-[#e2136e] bg-[#fce4ec] px-2 py-0.5 rounded">
+                      bKash
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-[#335639] mt-0.5">
                     {language === 'bn'
-                      ? 'বিকাশ অ্যাপ অথবা ওটিপি দিয়ে তাৎক্ষণিক পরিশোধ।'
-                      : 'Instant bKash payment verification.'}
-                  </span>
+                      ? 'বিকাশ ওয়ালেটের মাধ্যমে তাত্ক্ষণিক ও নিরাপদ পেমেন্ট।'
+                      : 'Instant digital wallet settlement.'}
+                  </p>
                 </div>
               </label>
 
               {/* Nagad */}
               <label
-                className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
                   paymentMethod === 'nagad'
-                    ? 'border-[#f7931e] bg-[#fff8ef] shadow-xs'
-                    : 'border-[#bedec0] bg-white hover:bg-[#fff8ef]/50'
+                    ? 'border-[#0f2113] bg-[#edf6eb] shadow-xs'
+                    : 'border-[#bedec0] bg-white hover:border-[#badbb3]'
                 }`}
               >
                 <input
@@ -409,26 +442,31 @@ export const CheckoutPage: React.FC = () => {
                   value="nagad"
                   checked={paymentMethod === 'nagad'}
                   onChange={() => setPaymentMethod('nagad')}
-                  className="accent-[#f7931e] mt-0.5"
+                  className="accent-[#1b5e28] mt-1 cursor-pointer"
                 />
-                <div>
-                  <span className="font-black text-[13px] text-[#c96900] block">
-                    {language === 'bn' ? 'নগদ ডিজিটাল পেমেন্ট' : 'Nagad Pay'}
-                  </span>
-                  <span className="text-[11.5px] text-[#553040] leading-tight block mt-0.5">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-[13px] text-[#0f2113] block">
+                      Nagad Digital
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-[#f58220] bg-[#fff3e0] px-2 py-0.5 rounded">
+                      Nagad
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-[#335639] mt-0.5">
                     {language === 'bn'
-                      ? 'নগদ ওয়ালেট থেকে দ্রুত ও নিরাপদে পেমেন্ট।'
+                      ? 'নগদ অ্যাকাউন্টের মাধ্যমে দ্রুত পেমেন্ট।'
                       : 'Fast checkout with Nagad wallet.'}
-                  </span>
+                  </p>
                 </div>
               </label>
 
               {/* Card */}
               <label
-                className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
                   paymentMethod === 'card'
                     ? 'border-[#0f2113] bg-[#edf6eb] shadow-xs'
-                    : 'border-[#bedec0] bg-white hover:bg-[#edf6eb]/50'
+                    : 'border-[#bedec0] bg-white hover:border-[#badbb3]'
                 }`}
               >
                 <input
@@ -437,48 +475,51 @@ export const CheckoutPage: React.FC = () => {
                   value="card"
                   checked={paymentMethod === 'card'}
                   onChange={() => setPaymentMethod('card')}
-                  className="accent-[#0f2113] mt-0.5"
+                  className="accent-[#1b5e28] mt-1 cursor-pointer"
                 />
-                <div>
-                  <span className="font-black text-[13px] text-[#0f2113] block">
-                    {language === 'bn' ? 'ভিসা / মাস্টারকার্ড / অ্যামেক্স' : 'Credit / Debit Cards'}
-                  </span>
-                  <span className="text-[11.5px] text-[#335639] leading-tight block mt-0.5">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-[13px] text-[#0f2113] block">
+                      Visa / Mastercard / Amex
+                    </span>
+                    <CreditCard className="w-4 h-4 text-[#1b5e28]" />
+                  </div>
+                  <p className="text-[11.5px] text-[#335639] mt-0.5">
                     {language === 'bn'
-                      ? 'আন্তর্জাতিক ও স্থানীয় সিকিউর কার্ড গেটওয়ে।'
-                      : 'Encrypted SSL / 3D Secure gateway.'}
-                  </span>
+                      ? 'আন্তর্জাতিক ও লোকাল কার্ড গেটওয়ে।'
+                      : 'Local and international credit & debit cards.'}
+                  </p>
                 </div>
               </label>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: ORDER SUMMARY & PLACE ORDER BUTTON (5 cols on lg) */}
+        {/* RIGHT COLUMN: ORDER MANIFEST SUMMARY (5 cols on lg) */}
         <div className="lg:col-span-5 flex flex-col gap-4 sticky top-24">
           <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-md border border-[#bedec0] flex flex-col gap-4">
             <h2 className="font-display font-black text-[18px] text-[#0f2113] pb-3 border-b border-[#edf4ea]">
-              {language === 'bn' ? 'অর্ডারভুক্ত পোশাকসমূহ' : 'Bag Items'} ({formatNumber(cartItems.length)})
+              {language === 'bn' ? 'অর্ডার রিভিউ' : 'Bag Overview'} ({formatNumber(cartItems.length)})
             </h2>
 
-            {/* Compact Item List */}
+            {/* List of items */}
             <div className="space-y-3 max-h-60 overflow-y-auto pr-1 no-scrollbar">
-              {cartItems.map((item, i) => {
-                const loc = localizeProduct(item.product);
+              {cartItems.map((item, idx) => {
+                const localized = localizeProduct(item.product);
                 return (
-                  <div key={i} className="flex items-center gap-3 text-[12.5px]">
+                  <div key={idx} className="flex items-center gap-3 py-1.5 border-b border-[#edf4ea] last:border-b-0">
                     <img
                       src={item.product.image}
-                      alt={loc.name}
-                      className="w-12 h-14 object-cover rounded-lg bg-[#edf4ea] shrink-0"
+                      alt={localized.name}
+                      className="w-12 h-14 object-cover rounded-lg bg-[#edf6eb] shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-[#0f2113] truncate">{loc.name}</p>
-                      <p className="text-[11px] text-[#3a583e]">
-                        {item.size} • {item.color} • Qty: {formatNumber(item.quantity)}
+                      <h4 className="font-bold text-[13px] text-[#0f2113] truncate">{localized.name}</h4>
+                      <p className="text-[11px] text-[#335639]">
+                        {item.size} • {item.color} • {formatNumber(item.quantity)}x
                       </p>
                     </div>
-                    <span className="font-black text-[#0f2113]">
+                    <span className="font-black text-[13px] text-[#0f2113]">
                       {formatPrice(item.product.price * item.quantity)}
                     </span>
                   </div>
@@ -486,7 +527,7 @@ export const CheckoutPage: React.FC = () => {
               })}
             </div>
 
-            {/* Calculations */}
+            {/* Cost breakdown */}
             <div className="space-y-2 text-[13px] pt-3 border-t border-[#edf4ea]">
               <div className="flex justify-between text-[#305335]">
                 <span>{language === 'bn' ? 'সাবটোটাল' : 'Subtotal'}</span>
@@ -494,7 +535,7 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               <div className="flex justify-between text-[#305335]">
-                <span>{language === 'bn' ? 'ডেলিভারি চার্জ' : 'Shipping Fee'}</span>
+                <span>{language === 'bn' ? 'ডেলিভারি চার্জ' : 'Delivery Fee'}</span>
                 <span>
                   {deliveryFee === 0 ? (
                     <span className="text-[#1b5e28] font-black uppercase text-[11px]">
@@ -507,44 +548,35 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               <div className="flex justify-between text-[17px] font-black text-[#0f2113] pt-3 border-t border-[#edf4ea]">
-                <span>{language === 'bn' ? 'মোট পরিশোধযোগ্য' : 'Grand Total'}</span>
+                <span>{language === 'bn' ? 'সর্বমোট পরিশোধযোগ্য' : 'Total Payable'}</span>
                 <span>{formatPrice(finalTotal)}</span>
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Place Order Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 rounded-2xl bg-[#0f2113] text-white font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:bg-[#1a3820] active:scale-98 transition-all disabled:opacity-75"
+              className="w-full h-13 rounded-2xl bg-[#0f2113] text-white font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md hover:bg-[#1a3a20] active:scale-98 transition-all disabled:opacity-75 mt-2"
             >
               {isSubmitting ? (
-                <>
-                  <span className="animate-spin material-symbols-outlined text-[20px]">progress_activity</span>
-                  <span>{language === 'bn' ? 'অর্ডার প্রসেস হচ্ছে...' : 'Booking Order...'}</span>
-                </>
+                <span>{language === 'bn' ? 'অর্ডার প্রস্তুত হচ্ছে...' : 'Confirming Acquisition...'}</span>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                  <span>
-                    {language === 'bn'
-                      ? `অর্ডার নিশ্চিত করুন (${formatPrice(finalTotal)})`
-                      : `Confirm Acquisition (${formatPrice(finalTotal)})`}
-                  </span>
+                  <Lock className="w-4 h-4" />
+                  <span>{language === 'bn' ? 'অর্ডার নিশ্চিত করুন' : 'Confirm & Place Order'}</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
 
-            <div className="p-3 bg-[#edf6eb] rounded-xl border border-[#bedeb8] text-[11px] text-[#2c4e31] space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-[#0f2113]">
-                <span className="material-symbols-outlined text-[15px] text-[#1b5e28]">verified</span>
-                <span>{language === 'bn' ? 'সুপাবেস ডাটাবেস রিয়েলটাইম সিঙ্ক' : 'Supabase Cloud Synchronization'}</span>
-              </div>
-              <p>
+            <div className="p-3 rounded-xl bg-[#edf6eb] border border-[#bedec0] flex items-center gap-2 text-[11.5px] text-[#1b5e28]">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>
                 {language === 'bn'
-                  ? 'আপনার অর্ডার স্বয়ংক্রিয়ভাবে অঁতেলিয়ে ম্যানেজমেন্ট সিস্টেমে যুক্ত হবে।'
-                  : 'Your order details are automatically stored and trackable in real-time.'}
-              </p>
+                  ? 'সরাসরি ঢাকা অঁতেলিয়ে ও সুপাবেস ক্লাউডে অর্ডার সিনক্রোনাইজেশন।'
+                  : 'Direct sync to Dhaka Atelier and Supabase live orders.'}
+              </span>
             </div>
           </div>
         </div>

@@ -1,9 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem } from '../types';
-import { INITIAL_CART, PRODUCTS } from '../data/catalog';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Product, CartItem, CategoryCard } from '../types';
+import { CATEGORIES as DEFAULT_CATEGORIES } from '../data/catalog';
+import { CollectionInfo, COLLECTIONS as DEFAULT_COLLECTIONS } from '../utils/slug';
 import { useLanguage } from './LanguageContext';
+import {
+  fetchProductsFromSupabase,
+  fetchCategoriesFromSupabase,
+  fetchCollectionsFromSupabase,
+} from '../services/supabaseService';
 
 interface StoreContextType {
+  products: Product[];
+  categories: CategoryCard[];
+  collections: CollectionInfo[];
+  isLoadingCatalog: boolean;
+  refreshCatalog: () => Promise<void>;
   cartItems: CartItem[];
   wishlistIds: string[];
   totalCartCount: number;
@@ -31,27 +42,73 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'elif_shopping_cart_v2';
-const WISHLIST_STORAGE_KEY = 'elif_wishlist_ids_v2';
+const CART_STORAGE_KEY = 'elif_shopping_cart_v3';
+const WISHLIST_STORAGE_KEY = 'elif_wishlist_ids_v3';
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { language, localizeProduct } = useLanguage();
 
-  // Load cart items from localStorage or fallback to INITIAL_CART
+  // Dynamic Catalog State from Supabase
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoryCard[]>(DEFAULT_CATEGORIES);
+  const [collections, setCollections] = useState<CollectionInfo[]>(DEFAULT_COLLECTIONS);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
+
+  const refreshCatalog = useCallback(async () => {
+    setIsLoadingCatalog(true);
+    try {
+      const [fetchedProducts, fetchedCats, fetchedCols] = await Promise.all([
+        fetchProductsFromSupabase(),
+        fetchCategoriesFromSupabase(),
+        fetchCollectionsFromSupabase(),
+      ]);
+
+      setProducts(fetchedProducts);
+
+      if (fetchedCats && fetchedCats.length > 0) {
+        setCategories(fetchedCats);
+      } else {
+        // Recalculate pieces count for default categories
+        setCategories(
+          DEFAULT_CATEGORIES.map((cat) => ({
+            ...cat,
+            piecesCount: fetchedProducts.filter((p) =>
+              p.category.toLowerCase().includes(cat.slug.toLowerCase()) ||
+              p.category.toLowerCase().includes(cat.name.toLowerCase())
+            ).length,
+          }))
+        );
+      }
+
+      if (fetchedCols && fetchedCols.length > 0) {
+        setCollections(fetchedCols);
+      }
+    } catch (err) {
+      console.error('Failed to load catalog from Supabase:', err);
+    } finally {
+      setIsLoadingCatalog(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshCatalog();
+  }, [refreshCatalog]);
+
+  // Clean persistent cart: defaults to empty array []
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem(CART_STORAGE_KEY) : null;
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
       console.error(e);
     }
-    return INITIAL_CART;
+    return [];
   });
 
-  // Load wishlist from localStorage or fallback
+  // Clean persistent wishlist: defaults to empty array []
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem(WISHLIST_STORAGE_KEY) : null;
@@ -62,7 +119,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (e) {
       console.error(e);
     }
-    return ['prod-1', 'prod-2'];
+    return [];
   });
 
   const [toast, setToast] = useState<string | null>(null);
@@ -70,7 +127,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
 
-  // Sync to localStorage
+  // Sync cart to localStorage
   useEffect(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -81,6 +138,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [cartItems]);
 
+  // Sync wishlist to localStorage
   useEffect(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -106,9 +164,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleWishlist = (productId: string) => {
     setWishlistIds((prev) => {
       const exists = prev.includes(productId);
-      const product = PRODUCTS.find((p) => p.id === productId);
-      const loc = product ? localizeProduct(product) : null;
-      const name = loc?.name || 'piece';
+      const foundProduct = products.find((p) => p.id === productId);
+      const loc = foundProduct ? localizeProduct(foundProduct) : null;
+      const name = loc?.name || (language === 'bn' ? 'পোশাক' : 'Piece');
       if (exists) {
         showToast(language === 'bn' ? 'উইশলিস্ট থেকে সরানো হয়েছে।' : 'Removed from curated wishlist.');
         return prev.filter((id) => id !== productId);
@@ -205,6 +263,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <StoreContext.Provider
       value={{
+        products,
+        categories,
+        collections,
+        isLoadingCatalog,
+        refreshCatalog,
         cartItems,
         wishlistIds,
         totalCartCount,

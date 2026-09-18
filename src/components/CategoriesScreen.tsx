@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Eye } from 'lucide-react';
-import { CATEGORIES, PRODUCTS } from '../data/catalog';
 import { Product } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
 
 interface CategoriesScreenProps {
@@ -26,6 +26,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
   const navigate = useNavigate();
   const { language, t, localizeCategory, localizeProduct, formatPrice, formatNumber } =
     useLanguage();
+  const { products, categories } = useStore();
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory || 'All');
   const [selectedMaterial, setSelectedMaterial] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
@@ -40,7 +41,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
     { id: 'Cotton', label: language === 'bn' ? 'অর্গানিক কটন' : 'Organic Cotton' },
   ];
 
-  const filteredProducts = PRODUCTS.filter((p) => {
+  const filteredProducts = products.filter((p) => {
     const matchesCategory =
       activeCategory === 'All' ||
       p.category.toLowerCase().includes(activeCategory.toLowerCase()) ||
@@ -80,7 +81,7 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({
         className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scroll-smooth no-scrollbar mb-3 sm:mb-4 px-1 sm:px-0"
         style={{ scrollPaddingLeft: '0.5rem', scrollPaddingRight: '0.5rem' }}
       >
-        {['All', ...CATEGORIES.map((c) => c.name)].map((catName) => {
+        {['All', ...categories.map((c) => c.name)].map((catName) => {
           const isSelected = activeCategory === catName;
           const displayLabel = catName === 'All' ? t.categoryAll : localizeCategory(catName);
           return (

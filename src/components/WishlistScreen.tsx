@@ -1,7 +1,7 @@
 import React from 'react';
-import { PRODUCTS } from '../data/catalog';
 import { Product, TabType } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useStore } from '../context/StoreContext';
 
 interface WishlistScreenProps {
   wishlistIds: string[];
@@ -21,7 +21,8 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
   onShowToast,
 }) => {
   const { language, t, localizeProduct, formatPrice, formatNumber } = useLanguage();
-  const wishlistedProducts = PRODUCTS.filter((p) => wishlistIds.includes(p.id));
+  const { products } = useStore();
+  const wishlistedProducts = products.filter((p) => wishlistIds.includes(p.id));
 
   const handleAddAllToBag = () => {
     wishlistedProducts.forEach((product) => {
@@ -60,84 +61,81 @@ export const WishlistScreen: React.FC<WishlistScreenProps> = ({
         )}
       </div>
 
-      {/* Wishlist Items List (PC Responsive Grid) */}
-      {wishlistedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5 mb-10 px-1 sm:px-0">
+      {wishlistedProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-2xl border border-[#bedec0] text-center">
+          <span className="material-symbols-outlined text-[48px] text-[#2d6636]/40 mb-2">
+            favorite_border
+          </span>
+          <h3 className="font-display font-black text-[18px] text-[#18281b]">
+            {t.wishlistEmpty}
+          </h3>
+          <p className="text-[12.5px] text-[#3a4d3d] max-w-xs mt-1 mb-5">
+            {t.wishlistEmptySub}
+          </p>
+          <button
+            onClick={() => onNavigateTab('shop')}
+            className="h-10 px-5 rounded-xl bg-[#18281b] hover:bg-[#2d6636] text-white text-[11px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            {t.exploreCollections}
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           {wishlistedProducts.map((product) => {
             const localized = localizeProduct(product);
             return (
               <div
                 key={product.id}
-                className="flex bg-[#f1f6ee] rounded-2xl p-2.5 sm:p-3 shadow-xs border border-[#d6e5d2] gap-2.5 sm:gap-3 relative hover:shadow-md hover:border-[#2d6636]/40 transition-all"
+                className="bg-white rounded-2xl border border-[#bedec0] overflow-hidden flex flex-col justify-between group shadow-2xs hover:shadow-sm transition-all"
               >
                 <div
                   onClick={() => onOpenProductDetail(product)}
-                  className="w-20 sm:w-24 h-26 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-[#e7f0e3] cursor-pointer"
+                  className="relative aspect-[3/4] bg-[#edf6eb] overflow-hidden cursor-pointer"
                 >
                   <img
-                    className="w-full h-full object-cover"
                     src={product.image}
-                    alt={product.alt}
+                    alt={localized.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleWishlist(product.id);
+                    }}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-[#18281b] text-white flex items-center justify-center shadow-xs cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">favorite</span>
+                  </button>
                 </div>
 
-                <div className="flex flex-col justify-between flex-1 min-w-0">
+                <div className="p-2.5 sm:p-3 flex flex-col flex-1 justify-between">
                   <div>
-                    <div className="flex items-start justify-between gap-1">
-                      <h3
-                        onClick={() => onOpenProductDetail(product)}
-                        className="font-display font-black text-[14px] sm:text-[16px] text-[#18281b] truncate cursor-pointer hover:text-[#2d6636] transition-colors"
-                      >
-                        {localized.name}
-                      </h3>
-                      <button
-                        onClick={() => onToggleWishlist(product.id)}
-                        className="text-[#3a4d3d] hover:text-[#ba1a1a] p-1 cursor-pointer transition-colors active:scale-90"
-                        aria-label="Remove from wishlist"
-                      >
-                        <span className="material-symbols-outlined text-[17px]">close</span>
-                      </button>
-                    </div>
-
-                    <p className="text-[11px] sm:text-[12px] text-[#3a4d3d] truncate mt-0.5 font-bold">
-                      {localized.subtitle}
-                    </p>
-                    <p className="text-[14px] sm:text-[15px] font-black text-[#18281b] mt-1">
-                      {formatPrice(product.price)}
-                    </p>
+                    <span className="text-[9.5px] text-[#2d6636] uppercase font-black tracking-wider block">
+                      {localized.category}
+                    </span>
+                    <h4
+                      onClick={() => onOpenProductDetail(product)}
+                      className="font-display font-black text-[13px] sm:text-[14px] text-[#18281b] line-clamp-1 cursor-pointer hover:underline"
+                    >
+                      {localized.name}
+                    </h4>
                   </div>
 
-                  <div className="flex items-center gap-1.5 pt-1.5">
+                  <div className="pt-2 border-t border-[#edf4ea] mt-2 flex items-center justify-between">
+                    <span className="font-black text-[13px] text-[#18281b]">
+                      {formatPrice(product.price)}
+                    </span>
                     <button
-                      onClick={() => onOpenProductDetail(product)}
-                      className="flex-1 h-8 sm:h-9 rounded-lg bg-[#0f2113] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform hover:bg-[#2d6636] cursor-pointer"
+                      onClick={() => onQuickAddToCart(product)}
+                      className="px-2.5 py-1 bg-[#18281b] hover:bg-[#2d6636] text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[14px]">visibility</span>
-                      <span>{t.viewDetails}</span>
+                      + {language === 'bn' ? 'ব্যাগ' : 'Bag'}
                     </button>
                   </div>
                 </div>
               </div>
             );
           })}
-        </div>
-      ) : (
-        <div className="py-20 text-center bg-[#f1f6ee] rounded-xl border border-[#d6e5d2] p-8 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-[#e7f0e3] flex items-center justify-center text-[#2d6636] mb-4">
-            <span className="material-symbols-outlined text-[32px]">favorite</span>
-          </div>
-          <h2 className="font-display font-medium text-[22px] text-[#18281b] mb-2">
-            {t.wishlistEmpty}
-          </h2>
-          <p className="text-[13px] text-[#3a4d3d] max-w-[320px] mb-6 leading-relaxed font-normal">
-            {t.wishlistEmptySub}
-          </p>
-          <button
-            onClick={() => onNavigateTab('home')}
-            className="h-12 px-6 rounded-lg bg-[#2d6636] text-white text-[12px] font-medium uppercase tracking-wider active:scale-95 transition-all hover:bg-[#23522b] cursor-pointer"
-          >
-            {t.exploreCollections}
-          </button>
         </div>
       )}
     </div>

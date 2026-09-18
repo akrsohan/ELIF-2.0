@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Sparkles,
 } from 'lucide-react';
-import { PRODUCTS } from '../data/catalog';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
@@ -19,13 +18,13 @@ import { getProductSlug } from '../utils/slug';
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { language, t, localizeProduct, formatNumber, formatPrice } = useLanguage();
-  const { wishlistIds, toggleWishlist, setStoryModalOpen } = useStore();
+  const { products, isLoadingCatalog, wishlistIds, toggleWishlist, setStoryModalOpen } = useStore();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
   const categories = [
-    { key: 'All', label: t.filterAll, count: PRODUCTS.length },
+    { key: 'All', label: t.filterAll, count: products.length },
     { key: 'Outerwear', label: language === 'bn' ? 'ওভারওয়্যার ও জ্যাকেট' : 'Coats & Outerwear' },
     { key: 'Knitwear', label: language === 'bn' ? 'নিটওয়্যার ও সোয়েটার' : 'Knitwear & Sweaters' },
     { key: 'Silk & Shirting', label: language === 'bn' ? 'সিল্ক ও শার্ট' : 'Silk & Shirts' },
@@ -34,7 +33,7 @@ export const HomePage: React.FC = () => {
     { key: 'Footwear', label: language === 'bn' ? 'হ্যান্ডমেড জুতা' : 'Footwear' },
   ];
 
-  const filteredProducts = PRODUCTS.filter((p) => {
+  const filteredProducts = products.filter((p) => {
     return (
       selectedCategory === 'All' ||
       p.category.toLowerCase().includes(selectedCategory.toLowerCase()) ||

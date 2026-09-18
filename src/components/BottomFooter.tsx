@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MessageSquare, X } from 'lucide-react';
+import { Phone, Mail, MessageSquare, MessageCircle, Instagram, Facebook, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { subscribeNewsletter } from '../services/supabaseService';
@@ -211,31 +211,33 @@ export const BottomFooter: React.FC = () => {
           {/* Social links */}
           <div className="flex items-center gap-3 mt-1 text-[#c8dac4]">
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/elif_rekha?stkn=MTZxY2R6cGJxdWMwMw=="
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-[#203122] border border-[#2b3e2d] flex items-center justify-center hover:bg-[#2d6636] hover:text-white transition-colors"
+              className="w-8 h-8 rounded-full bg-[#203122] border border-[#2b3e2d] flex items-center justify-center hover:bg-gradient-to-tr hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white hover:border-transparent hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer shadow-xs"
               aria-label="Instagram"
             >
-              <span className="text-[13px] font-bold">IG</span>
+              <Instagram className="w-4 h-4" />
             </a>
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/share/19TmHushxi/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-[#203122] border border-[#2b3e2d] flex items-center justify-center hover:bg-[#2d6636] hover:text-white transition-colors"
+              className="w-8 h-8 rounded-full bg-[#203122] border border-[#2b3e2d] flex items-center justify-center hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer shadow-xs"
               aria-label="Facebook"
             >
-              <span className="text-[13px] font-bold">FB</span>
+              <Facebook className="w-4 h-4" />
             </a>
             <a
               href="https://wa.me/8801995513269"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-[#203122] border border-[#2b3e2d] flex items-center justify-center hover:bg-[#2d6636] hover:text-white transition-colors"
+              className="w-8 h-8 rounded-full bg-[#203122] border border-[#2b3e2d] flex items-center justify-center hover:bg-[#25D366] hover:text-white hover:border-[#25D366] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer shadow-xs"
               aria-label="WhatsApp"
             >
-              <MessageSquare className="w-4 h-4" />
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m-3.53 3.93c-.19 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.19 2.06 3.29 5.09 4.49 2.52 1 3.03.8 3.58.75.55-.06 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.43-.07-.12-.27-.19-.57-.34-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.89-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51-.17-.01-.37-.01-.57-.01z" />
+              </svg>
             </a>
           </div>
         </div>
@@ -297,7 +299,9 @@ export const BottomFooter: React.FC = () => {
                 className="flex items-center justify-between p-3 rounded-xl bg-[#25d366]/15 border border-[#25d366]/40 hover:bg-[#25d366]/25 transition-colors"
               >
                 <div className="flex items-center gap-2.5">
-                  <MessageSquare className="w-4 h-4 text-[#128c7e]" />
+                  <svg className="w-5 h-5 fill-[#128c7e]" viewBox="0 0 24 24">
+                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m-3.53 3.93c-.19 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.19 2.06 3.29 5.09 4.49 2.52 1 3.03.8 3.58.75.55-.06 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.43-.07-.12-.27-.19-.57-.34-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.89-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51-.17-.01-.37-.01-.57-.01z" />
+                  </svg>
                   <div className="text-left">
                     <p className="text-[13px] font-bold text-[#18281b]">WhatsApp Concierge</p>
                     <p className="text-[11px] text-[#3a4d3d]">{language === 'bn' ? 'তাৎক্ষণিক মেসেজ ও ছবি পাঠান' : 'Instant Chat Support'}</p>

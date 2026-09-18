@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { CartItem } from '../types';
+import { CartItem, Product } from '../types';
 
 export interface OrderItemPayload {
   productId: string;
@@ -241,15 +241,21 @@ export const trackOrderByQuery = async (
  * Fetch all orders for the current client profile
  */
 export const fetchClientOrders = async (
-  phoneFilter = '01711000000'
+  phoneFilter?: string
 ): Promise<SavedOrder[]> => {
   if (isSupabaseConfigured()) {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
+
+      if (phoneFilter) {
+        query = query.ilike('phone', `%${phoneFilter.trim()}%`);
+      }
+
+      const { data, error } = await query;
 
       if (!error && data && data.length > 0) {
         return data as SavedOrder[];
@@ -259,7 +265,125 @@ export const fetchClientOrders = async (
     }
   }
 
-  return getLocalOrders();
+  const locals = getLocalOrders();
+  if (phoneFilter) {
+    return locals.filter((o) => o.phone.includes(phoneFilter.trim()));
+  }
+  return locals;
+};
+
+export function mapSupabaseProductRow(row: any): Product {
+  const images: string[] = (row.product_images || [])
+    .map((img: any) => img.image_url || img.url)
+    .filter(Boolean);
+
+  const primaryImg =
+    row.product_images?.find((img: any) => img.is_primary)?.image_url ||
+    images[0] ||
+    row.image_url ||
+    row.image ||
+    '';
+
+  const variants = row.product_variants || [];
+  const sizes = Array.from(new Set(variants.map((v: any) => v.size).filter(Boolean))) as string[];
+  const colors = Array.from(new Set(variants.map((v: any) => v.color).filter(Boolean))) as string[];
+
+  return {
+    id: String(row.id),
+    name: row.name || 'Untitled Piece',
+    category: row.category || row.category_id || 'Outerwear',
+    subtitle: row.subtitle || (row.description ? row.description.slice(0, 45) : ''),
+    price: Number(row.price) || 0,
+    currency: row.currency || '৳',
+    tag: row.tag || (row.status === 'featured' ? 'Featured' : undefined),
+    image: primaryImg,
+    images: images.length > 0 ? images : primaryImg ? [primaryImg] : [],
+    alt: row.alt || row.name || 'ELIF Atelier garment',
+    description: row.description || '',
+    fabric: row.fabric || '',
+    origin: row.origin || 'Dhaka Atelier',
+    sizes: sizes.length > 0 ? sizes : Array.isArray(row.sizes) ? row.sizes : ['38 FR'],
+    colors: colors.length > 0 ? colors : Array.isArray(row.colors) ? row.colors : ['Natural'],
+    stockCount: Number(row.stock_count ?? row.stock ?? 0),
+    modelStats: row.model_stats || '',
+    careInstructions: Array.isArray(row.care_instructions)
+      ? row.care_instructions
+      : row.care_instructions
+      ? [row.care_instructions]
+      : [],
+    features: Array.isArray(row.features)
+      ? row.features
+      : row.features
+      ? [row.features]
+      : [],
+  };
+}
+
+export const fetchProductsFromSupabase = async (): Promise<Product[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+  try {
+    const { data: productsData, error: productsError } = await supabase
+      .from('products')
+      .select('*, product_images(*), product_variants(*)');
+
+    if (productsError) {
+      const { data: simpleData, error: simpleError } = await supabase
+        .from('products')
+        .select('*');
+      if (simpleError || !simpleData) return [];
+      return simpleData.map(mapSupabaseProductRow);
+    }
+
+    if (!productsData || productsData.length === 0) {
+      return [];
+    }
+
+    return productsData.map(mapSupabaseProductRow);
+  } catch (err) {
+    console.error('Failed to fetch products from Supabase:', err);
+    return [];
+  }
+};
+
+export const fetchCategoriesFromSupabase = async (): Promise<any[]> => {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const { data, error } = await supabase.from('categories').select('*');
+    if (error || !data) return [];
+    return data.map((cat: any) => ({
+      id: String(cat.id),
+      name: cat.name || 'Category',
+      piecesCount: cat.pieces_count || cat.count || 0,
+      image: cat.image_url || cat.image || '',
+      alt: cat.name || 'Category',
+      slug: cat.slug || cat.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'category',
+    }));
+  } catch (err) {
+    console.error('Failed to fetch categories:', err);
+    return [];
+  }
+};
+
+export const fetchCollectionsFromSupabase = async (): Promise<any[]> => {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const { data, error } = await supabase.from('collections').select('*');
+    if (error || !data) return [];
+    return data.map((col: any) => ({
+      id: String(col.id),
+      slug: col.slug || col.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'collection',
+      title: col.name || col.title || 'Collection',
+      subtitle: col.subtitle || col.season || 'Atelier Collection',
+      collectionNumber: col.season || 'COLLECTION',
+      image: col.image_url || col.image || '',
+      description: col.description || '',
+    }));
+  } catch (err) {
+    console.error('Failed to fetch collections:', err);
+    return [];
+  }
 };
 
 /**

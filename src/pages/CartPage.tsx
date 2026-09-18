@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Truck, X, Lock, ArrowRight, ShoppingBag, Compass } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
@@ -90,7 +91,7 @@ export const CartPage: React.FC = () => {
             <div className="bg-[#edf6eb] border border-[#bedec0] rounded-2xl p-4 shadow-xs">
               <div className="flex items-center justify-between text-[11.5px] font-black text-[#0f2113] mb-2 uppercase tracking-wider">
                 <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-[#1b5e28]">local_shipping</span>
+                  <Truck className="w-4 h-4 text-[#1b5e28]" />
                   {isFreeShipping
                     ? (language === 'bn' ? 'সারাদেশে ফ্রি ডেলিভারি সক্রিয়!' : 'Complimentary Bangladesh Delivery Unlocked')
                     : (language === 'bn'
@@ -143,7 +144,7 @@ export const CartPage: React.FC = () => {
                             className="text-[#3a4d3d] hover:text-[#ba1a1a] p-1 cursor-pointer transition-colors active:scale-90"
                             aria-label="Remove item"
                           >
-                            <span className="material-symbols-outlined text-[18px]">close</span>
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
 
@@ -272,9 +273,9 @@ export const CartPage: React.FC = () => {
                 onClick={() => navigate('/checkout')}
                 className="w-full h-13 rounded-2xl bg-[#0f2113] text-white font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md hover:bg-[#1a3a20] active:scale-98 transition-all"
               >
-                <span className="material-symbols-outlined text-[20px]">lock</span>
+                <Lock className="w-4 h-4" />
                 <span>{language === 'bn' ? 'চেকআউট পেজে যান' : 'Proceed to Checkout'}</span>
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
 
               <p className="text-[11px] text-center text-[#3a583e]">
@@ -288,7 +289,7 @@ export const CartPage: React.FC = () => {
       ) : (
         <div className="py-20 text-center bg-[#f1f6ee] rounded-3xl border border-[#d6e5d2] p-8 flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-[#e7f0e3] flex items-center justify-center text-[#2d6636] mb-4">
-            <span className="material-symbols-outlined text-[32px]">shopping_bag</span>
+            <ShoppingBag className="w-8 h-8 text-[#2d6636]" />
           </div>
           <h2 className="font-display font-bold text-[22px] text-[#18281b] mb-2">
             {t.bagEmpty}
@@ -300,7 +301,7 @@ export const CartPage: React.FC = () => {
             to="/shop"
             className="h-12 px-6 rounded-xl bg-[#0f2113] text-white text-[12px] font-black uppercase tracking-wider active:scale-95 transition-all hover:bg-[#1b5e28] flex items-center gap-2 shadow-sm"
           >
-            <span className="material-symbols-outlined text-[18px]">explore</span>
+            <Compass className="w-4 h-4" />
             <span>{t.exploreCollections}</span>
           </Link>
         </div>

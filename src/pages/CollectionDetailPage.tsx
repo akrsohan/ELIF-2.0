@@ -1,20 +1,22 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { PRODUCTS } from '../data/catalog';
+import { Heart, ShoppingBag, ArrowLeft, Package } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
-import { findCollectionBySlug, getProductSlug } from '../utils/slug';
+import { getProductSlug } from '../utils/slug';
 
 export const CollectionDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { language, t, localizeProduct, localizeCategory, formatPrice } = useLanguage();
-  const { wishlistIds, toggleWishlist, quickAddToCart } = useStore();
+  const { products, collections, wishlistIds, toggleWishlist, quickAddToCart } = useStore();
 
-  const collection = slug ? findCollectionBySlug(slug) : undefined;
+  const collection = collections.find(
+    (c) => c.slug.toLowerCase() === slug?.toLowerCase() || c.id.toLowerCase() === slug?.toLowerCase()
+  );
 
   if (!collection) {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-6">
+      <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-6 selection:bg-[#d6edd2] selection:text-[#18281b]">
         <h1 className="font-display text-[26px] font-black text-[#0f2113] mb-3">
           {language === 'bn' ? 'কালেকশন পাওয়া যায়নি' : 'Collection Not Found'}
         </h1>
@@ -29,7 +31,7 @@ export const CollectionDetailPage: React.FC = () => {
   }
 
   // Filter products for this collection
-  const collectionProducts = PRODUCTS.filter((p) => {
+  const collectionProducts = products.filter((p) => {
     if (!collection.categoryFilter || collection.categoryFilter === 'All') return true;
     return p.category.toLowerCase().includes(collection.categoryFilter.toLowerCase());
   });
@@ -87,98 +89,125 @@ export const CollectionDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-        {collectionProducts.map((product) => {
-          const localized = localizeProduct(product);
-          const isWish = wishlistIds.includes(product.id);
-          const prodSlug = getProductSlug(product);
-
-          return (
-            <div
-              key={product.id}
-              className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#bedec0] shadow-xs hover:shadow-md transition-all"
+      {collectionProducts.length === 0 ? (
+        <div className="py-16 px-6 text-center bg-[#f1f6ee] rounded-3xl border border-[#d6e5d2] max-w-2xl mx-auto">
+          <div className="w-14 h-14 rounded-2xl bg-white text-[#1b5e28] flex items-center justify-center mx-auto mb-3 shadow-xs border border-[#badbb3]">
+            <Package className="w-6 h-6" />
+          </div>
+          <h2 className="font-display text-[20px] font-bold text-[#0a180d]">
+            {language === 'bn' ? 'এই কালেকশনে কোনো পোশাক পাওয়া যায়নি' : 'No pieces in this collection yet'}
+          </h2>
+          <p className="text-[13px] text-[#2c4b31] mt-1.5 max-w-md mx-auto">
+            {language === 'bn'
+              ? 'অন্যান্য কালেকশন বা শপ পেজ ঘুরে দেখার আমন্ত্রণ রইল।'
+              : 'Please check other collections or visit our main shop catalog.'}
+          </p>
+          <div className="mt-5 flex justify-center">
+            <Link
+              to="/collections"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0f2113] hover:bg-[#1b5e28] text-white text-[11px] font-black uppercase tracking-wider transition-colors shadow-xs"
             >
-              <div className="relative aspect-[3/4] bg-[#edf4ea] overflow-hidden">
-                <Link to={`/product/${prodSlug}`} className="block w-full h-full">
-                  <img
-                    src={product.image}
-                    alt={localized.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </Link>
+              <ArrowLeft className="w-4 h-4" />
+              {language === 'bn' ? 'সকল কালেকশন' : 'All Collections'}
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          {collectionProducts.map((product) => {
+            const localized = localizeProduct(product);
+            const isWish = wishlistIds.includes(product.id);
+            const prodSlug = getProductSlug(product);
 
-                <button
-                  type="button"
-                  onClick={() => toggleWishlist(product.id)}
-                  aria-label="Wishlist toggle"
-                  className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md border shadow-xs transition-all active:scale-90 cursor-pointer ${
-                    isWish
-                      ? 'bg-[#fce4ec]/95 border-[#f48fb1] text-[#c2185b]'
-                      : 'bg-white/80 border-[#bedec0] text-[#0f2113] hover:bg-white'
-                  }`}
-                >
-                  <span
-                    className="material-symbols-outlined text-[17px]"
-                    style={{ fontVariationSettings: isWish ? "'FILL' 1" : "'FILL' 0" }}
-                  >
-                    favorite
-                  </span>
-                </button>
-
-                {product.tag && (
-                  <span className="absolute top-2.5 left-2.5 bg-[#0f2113]/90 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    {product.tag === 'Best Seller'
-                      ? t.tagBestSeller
-                      : product.tag === 'Limited'
-                      ? t.tagLimited
-                      : product.tag === 'New'
-                      ? t.tagNew
-                      : product.tag}
-                  </span>
-                )}
-              </div>
-
-              <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-2">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#1b5e28]">
-                    {localizeCategory(product.category)}
-                  </span>
-                  <Link to={`/product/${prodSlug}`}>
-                    <h3 className="font-display text-[14px] sm:text-[15px] font-bold text-[#0b1b0e] hover:text-[#1b5e28] transition-colors line-clamp-1 mt-0.5">
-                      {localized.name}
-                    </h3>
+            return (
+              <div
+                key={product.id}
+                className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#bedec0] shadow-xs hover:shadow-md transition-all"
+              >
+                <div className="relative aspect-[3/4] bg-[#edf4ea] overflow-hidden">
+                  <Link to={`/product/${prodSlug}`} className="block w-full h-full">
+                    <img
+                      src={product.image}
+                      alt={localized.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                   </Link>
-                  <p className="text-[11px] text-[#335639] font-medium line-clamp-1 mt-0.5">
-                    {localized.subtitle}
-                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleWishlist(product.id)}
+                    aria-label="Wishlist toggle"
+                    className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md border shadow-xs transition-all active:scale-90 cursor-pointer ${
+                      isWish
+                        ? 'bg-[#d6edd2] border-[#aed6a3] text-[#15381a]'
+                        : 'bg-white/90 border-[#bedec0] text-[#0f2113] hover:bg-white'
+                    }`}
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${
+                        isWish ? 'fill-[#1b5e28] text-[#1b5e28]' : 'text-[#0f2113]'
+                      }`}
+                    />
+                  </button>
+
+                  {product.tag && (
+                    <span className="absolute top-2.5 left-2.5 bg-[#0f2113]/90 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-xs">
+                      {product.tag === 'Best Seller'
+                        ? t.tagBestSeller
+                        : product.tag === 'Limited'
+                        ? t.tagLimited
+                        : product.tag === 'New'
+                        ? t.tagNew
+                        : product.tag}
+                    </span>
+                  )}
                 </div>
 
-                <div className="pt-2 border-t border-[#edf4ea] flex items-center justify-between gap-1">
-                  <span className="text-[14px] sm:text-[15px] font-black text-[#0a190d]">
-                    {formatPrice(product.price)}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => quickAddToCart(product)}
-                      title={language === 'bn' ? 'দ্রুত ব্যাগে যোগ' : 'Quick Add to Bag'}
-                      className="w-8 h-8 rounded-xl bg-[#edf6eb] text-[#0f2113] hover:bg-[#0f2113] hover:text-white flex items-center justify-center border border-[#bedeb8] transition-all cursor-pointer active:scale-95"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
-                    </button>
-                    <Link
-                      to={`/product/${prodSlug}`}
-                      className="h-8 px-2.5 rounded-xl bg-[#0f2113] text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center hover:bg-[#1b4320] transition-colors"
-                    >
-                      {language === 'bn' ? 'দেখুন' : 'View'}
+                <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#1b5e28]">
+                      {localizeCategory(product.category)}
+                    </span>
+                    <Link to={`/product/${prodSlug}`}>
+                      <h3 className="font-display text-[14px] sm:text-[15px] font-bold text-[#0b1b0e] hover:text-[#1b5e28] transition-colors line-clamp-1 mt-0.5">
+                        {localized.name}
+                      </h3>
                     </Link>
+                    <p className="text-[11px] text-[#335639] font-medium line-clamp-1 mt-0.5">
+                      {localized.subtitle}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#edf4ea] flex items-center justify-between gap-1">
+                    <div>
+                      <span className="text-[14px] sm:text-[15px] font-black text-[#0a190d]">
+                        {formatPrice(product.price)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => quickAddToCart(product)}
+                        title={language === 'bn' ? 'দ্রুত ব্যাগে যোগ' : 'Quick Add to Bag'}
+                        className="w-8 h-8 rounded-xl bg-[#edf6eb] text-[#0f2113] hover:bg-[#0f2113] hover:text-white flex items-center justify-center border border-[#bedeb8] transition-all cursor-pointer active:scale-95"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                      </button>
+                      <Link
+                        to={`/product/${prodSlug}`}
+                        className="h-8 px-2.5 rounded-xl bg-[#0f2113] text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center hover:bg-[#1b4320] transition-colors"
+                      >
+                        {language === 'bn' ? 'দেখুন' : 'View'}
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

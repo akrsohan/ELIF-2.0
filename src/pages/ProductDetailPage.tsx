@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { PRODUCTS } from '../data/catalog';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Share2,
+  Heart,
+  Check,
+  ShoppingBag,
+  Zap,
+  ArrowRight,
+  X,
+  ShieldCheck,
+  Truck,
+  RefreshCw,
+  Package,
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { findProductBySlug, getProductSlug, getCategorySlug } from '../utils/slug';
@@ -9,9 +23,9 @@ export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { language, t, localizeProduct, localizeCategory, formatPrice, formatNumber } = useLanguage();
-  const { wishlistIds, toggleWishlist, addToCartWithOptions, showToast } = useStore();
+  const { products, wishlistIds, toggleWishlist, addToCartWithOptions, showToast } = useStore();
 
-  const product = slug ? findProductBySlug(slug) : undefined;
+  const product = slug ? findProductBySlug(slug, products) : undefined;
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
@@ -36,10 +50,10 @@ export const ProductDetailPage: React.FC = () => {
 
   if (!product) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-16">
-        <span className="material-symbols-outlined text-[64px] text-[#2d6636]/60 mb-4">
-          apparel
-        </span>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-16 selection:bg-[#d6edd2] selection:text-[#18281b]">
+        <div className="w-16 h-16 rounded-2xl bg-[#edf6eb] text-[#1b5e28] flex items-center justify-center mb-4 border border-[#badbb3] shadow-xs">
+          <Package className="w-8 h-8" />
+        </div>
         <h1 className="font-display text-[26px] sm:text-[32px] font-black text-[#0f2113] tracking-tight mb-2">
           {language === 'bn' ? 'পোশাকটি খুঁজে পাওয়া যায়নি' : 'Product Not Found'}
         </h1>
@@ -72,7 +86,7 @@ export const ProductDetailPage: React.FC = () => {
   const catSlug = getCategorySlug(product.category);
 
   // Related products from the same or complementary category
-  const relatedProducts = PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const relatedProducts = products.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handlePrevImage = () => {
     setSelectedImageIndex((prev) => (prev === 0 ? imageGallery.length - 1 : prev - 1));
@@ -146,7 +160,7 @@ export const ProductDetailPage: React.FC = () => {
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-90"
                   aria-label="Previous image"
                 >
-                  <span className="material-symbols-outlined text-[24px]">chevron_left</span>
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   type="button"
@@ -154,7 +168,7 @@ export const ProductDetailPage: React.FC = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-90"
                   aria-label="Next image"
                 >
-                  <span className="material-symbols-outlined text-[24px]">chevron_right</span>
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </>
             )}
@@ -186,9 +200,7 @@ export const ProductDetailPage: React.FC = () => {
                 aria-label="Copy share link"
                 className="w-10 h-10 rounded-full bg-white/90 hover:bg-white text-[#0f2113] backdrop-blur-md border border-[#bedec0] flex items-center justify-center shadow-xs cursor-pointer active:scale-90 transition-all"
               >
-                <span className="material-symbols-outlined text-[19px]">
-                  {copiedLink ? 'check' : 'share'}
-                </span>
+                {copiedLink ? <Check className="w-4 h-4 text-[#1b5e28]" /> : <Share2 className="w-4 h-4" />}
               </button>
               <button
                 type="button"
@@ -196,16 +208,15 @@ export const ProductDetailPage: React.FC = () => {
                 aria-label="Toggle Wishlist"
                 className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border shadow-xs cursor-pointer active:scale-90 transition-all ${
                   isWishlisted
-                    ? 'bg-[#fce4ec]/95 border-[#f48fb1] text-[#c2185b]'
+                    ? 'bg-[#d6edd2] border-[#aed6a3] text-[#15381a]'
                     : 'bg-white/90 border-[#bedec0] text-[#0f2113] hover:bg-white'
                 }`}
               >
-                <span
-                  className="material-symbols-outlined text-[20px]"
-                  style={{ fontVariationSettings: isWishlisted ? "'FILL' 1" : "'FILL' 0" }}
-                >
-                  favorite
-                </span>
+                <Heart
+                  className={`w-5 h-5 transition-colors ${
+                    isWishlisted ? 'fill-[#1b5e28] text-[#1b5e28]' : 'text-[#0f2113]'
+                  }`}
+                />
               </button>
             </div>
 
@@ -242,7 +253,7 @@ export const ProductDetailPage: React.FC = () => {
           {/* Editorial Atelier Textile Provenance Card */}
           <div className="p-4 sm:p-5 rounded-2xl bg-[#edf6eb] border border-[#b8dab2] flex flex-col gap-2 mt-2">
             <div className="flex items-center gap-2 text-[#13461d] text-[12px] font-black uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[18px]">verified</span>
+              <ShieldCheck className="w-4 h-4 text-[#1b5e28]" />
               <span>{language === 'bn' ? 'উৎপত্তি ও কাপড়ের মান' : 'Provenance & Craftsmanship'}</span>
             </div>
             <p className="text-[13px] text-[#1f3823] font-medium leading-relaxed">
@@ -301,61 +312,59 @@ export const ProductDetailPage: React.FC = () => {
             {localizedProduct.description}
           </p>
 
-          {/* Color Selection */}
+          {/* COLOR SELECTOR */}
           {product.colors && product.colors.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[12px] font-black uppercase tracking-wider text-[#0f2113]">
-                  {language === 'bn' ? 'রঙ নির্বাচন:' : 'Color Palette:'}{' '}
-                  <span className="text-[#1a5327] font-bold">{selectedColor}</span>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#1b5e28]">
+                  {language === 'bn' ? 'রঙ / শেড:' : 'Color Palette:'}
                 </span>
+                <span className="text-[12px] font-bold text-[#0f2113]">{selectedColor}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {product.colors.map((col) => (
+                {product.colors.map((clr) => (
                   <button
-                    key={col}
+                    key={clr}
                     type="button"
-                    onClick={() => setSelectedColor(col)}
-                    className={`px-3.5 py-2 rounded-xl text-[12px] font-black transition-all cursor-pointer border ${
-                      selectedColor === col
+                    onClick={() => setSelectedColor(clr)}
+                    className={`px-3.5 py-1.5 rounded-xl text-[11.5px] font-bold transition-all border cursor-pointer ${
+                      selectedColor === clr
                         ? 'bg-[#0f2113] text-white border-[#0f2113] shadow-xs'
-                        : 'bg-[#edf6eb] text-[#1b3821] border-[#bedeb8] hover:bg-[#dcf0dc]'
+                        : 'bg-[#edf6eb] text-[#1e3c23] border-[#bedec0] hover:border-[#1b5e28]'
                     }`}
                   >
-                    {col}
+                    {clr}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Size Selection & Size Guide */}
+          {/* SIZE SELECTOR */}
           {product.sizes && product.sizes.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[12px] font-black uppercase tracking-wider text-[#0f2113]">
-                  {language === 'bn' ? 'সাইজ নির্বাচন:' : 'Select Size:'}{' '}
-                  <span className="text-[#1a5327] font-bold">{selectedSize}</span>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#1b5e28]">
+                  {language === 'bn' ? 'সাইজ নির্বাচন করুন:' : 'Select Size:'}
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowSizeGuide(true)}
-                  className="text-[11.5px] font-bold text-[#1b5e28] underline hover:text-[#0b1b0e] flex items-center gap-1 cursor-pointer"
+                  className="text-[11.5px] font-black text-[#1b5e28] underline hover:text-[#0f2113] cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[15px]">straighten</span>
-                  <span>{language === 'bn' ? 'সাইজ গাইড' : 'Size Guide'}</span>
+                  {language === 'bn' ? 'সাইজ গাইড ↗' : 'Size Guide ↗'}
                 </button>
               </div>
-              <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {product.sizes.map((sz) => (
                   <button
                     key={sz}
                     type="button"
                     onClick={() => setSelectedSize(sz)}
-                    className={`py-2.5 px-2 rounded-xl text-[12.5px] font-black text-center transition-all cursor-pointer border ${
+                    className={`h-11 rounded-xl text-[12px] font-black transition-all border flex items-center justify-center cursor-pointer ${
                       selectedSize === sz
                         ? 'bg-[#0f2113] text-white border-[#0f2113] shadow-xs scale-102'
-                        : 'bg-[#edf6eb] text-[#1b3821] border-[#bedeb8] hover:bg-[#dcf0dc]'
+                        : 'bg-white text-[#15341c] border-[#badbb3] hover:border-[#1b5e28]'
                     }`}
                   >
                     {sz}
@@ -365,136 +374,125 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Quantity Selector */}
-          <div className="flex items-center gap-3">
-            <span className="text-[12px] font-black uppercase tracking-wider text-[#0f2113]">
-              {language === 'bn' ? 'পরিমাণ:' : 'Quantity:'}
-            </span>
-            <div className="flex items-center rounded-xl bg-[#edf6eb] border border-[#bedeb8] p-1">
+          {/* QUANTITY AND DIRECT BUY / ADD TO BAG ACTIONS */}
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex items-center gap-3">
+              {/* Quantity Counter */}
+              <div className="flex items-center h-12 bg-white border border-[#badbb3] rounded-xl px-2 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="w-8 h-8 flex items-center justify-center text-[#0f2113] font-black text-[16px] hover:bg-[#edf6eb] rounded-lg cursor-pointer"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <span className="w-8 text-center text-[14px] font-black text-[#0f2113]">
+                  {formatNumber(quantity)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="w-8 h-8 flex items-center justify-center text-[#0f2113] font-black text-[16px] hover:bg-[#edf6eb] rounded-lg cursor-pointer"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Add to Bag Button */}
               <button
                 type="button"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="w-8 h-8 rounded-lg bg-white/80 hover:bg-white text-[#0f2113] flex items-center justify-center font-bold cursor-pointer"
+                onClick={handleAddToCart}
+                className="flex-1 h-12 rounded-xl bg-[#0f2113] hover:bg-[#1a3d21] text-white font-black text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 transition-all"
               >
-                -
-              </button>
-              <span className="w-10 text-center font-black text-[13px] text-[#0f2113]">
-                {formatNumber(quantity)}
-              </span>
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => q + 1)}
-                className="w-8 h-8 rounded-lg bg-white/80 hover:bg-white text-[#0f2113] flex items-center justify-center font-bold cursor-pointer"
-              >
-                +
+                <ShoppingBag className="w-4 h-4" />
+                <span>{language === 'bn' ? 'শপিং ব্যাগে যুক্ত করুন' : 'Add to Bag'}</span>
               </button>
             </div>
-          </div>
 
-          {/* Primary Action Buttons (Desktop & Tablet) */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className="w-full sm:flex-1 h-13 px-5 rounded-2xl bg-[#0f2113] text-white font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md hover:bg-[#1a3a20] active:scale-98 transition-all"
-            >
-              <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
-              <span>{language === 'bn' ? 'শপিং ব্যাগে যুক্ত করুন' : 'Add to Shopping Bag'}</span>
-            </button>
-
+            {/* Direct Buy Now Button */}
             <button
               type="button"
               onClick={handleDirectBuy}
-              className="w-full sm:flex-1 h-13 px-5 rounded-2xl bg-[#d4ebd0] text-[#0a1a0c] font-black text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#a2cf9d] hover:bg-[#c2e4bc] active:scale-98 transition-all shadow-sm"
+              className="w-full h-12 rounded-xl bg-[#d4ebd0] hover:bg-[#c2e4bc] text-[#0a1a0c] font-black text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#9fd099] shadow-xs active:scale-98 transition-all"
             >
-              <span className="material-symbols-outlined text-[20px] text-[#134e1f]">bolt</span>
-              <span>{language === 'bn' ? 'সরাসরি অর্ডার (Buy Now)' : 'Direct Buy Now'}</span>
+              <Zap className="w-4 h-4 text-[#165020]" />
+              <span>{language === 'bn' ? 'সরাসরি অর্ডার করুন (ক্যাশ অন ডেলিভারি)' : 'Instant Buy (Cash On Delivery)'}</span>
             </button>
           </div>
 
-          {/* Highlights & Trust Assurance */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="p-3.5 rounded-xl bg-[#f2f8f0] border border-[#c4e2bf] flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[22px] text-[#1b5e28]">
-                local_shipping
-              </span>
-              <div>
-                <p className="text-[11.5px] font-black text-[#0f2113]">
-                  {language === 'bn' ? '২৪-৪৮ ঘণ্টায় ডেলিভারি' : '24-48h Dhaka Dispatch'}
-                </p>
-                <p className="text-[10.5px] text-[#2c4e31]">
-                  {language === 'bn' ? 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি' : 'Nationwide COD available'}
-                </p>
-              </div>
+          {/* 3-KEY ATELIER VALUE PILLARS */}
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#bedec0] text-center">
+            <div className="p-2.5 bg-[#edf6eb] rounded-xl border border-[#c4e0c0]">
+              <Truck className="w-4 h-4 mx-auto text-[#1b5e28] mb-1" />
+              <p className="text-[10px] font-black text-[#0f2113]">{t.trustDelivery}</p>
+              <p className="text-[9px] text-[#335639]">{t.trustDeliverySub}</p>
             </div>
-
-            <div className="p-3.5 rounded-xl bg-[#f2f8f0] border border-[#c4e2bf] flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-[22px] text-[#1b5e28]">
-                swap_horizontal_circle
-              </span>
-              <div>
-                <p className="text-[11.5px] font-black text-[#0f2113]">
-                  {language === 'bn' ? '৭ দিনের সহজ এক্সচেঞ্জ' : '7-Day Easy Exchange'}
-                </p>
-                <p className="text-[10.5px] text-[#2c4e31]">
-                  {language === 'bn' ? 'সাইজ না মিললে দ্রুত পরিবর্তন' : 'Hassle-free size replacement'}
-                </p>
-              </div>
+            <div className="p-2.5 bg-[#edf6eb] rounded-xl border border-[#c4e0c0]">
+              <ShieldCheck className="w-4 h-4 mx-auto text-[#1b5e28] mb-1" />
+              <p className="text-[10px] font-black text-[#0f2113]">{t.trustCod}</p>
+              <p className="text-[9px] text-[#335639]">{t.trustCodSub}</p>
+            </div>
+            <div className="p-2.5 bg-[#edf6eb] rounded-xl border border-[#c4e0c0]">
+              <RefreshCw className="w-4 h-4 mx-auto text-[#1b5e28] mb-1" />
+              <p className="text-[10px] font-black text-[#0f2113]">{t.trustReturn}</p>
+              <p className="text-[9px] text-[#335639]">{t.trustReturnSub}</p>
             </div>
           </div>
 
-          {/* Tabbed In-Depth Information */}
-          <div className="mt-4 border border-[#bedec0] rounded-2xl overflow-hidden bg-white/70">
-            <div className="flex border-b border-[#bedec0] bg-[#edf6eb] text-[11px] font-black uppercase tracking-wider overflow-x-auto no-scrollbar">
+          {/* TABBED SPECIFICATIONS & ATELIER NOTES */}
+          <div className="pt-2">
+            <div className="flex border-b border-[#bedec0] gap-4">
               <button
                 type="button"
                 onClick={() => setActiveTab('details')}
-                className={`py-3 px-4 transition-colors whitespace-nowrap cursor-pointer ${
+                className={`pb-2 text-[12px] font-black uppercase tracking-wider cursor-pointer transition-colors border-b-2 ${
                   activeTab === 'details'
-                    ? 'bg-white text-[#0f2113] border-b-2 border-[#0f2113]'
-                    : 'text-[#35573a] hover:text-[#0f2113]'
+                    ? 'border-[#0f2113] text-[#0f2113]'
+                    : 'border-transparent text-[#426148] hover:text-[#0f2113]'
                 }`}
               >
-                {language === 'bn' ? 'বৈশিষ্ট্য' : 'Key Highlights'}
+                {language === 'bn' ? 'বিবরণ' : 'Details'}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('specs')}
-                className={`py-3 px-4 transition-colors whitespace-nowrap cursor-pointer ${
+                className={`pb-2 text-[12px] font-black uppercase tracking-wider cursor-pointer transition-colors border-b-2 ${
                   activeTab === 'specs'
-                    ? 'bg-white text-[#0f2113] border-b-2 border-[#0f2113]'
-                    : 'text-[#35573a] hover:text-[#0f2113]'
+                    ? 'border-[#0f2113] text-[#0f2113]'
+                    : 'border-transparent text-[#426148] hover:text-[#0f2113]'
                 }`}
               >
-                {language === 'bn' ? 'ফেব্রিক ও কারুশিল্প' : 'Fabric & Craft'}
+                {language === 'bn' ? 'ফেব্রিক' : 'Textile'}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('care')}
-                className={`py-3 px-4 transition-colors whitespace-nowrap cursor-pointer ${
+                className={`pb-2 text-[12px] font-black uppercase tracking-wider cursor-pointer transition-colors border-b-2 ${
                   activeTab === 'care'
-                    ? 'bg-white text-[#0f2113] border-b-2 border-[#0f2113]'
-                    : 'text-[#35573a] hover:text-[#0f2113]'
+                    ? 'border-[#0f2113] text-[#0f2113]'
+                    : 'border-transparent text-[#426148] hover:text-[#0f2113]'
                 }`}
               >
-                {language === 'bn' ? 'যত্ন ও ধোয়া' : 'Care Guide'}
+                {language === 'bn' ? 'যত্ন' : 'Care'}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('shipping')}
-                className={`py-3 px-4 transition-colors whitespace-nowrap cursor-pointer ${
+                className={`pb-2 text-[12px] font-black uppercase tracking-wider cursor-pointer transition-colors border-b-2 ${
                   activeTab === 'shipping'
-                    ? 'bg-white text-[#0f2113] border-b-2 border-[#0f2113]'
-                    : 'text-[#35573a] hover:text-[#0f2113]'
+                    ? 'border-[#0f2113] text-[#0f2113]'
+                    : 'border-transparent text-[#426148] hover:text-[#0f2113]'
                 }`}
               >
-                {language === 'bn' ? 'ডেলিভারি নীতি' : 'Shipping & Terms'}
+                {language === 'bn' ? 'ডেলিভারি' : 'Delivery'}
               </button>
             </div>
 
-            <div className="p-4 sm:p-5 text-[13px] text-[#1c3821] leading-relaxed">
+            <div className="pt-3 text-[12.5px] leading-relaxed text-[#1f3b25]">
               {activeTab === 'details' && (
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {localizedProduct.features && localizedProduct.features.length > 0 ? (
                     localizedProduct.features.map((feat, i) => (
                       <li key={i} className="flex items-start gap-2">
@@ -572,70 +570,72 @@ export const ProductDetailPage: React.FC = () => {
       </div>
 
       {/* 3. RELATED PIECES SHOWCASE */}
-      <section className="mt-16 pt-10 border-t border-[#bedec0]">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1b5e28]">
-              {language === 'bn' ? 'সম্পূরক কালেকশন' : 'Complementary Pieces'}
-            </span>
-            <h2 className="font-display text-[22px] sm:text-[26px] font-black text-[#0b1b0e]">
-              {language === 'bn' ? 'আপনার জন্য নির্বাচিত' : 'You May Also Admire'}
-            </h2>
+      {relatedProducts.length > 0 && (
+        <section className="mt-16 pt-10 border-t border-[#bedec0]">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1b5e28]">
+                {language === 'bn' ? 'সম্পূরক কালেকশন' : 'Complementary Pieces'}
+              </span>
+              <h2 className="font-display text-[22px] sm:text-[26px] font-black text-[#0b1b0e]">
+                {language === 'bn' ? 'আপনার জন্য নির্বাচিত' : 'You May Also Admire'}
+              </h2>
+            </div>
+            <Link
+              to={`/category/${catSlug}`}
+              className="text-[12px] font-black text-[#1b5e28] uppercase tracking-wider hover:underline flex items-center gap-1"
+            >
+              <span>{language === 'bn' ? 'আরও দেখুন' : 'Explore Category'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            to={`/category/${catSlug}`}
-            className="text-[12px] font-black text-[#1b5e28] uppercase tracking-wider hover:underline flex items-center gap-1"
-          >
-            <span>{language === 'bn' ? 'আরও দেখুন' : 'Explore Category'}</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </Link>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
-          {relatedProducts.map((relProd) => {
-            const locRel = localizeProduct(relProd);
-            const relSlug = getProductSlug(relProd);
-            return (
-              <Link
-                key={relProd.id}
-                to={`/product/${relSlug}`}
-                className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#bedec0] shadow-xs hover:shadow-md transition-all"
-              >
-                <div className="relative aspect-[3/4] bg-[#edf4ea] overflow-hidden">
-                  <img
-                    src={relProd.image}
-                    alt={locRel.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {relProd.tag && (
-                    <span className="absolute top-2 left-2 bg-[#0f2113]/90 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                      {relProd.tag}
-                    </span>
-                  )}
-                </div>
-                <div className="p-3 flex flex-col flex-1 justify-between">
-                  <div>
-                    <span className="text-[10px] font-black uppercase text-[#1b5e28]">
-                      {localizeCategory(relProd.category)}
-                    </span>
-                    <h3 className="font-display text-[14px] font-bold text-[#0f2113] line-clamp-1 group-hover:text-[#1b5e28] transition-colors">
-                      {locRel.name}
-                    </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
+            {relatedProducts.map((relProd) => {
+              const locRel = localizeProduct(relProd);
+              const relSlug = getProductSlug(relProd);
+              return (
+                <Link
+                  key={relProd.id}
+                  to={`/product/${relSlug}`}
+                  className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#bedec0] shadow-xs hover:shadow-md transition-all"
+                >
+                  <div className="relative aspect-[3/4] bg-[#edf4ea] overflow-hidden">
+                    <img
+                      src={relProd.image}
+                      alt={locRel.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {relProd.tag && (
+                      <span className="absolute top-2 left-2 bg-[#0f2113]/90 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        {relProd.tag}
+                      </span>
+                    )}
                   </div>
-                  <div className="mt-2 pt-2 border-t border-[#edf4ea] flex items-center justify-between">
-                    <span className="text-[13px] font-black text-[#0f2113]">
-                      {formatPrice(relProd.price)}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#1b5e28] uppercase">
-                      {language === 'bn' ? 'দেখুন →' : 'View →'}
-                    </span>
+                  <div className="p-3 flex flex-col flex-1 justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-[#1b5e28]">
+                        {localizeCategory(relProd.category)}
+                      </span>
+                      <h3 className="font-display text-[14px] font-bold text-[#0f2113] line-clamp-1 group-hover:text-[#1b5e28] transition-colors">
+                        {locRel.name}
+                      </h3>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-[#edf4ea] flex items-center justify-between">
+                      <span className="text-[13px] font-black text-[#0f2113]">
+                        {formatPrice(relProd.price)}
+                      </span>
+                      <span className="text-[10px] font-bold text-[#1b5e28] uppercase">
+                        {language === 'bn' ? 'দেখুন →' : 'View →'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 4. MOBILE STICKY FLOATING BOTTOM ACTION BAR */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#faf7eb]/95 backdrop-blur-xl border-t border-[#bedec0] p-3 md:hidden shadow-[0_-4px_20px_rgba(24,40,27,0.08)] pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
@@ -645,7 +645,7 @@ export const ProductDetailPage: React.FC = () => {
             onClick={handleAddToCart}
             className="flex-1 h-11 rounded-xl bg-[#0f2113] text-white font-black text-[12px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
           >
-            <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
+            <ShoppingBag className="w-4 h-4" />
             <span>{language === 'bn' ? 'ব্যাগে যোগ' : 'Add to Bag'}</span>
           </button>
 
@@ -654,7 +654,7 @@ export const ProductDetailPage: React.FC = () => {
             onClick={handleDirectBuy}
             className="flex-1 h-11 rounded-xl bg-[#d4ebd0] text-[#0a1a0c] font-black text-[12px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer border border-[#a2cf9d] active:scale-95 transition-all shadow-xs"
           >
-            <span className="material-symbols-outlined text-[18px] text-[#134e1f]">bolt</span>
+            <Zap className="w-4 h-4 text-[#134e1f]" />
             <span>{language === 'bn' ? 'অর্ডার করুন' : 'Buy Now'}</span>
           </button>
         </div>
@@ -684,7 +684,7 @@ export const ProductDetailPage: React.FC = () => {
                 onClick={() => setShowSizeGuide(false)}
                 className="w-8 h-8 rounded-full bg-[#edf6eb] flex items-center justify-center text-[#0f2113] hover:bg-[#dcefe0] cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

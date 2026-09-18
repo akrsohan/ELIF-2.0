@@ -30,27 +30,29 @@ export function getProductSlug(product: Product): string {
   return slugify(product.name) || product.id;
 }
 
-export function findProductBySlug(slugOrId: string): Product | undefined {
+export function findProductBySlug(slugOrId: string, productsList: Product[] = []): Product | undefined {
   if (!slugOrId) return undefined;
+  const list = productsList.length > 0 ? productsList : PRODUCTS;
   const normalized = slugOrId.toLowerCase().trim();
 
   // 1. Direct ID match
-  const byId = PRODUCTS.find((p) => p.id.toLowerCase() === normalized);
+  const byId = list.find((p) => p.id.toLowerCase() === normalized);
   if (byId) return byId;
 
   // 2. Exact map match
   for (const [id, mappedSlug] of Object.entries(PRODUCT_SLUG_MAP)) {
     if (mappedSlug.toLowerCase() === normalized) {
-      return PRODUCTS.find((p) => p.id === id);
+      const found = list.find((p) => p.id === id);
+      if (found) return found;
     }
   }
 
   // 3. Name slug match
-  const byNameSlug = PRODUCTS.find((p) => slugify(p.name) === normalized);
+  const byNameSlug = list.find((p) => slugify(p.name) === normalized);
   if (byNameSlug) return byNameSlug;
 
-  // 4. Fuzzy / partial match (e.g. "cocoon-coat" in "alpaca-cocoon-coat" or "silk-dress" in "mulberry-silk-slip-dress")
-  return PRODUCTS.find((p) => {
+  // 4. Fuzzy / partial match
+  return list.find((p) => {
     const pSlug = slugify(p.name);
     return pSlug.includes(normalized) || normalized.includes(pSlug);
   });

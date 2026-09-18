@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { PRODUCTS } from '../data/catalog';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
 import { getProductSlug } from '../utils/slug';
@@ -9,28 +8,21 @@ import { getProductSlug } from '../utils/slug';
 export const SearchModal: React.FC = () => {
   const navigate = useNavigate();
   const { language, t, localizeProduct, formatPrice } = useLanguage();
-  const { isSearchOpen, setSearchOpen } = useStore();
+  const { isSearchOpen, setSearchOpen, products, categories } = useStore();
   const [query, setQuery] = useState('');
 
   if (!isSearchOpen) return null;
 
   const onClose = () => setSearchOpen(false);
 
-  const quickKeywords =
-    language === 'bn'
-      ? ['কোকুন কোট', 'কাশ্মীরি শাল', 'টার্টলনেক', 'ট্রেভারটাইন ব্যাগ', 'সিল্ক শার্ট', 'বুটস']
-      : [
-          'Cocoon Coat',
-          'Cashmere',
-          'Turtleneck',
-          'Travertine Bag',
-          'Wool Trouser',
-          'Silk Shirt',
-          'Ankle Boots',
-        ];
+  const quickKeywords = categories && categories.length > 0
+    ? categories.slice(0, 6).map((c) => c.name)
+    : language === 'bn'
+    ? ['কোট', 'সিল্ক', 'শাল', 'ব্যাগ', 'শার্ট', 'জুতা']
+    : ['Coat', 'Silk', 'Knitwear', 'Leather', 'Shirt', 'Trousers'];
 
   const searchResults = query.trim()
-    ? PRODUCTS.filter((p) => {
+    ? products.filter((p) => {
         const q = query.toLowerCase();
         const loc = localizeProduct(p);
         return (
@@ -54,10 +46,10 @@ export const SearchModal: React.FC = () => {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex flex-col bg-black/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex flex-col bg-black/60 backdrop-blur-sm animate-fadeIn selection:bg-[#d6edd2] selection:text-[#18281b]"
     >
       <div
-        className="w-full bg-[#faf7eb] p-4 border-b border-[#ded6be] shadow-lg pt-[calc(1rem+env(safe-area-inset-top,0px))] selection:bg-[#d6edd2] selection:text-[#18281b]"
+        className="w-full bg-[#faf7eb] p-4 border-b border-[#ded6be] shadow-lg pt-[calc(1rem+env(safe-area-inset-top,0px))]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="max-w-2xl mx-auto flex items-center gap-3">
@@ -163,10 +155,10 @@ export const SearchModal: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="text-center py-12 text-[#3a4d3d]/60 text-[13px]">
+            <div className="py-12 text-center text-[#3a4d3d]/80 text-[13px]">
               {language === 'bn'
-                ? 'অনুসন্ধান করতে পোশাক বা ফেব্রিকের নাম টাইপ করুন'
-                : 'Type to discover silhouettes, silks, and cashmere...'}
+                ? 'পোশাকের নাম, ফেব্রিক বা ক্যাটাগরি লিখে খুঁজুন...'
+                : 'Search by garment title, textile, or collection department...'}
             </div>
           )}
         </div>

@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+  Package,
+  Calendar,
+  Ruler,
+  Search,
+  Check,
+  X,
+  User,
+  ShieldCheck,
+  PlusCircle,
+  Loader2,
+  Copy,
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useStore } from '../context/StoreContext';
-import { checkSupabaseConnection, isSupabaseConfigured } from '../lib/supabase';
+import { checkSupabaseConnection } from '../lib/supabase';
 import {
   SavedOrder,
   fetchClientOrders,
@@ -20,7 +33,7 @@ export const AccountPage: React.FC = () => {
   const { language, t, formatPrice, formatNumber } = useLanguage();
   const { showToast } = useStore();
 
-  // Active section: 'orders' | 'appointments' | 'tailoring' | 'status'
+  // Active section: 'orders' | 'appointments' | 'tailoring'
   const activeSection = sectionParam || (orderIdParam ? 'orders' : 'orders');
 
   // Supabase Connection Status
@@ -41,37 +54,28 @@ export const AccountPage: React.FC = () => {
     foundIn: 'supabase' | 'local' | 'none';
   } | null>(null);
 
-  // Appointments State
-  const [appointments, setAppointments] = useState<AppointmentPayload[]>([
-    {
-      clientName: 'Farhana Ahmed',
-      phone: '01711-000000',
-      sessionType: 'Autumn Solace Fitting Suite',
-      date: 'Thursday',
-      time: '16:30',
-      location: 'House 42, Road 11, Banani / Gulshan 2, Dhaka',
-    },
-  ]);
+  // Appointments State - starts empty (no mock data)
+  const [appointments, setAppointments] = useState<AppointmentPayload[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingForm, setBookingForm] = useState({
-    clientName: 'Farhana Ahmed',
-    phone: '01711-000000',
+    clientName: '',
+    phone: '',
     sessionType: 'Bespoke Outerwear & Silk Fitting',
-    date: 'Tomorrow',
-    time: '15:00',
+    date: '',
+    time: '',
     location: 'Gulshan 2 Flagship Atelier',
   });
   const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
 
-  // Tailoring Profile State
+  // Tailoring Profile State - starts clean or loaded from real stored profile
   const [isEditingMeasurements, setIsEditingMeasurements] = useState(false);
   const [tailoringProfile, setTailoringProfile] = useState({
-    clientPhone: '01711-000000',
-    clientName: 'Farhana Ahmed',
-    trenchSize: '38 FR (Oversized Sloped Cut)',
-    knitwearSize: 'S (Comfort Draped)',
-    trouserInseam: '84 cm (Floor Grazing)',
-    notes: 'Pure natural fabrics only (Hypoallergenic Alpaca & Rajshahi Silk)',
+    clientPhone: '',
+    clientName: '',
+    trenchSize: '',
+    knitwearSize: '',
+    trouserInseam: '',
+    notes: '',
   });
   const [isSavingMeasurements, setIsSavingMeasurements] = useState(false);
 
@@ -93,13 +97,20 @@ export const AccountPage: React.FC = () => {
     const stored = getStoredTailoringProfile();
     if (stored) {
       setTailoringProfile({
-        clientPhone: stored.clientPhone || '01711-000000',
-        clientName: stored.clientName || 'Farhana Ahmed',
-        trenchSize: stored.trenchSize || '38 FR (Oversized Sloped Cut)',
-        knitwearSize: stored.knitwearSize || 'S (Comfort Draped)',
-        trouserInseam: stored.trouserInseam || '84 cm (Floor Grazing)',
-        notes: stored.notes || 'Pure natural fabrics only',
+        clientPhone: stored.clientPhone || '',
+        clientName: stored.clientName || '',
+        trenchSize: stored.trenchSize || '',
+        knitwearSize: stored.knitwearSize || '',
+        trouserInseam: stored.trouserInseam || '',
+        notes: stored.notes || '',
       });
+      if (stored.clientName) {
+        setBookingForm((prev) => ({
+          ...prev,
+          clientName: stored.clientName || '',
+          phone: stored.clientPhone || '',
+        }));
+      }
     }
   }, []);
 
@@ -148,18 +159,21 @@ export const AccountPage: React.FC = () => {
 
   const handleBookAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!bookingForm.clientName.trim() || !bookingForm.phone.trim() || !bookingForm.date.trim()) {
+      showToast(language === 'bn' ? 'অনুগ্রহ করে সকল তথ্য পূরণ করুন।' : 'Please fill all appointment fields.');
+      return;
+    }
+
     setIsSubmittingBooking(true);
     try {
       const res = await bookFittingAppointment(bookingForm);
-      const newAppt = {
-        id: `apt-${Date.now()}`,
-        client_name: bookingForm.clientName,
+      const newAppt: AppointmentPayload = {
+        clientName: bookingForm.clientName,
         phone: bookingForm.phone,
-        preferred_date: bookingForm.preferredDate,
-        preferred_time: bookingForm.preferredTime,
-        salon_location: bookingForm.salonLocation,
-        status: 'confirmed',
-        created_at: new Date().toISOString(),
+        sessionType: bookingForm.sessionType,
+        date: bookingForm.date,
+        time: bookingForm.time || '15:00',
+        location: bookingForm.location,
       };
       setAppointments((prev) => [newAppt, ...prev]);
       setShowBookingModal(false);
@@ -201,6 +215,9 @@ export const AccountPage: React.FC = () => {
     setTimeout(() => setCopiedSql(false), 3000);
   };
 
+  const clientDisplayName = tailoringProfile.clientName || (orders[0]?.customer_name) || '';
+  const clientDisplayPhone = tailoringProfile.clientPhone || (orders[0]?.phone) || '';
+
   return (
     <div className="w-full pb-20 selection:bg-[#d6edd2] selection:text-[#18281b]">
       {/* 1. BREADCRUMBS */}
@@ -220,20 +237,21 @@ export const AccountPage: React.FC = () => {
       {/* 2. PROFILE HERO HEADER */}
       <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#edf6eb] via-[#e5f2e3] to-[#dcf0dc] border border-[#bedec0] mb-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#0f2113] text-white flex items-center justify-center font-display text-[24px] font-black shadow-sm">
-            FA
+          <div className="w-16 h-16 rounded-2xl bg-[#0f2113] text-white flex items-center justify-center font-display text-[22px] font-black shadow-sm">
+            {clientDisplayName ? clientDisplayName.slice(0, 2).toUpperCase() : <User className="w-7 h-7 text-white" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-display font-black text-[22px] sm:text-[26px] text-[#0f2113]">
-                Farhana Ahmed
+                {clientDisplayName || (language === 'bn' ? 'গ্রাহক পোর্টাল' : 'Client Suite')}
               </h1>
               <span className="bg-[#0f2113] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
-                VIP Client
+                {language === 'bn' ? 'অঁতেলিয়ে অ্যাকাউন্ট' : 'Atelier Member'}
               </span>
             </div>
             <p className="text-[12px] sm:text-[13px] text-[#2b4c30] font-bold">
-              01711-000000 • Gulshan 2 / Banani Atelier Member
+              {clientDisplayPhone ? `${clientDisplayPhone} • ` : ''}
+              {language === 'bn' ? 'গুলশান ও বনানী প্রাইভেট স্যালন' : 'Dhaka Atelier & Concierge'}
             </p>
           </div>
         </div>
@@ -270,7 +288,7 @@ export const AccountPage: React.FC = () => {
               : 'bg-[#edf6eb] text-[#1b3821] hover:bg-[#dcf0dc]'
           }`}
         >
-          <span className="material-symbols-outlined text-[17px]">inventory_2</span>
+          <Package className="w-4 h-4" />
           <span>{language === 'bn' ? 'অর্ডার ও ট্র্যাকিং' : 'Orders & Consignments'}</span>
         </button>
 
@@ -283,7 +301,7 @@ export const AccountPage: React.FC = () => {
               : 'bg-[#edf6eb] text-[#1b3821] hover:bg-[#dcf0dc]'
           }`}
         >
-          <span className="material-symbols-outlined text-[17px]">calendar_month</span>
+          <Calendar className="w-4 h-4" />
           <span>{language === 'bn' ? 'স্যালন ফিটিং' : 'Private Salon Fittings'}</span>
         </button>
 
@@ -296,7 +314,7 @@ export const AccountPage: React.FC = () => {
               : 'bg-[#edf6eb] text-[#1b3821] hover:bg-[#dcf0dc]'
           }`}
         >
-          <span className="material-symbols-outlined text-[17px]">straighten</span>
+          <Ruler className="w-4 h-4" />
           <span>{language === 'bn' ? 'টেইলরিং প্রোফাইল' : 'Bespoke Measurements'}</span>
         </button>
       </div>
@@ -327,9 +345,9 @@ export const AccountPage: React.FC = () => {
                 className="px-6 py-3 bg-[#0f2113] text-white font-black text-[12px] uppercase tracking-wider rounded-2xl hover:bg-[#1b5e28] transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-75"
               >
                 {isSearching ? (
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-[18px]">search</span>
+                  <Search className="w-4 h-4" />
                 )}
                 <span>{language === 'bn' ? 'ট্র্যাক করুন' : 'Track Order'}</span>
               </button>
@@ -354,26 +372,26 @@ export const AccountPage: React.FC = () => {
               </div>
 
               {searchResults.orders.map((ord) => (
-                <div key={ord.id || ord.orderNumber} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#bedec0] flex flex-col gap-3">
+                <div key={ord.id || ord.order_number} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#bedec0] flex flex-col gap-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <span className="font-black text-[16px] text-[#0f2113]">#{ord.orderNumber}</span>
+                      <span className="font-black text-[16px] text-[#0f2113]">#{ord.order_number}</span>
                       <span className="text-[12px] text-[#335639] ml-2">
-                        {new Date(ord.createdAt).toLocaleDateString()}
+                        {new Date(ord.created_at).toLocaleDateString()}
                       </span>
                     </div>
                     <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase bg-[#d6edd2] text-[#113817] border border-[#bedec0]">
-                      {ord.status || 'In Transit (Pathao Express)'}
+                      {ord.order_status || 'In Transit'}
                     </span>
                   </div>
 
                   <p className="text-[12.5px] text-[#2c4e31]">
-                    <strong>{language === 'bn' ? 'ঠিকানা:' : 'Address:'}</strong> {ord.deliveryAddress}
+                    <strong>{language === 'bn' ? 'ঠিকানা:' : 'Address:'}</strong> {ord.delivery_address}
                   </p>
 
                   <div className="flex justify-between text-[13px] font-bold text-[#0f2113] pt-2 border-t border-[#edf4ea]">
-                    <span>{language === 'bn' ? 'পেমেন্ট মেথড:' : 'Payment Method:'} {ord.paymentMethod.toUpperCase()}</span>
-                    <span>{formatPrice(ord.totalAmount)}</span>
+                    <span>{language === 'bn' ? 'পেমেন্ট মেথড:' : 'Payment Method:'} {ord.payment_method?.toUpperCase()}</span>
+                    <span>{formatPrice(ord.total_amount)}</span>
                   </div>
                 </div>
               ))}
@@ -388,31 +406,31 @@ export const AccountPage: React.FC = () => {
 
             {isLoadingOrders ? (
               <div className="py-8 text-center text-[#35573a]">
-                <span className="material-symbols-outlined text-[28px] animate-spin mb-2">progress_activity</span>
+                <Loader2 className="w-7 h-7 animate-spin mx-auto mb-2 text-[#1b5e28]" />
                 <p className="text-[12px]">{language === 'bn' ? 'অর্ডার ডাটা লোড হচ্ছে...' : 'Loading order history...'}</p>
               </div>
             ) : orders.length > 0 ? (
               <div className="space-y-3">
                 {orders.map((ord) => (
                   <div
-                    key={ord.id || ord.orderNumber}
+                    key={ord.id || ord.order_number}
                     className="p-4 rounded-2xl bg-[#edf6eb] border border-[#bedeb8] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-[14px] text-[#0f2113]">#{ord.orderNumber}</span>
+                        <span className="font-black text-[14px] text-[#0f2113]">#{ord.order_number}</span>
                         <span className="text-[10.5px] font-black uppercase px-2 py-0.5 rounded-md bg-white border border-[#bedeb8] text-[#1b5e28]">
-                          {ord.status || 'Dispatched'}
+                          {ord.order_status || 'Dispatched'}
                         </span>
                       </div>
                       <p className="text-[12px] text-[#2c4e31] mt-0.5">
-                        {ord.itemsSummary || (ord.cartItems ? `${ord.cartItems.length} pieces` : 'Haute Pieces')} • {formatPrice(ord.totalAmount)}
+                        {ord.items ? `${ord.items.length} pieces` : 'Garments'} • {formatPrice(ord.total_amount)}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <Link
-                        to={`/account/orders/${ord.orderNumber}`}
+                        to={`/account/orders/${ord.order_number}`}
                         className="px-3.5 py-1.5 bg-[#0f2113] text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-[#1b5e28] transition-colors"
                       >
                         {language === 'bn' ? 'ট্র্যাক' : 'Track'}
@@ -422,9 +440,17 @@ export const AccountPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-[13px] text-[#3a583e] py-4 text-center">
-                {language === 'bn' ? 'বর্তমানে কোনো পূর্বের অর্ডার সংরক্ষিত নেই।' : 'No orders recorded in this session yet.'}
-              </p>
+              <div className="py-8 text-center text-[#3a583e] bg-[#edf6eb] rounded-2xl border border-[#bedeb8]">
+                <p className="text-[13px] font-medium">
+                  {language === 'bn' ? 'বর্তমানে কোনো পূর্বের অর্ডার সংরক্ষিত নেই।' : 'No orders recorded in this session yet.'}
+                </p>
+                <Link
+                  to="/shop"
+                  className="mt-3 inline-block px-4 py-2 bg-[#0f2113] text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-[#1b5e28]"
+                >
+                  {language === 'bn' ? 'কালেকশন দেখুন' : 'Explore Catalog'}
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -447,29 +473,45 @@ export const AccountPage: React.FC = () => {
               onClick={() => setShowBookingModal(true)}
               className="h-10 px-4 rounded-xl bg-[#0f2113] text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 hover:bg-[#1b5e28] transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
             >
-              <span className="material-symbols-outlined text-[16px]">add_circle</span>
+              <PlusCircle className="w-4 h-4" />
               <span>{language === 'bn' ? 'নতুন অ্যাপয়েন্টমেন্ট' : 'Book Fitting'}</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {appointments.map((apt, i) => (
-              <div key={i} className="p-4 rounded-2xl bg-[#edf6eb] border border-[#bedeb8] flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-black text-[#0f2113]">{apt.sessionType}</span>
-                  <span className="text-[10px] font-black uppercase bg-[#d6edd2] text-[#15381a] px-2 py-0.5 rounded-md border border-[#bedec0]">
-                    Confirmed
-                  </span>
+          {appointments.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {appointments.map((apt, i) => (
+                <div key={i} className="p-4 rounded-2xl bg-[#edf6eb] border border-[#bedeb8] flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-black text-[#0f2113]">{apt.sessionType}</span>
+                    <span className="text-[10px] font-black uppercase bg-[#d6edd2] text-[#15381a] px-2 py-0.5 rounded-md border border-[#bedec0]">
+                      Confirmed
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-[#2c4e31]">
+                    <strong>{language === 'bn' ? 'তারিখ ও সময়:' : 'Date & Time:'}</strong> {apt.date} at {apt.time}
+                  </p>
+                  <p className="text-[12px] text-[#2c4e31]">
+                    <strong>{language === 'bn' ? 'লোকেশন:' : 'Location:'}</strong> {apt.location}
+                  </p>
                 </div>
-                <p className="text-[12px] text-[#2c4e31]">
-                  <strong>{language === 'bn' ? 'তারিখ ও সময়:' : 'Date & Time:'}</strong> {apt.date} at {apt.time}
-                </p>
-                <p className="text-[12px] text-[#2c4e31]">
-                  <strong>{language === 'bn' ? 'লোকেশন:' : 'Location:'}</strong> {apt.location}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center bg-[#edf6eb] rounded-2xl border border-[#bedeb8]">
+              <Calendar className="w-8 h-8 text-[#1b5e28] mx-auto mb-2 opacity-70" />
+              <p className="text-[13px] text-[#2c4e31] font-medium">
+                {language === 'bn' ? 'বর্তমানে কোনো নির্ধারিত অ্যাপয়েন্টমেন্ট নেই।' : 'No private salon fitting appointments scheduled yet.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowBookingModal(true)}
+                className="mt-3 px-4 py-2 bg-[#0f2113] text-white text-[11px] font-black uppercase tracking-wider rounded-xl hover:bg-[#1b5e28]"
+              >
+                {language === 'bn' ? 'অ্যাপয়েন্টমেন্ট বুক করুন' : 'Schedule Appointment'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -499,6 +541,34 @@ export const AccountPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
+                {language === 'bn' ? 'আপনার নাম' : 'Full Name'}
+              </label>
+              <input
+                type="text"
+                disabled={!isEditingMeasurements}
+                value={tailoringProfile.clientName}
+                onChange={(e) => setTailoringProfile({ ...tailoringProfile, clientName: e.target.value })}
+                placeholder={language === 'bn' ? 'আপনার নাম' : 'Your Name'}
+                className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] font-bold disabled:opacity-80"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
+                {language === 'bn' ? 'মোবাইল নম্বর' : 'Phone Number'}
+              </label>
+              <input
+                type="text"
+                disabled={!isEditingMeasurements}
+                value={tailoringProfile.clientPhone}
+                onChange={(e) => setTailoringProfile({ ...tailoringProfile, clientPhone: e.target.value })}
+                placeholder="017XX-XXXXXX"
+                className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] font-bold disabled:opacity-80"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
                 {language === 'bn' ? 'ট্রেনচ ও ওভারকোট সাইজ' : 'Trench & Coat Cut'}
               </label>
               <input
@@ -506,6 +576,7 @@ export const AccountPage: React.FC = () => {
                 disabled={!isEditingMeasurements}
                 value={tailoringProfile.trenchSize}
                 onChange={(e) => setTailoringProfile({ ...tailoringProfile, trenchSize: e.target.value })}
+                placeholder="e.g. 38 FR (Sloped Shoulder Cut)"
                 className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] font-bold disabled:opacity-80"
               />
             </div>
@@ -519,6 +590,7 @@ export const AccountPage: React.FC = () => {
                 disabled={!isEditingMeasurements}
                 value={tailoringProfile.knitwearSize}
                 onChange={(e) => setTailoringProfile({ ...tailoringProfile, knitwearSize: e.target.value })}
+                placeholder="e.g. S (Relaxed Drape)"
                 className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] font-bold disabled:opacity-80"
               />
             </div>
@@ -532,6 +604,7 @@ export const AccountPage: React.FC = () => {
                 disabled={!isEditingMeasurements}
                 value={tailoringProfile.trouserInseam}
                 onChange={(e) => setTailoringProfile({ ...tailoringProfile, trouserInseam: e.target.value })}
+                placeholder="e.g. 84 cm (Floor Grazing)"
                 className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] font-bold disabled:opacity-80"
               />
             </div>
@@ -545,6 +618,7 @@ export const AccountPage: React.FC = () => {
                 disabled={!isEditingMeasurements}
                 value={tailoringProfile.notes}
                 onChange={(e) => setTailoringProfile({ ...tailoringProfile, notes: e.target.value })}
+                placeholder="e.g. Silk and linen only"
                 className="w-full px-3.5 py-2.5 bg-[#edf6eb] text-[#0f2113] border border-[#bedeb8] rounded-xl text-[13px] font-bold disabled:opacity-80"
               />
             </div>
@@ -580,13 +654,41 @@ export const AccountPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowBookingModal(false)}
-                className="w-8 h-8 rounded-full bg-[#edf6eb] flex items-center justify-center text-[#0f2113]"
+                className="w-8 h-8 rounded-full bg-[#edf6eb] flex items-center justify-center text-[#0f2113] hover:bg-[#dcefe0] cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleBookAppointment} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
+                  {language === 'bn' ? 'আপনার নাম *' : 'Full Name *'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={bookingForm.clientName}
+                  onChange={(e) => setBookingForm({ ...bookingForm, clientName: e.target.value })}
+                  placeholder="Enter full name"
+                  className="w-full px-3 py-2 bg-[#edf6eb] border border-[#bedeb8] rounded-xl text-[12px]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
+                  {language === 'bn' ? 'মোবাইল নম্বর *' : 'Phone Number *'}
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={bookingForm.phone}
+                  onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                  placeholder="017XX-XXXXXX"
+                  className="w-full px-3 py-2 bg-[#edf6eb] border border-[#bedeb8] rounded-xl text-[12px]"
+                />
+              </div>
+
               <div>
                 <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
                   {language === 'bn' ? 'সেশনের ধরন' : 'Session Type'}
@@ -603,10 +705,10 @@ export const AccountPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[11px] font-black uppercase text-[#0f2113] block mb-1">
-                    {language === 'bn' ? 'তারিখ' : 'Date'}
+                    {language === 'bn' ? 'তারিখ *' : 'Date *'}
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     required
                     value={bookingForm.date}
                     onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
@@ -618,8 +720,7 @@ export const AccountPage: React.FC = () => {
                     {language === 'bn' ? 'সময়' : 'Time'}
                   </label>
                   <input
-                    type="text"
-                    required
+                    type="time"
                     value={bookingForm.time}
                     onChange={(e) => setBookingForm({ ...bookingForm, time: e.target.value })}
                     className="w-full px-3 py-2 bg-[#edf6eb] border border-[#bedeb8] rounded-xl text-[12px]"
@@ -676,7 +777,7 @@ export const AccountPage: React.FC = () => {
                 onClick={() => setShowSqlModal(false)}
                 className="w-8 h-8 rounded-full bg-[#edf6eb] flex items-center justify-center text-[#0f2113]"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -688,9 +789,10 @@ export const AccountPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCopySql}
-                className="flex-1 py-2.5 bg-[#0f2113] text-white font-black text-[11px] uppercase tracking-wider rounded-xl hover:bg-[#1b5e28] transition-colors cursor-pointer"
+                className="flex-1 py-2.5 bg-[#0f2113] text-white font-black text-[11px] uppercase tracking-wider rounded-xl hover:bg-[#1b5e28] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
               >
-                {copiedSql ? '✓ Copied SQL' : 'Copy SQL Script'}
+                {copiedSql ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                <span>{copiedSql ? 'Copied SQL' : 'Copy SQL Script'}</span>
               </button>
               <button
                 type="button"
