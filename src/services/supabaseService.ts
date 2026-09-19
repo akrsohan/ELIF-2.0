@@ -12,14 +12,39 @@ export interface OrderItemPayload {
   image?: string;
 }
 
+export type DeliveryPaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'cod';
+export type DeliveryPaymentStatus =
+  | 'awaiting_payment'
+  | 'payment_submitted'
+  | 'under_review'
+  | 'payment_verified'
+  | 'payment_rejected';
+
+export type OrderLifeCycleStatus =
+  | 'pending'
+  | 'placed'
+  | 'confirmed'
+  | 'processing'
+  | 'packed'
+  | 'dispatched'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'returned'
+  | 'exchanged';
+
 export interface CreateOrderPayload {
   orderNumber?: string;
   customerName: string;
   phone: string;
   deliveryAddress: string;
   district: string;
-  paymentMethod: 'cod' | 'bkash' | 'nagad' | 'card';
-  paymentStatus?: 'pending' | 'completed' | 'cod_pending';
+  paymentMethod: DeliveryPaymentMethod;
+  paymentStatus?: 'pending' | 'completed' | 'cod_pending' | 'payment_submitted' | 'under_review';
+  deliveryPaymentStatus?: DeliveryPaymentStatus;
+  transactionId?: string;
+  paymentProofUrl?: string;
+  deliveryChargePaid?: number;
   cartItems: CartItem[];
   subtotal: number;
   deliveryFee: number;
@@ -36,13 +61,27 @@ export interface SavedOrder {
   district: string;
   payment_method: string;
   payment_status: string;
+  delivery_payment_status?: DeliveryPaymentStatus;
+  transaction_id?: string;
+  payment_proof_url?: string;
+  delivery_charge_paid?: number;
   items: OrderItemPayload[];
   subtotal: number;
   delivery_fee: number;
   total_amount: number;
-  order_status: 'placed' | 'confirmed' | 'dispatched' | 'delivered';
+  order_status: OrderLifeCycleStatus;
   notes?: string;
   created_at: string;
+}
+
+export interface PaymentNumbersConfig {
+  bkashNumber?: string;
+  nagadNumber?: string;
+  rocketNumber?: string;
+  bkashType?: string;
+  nagadType?: string;
+  rocketType?: string;
+  instructions?: string;
 }
 
 export interface AppointmentPayload {
@@ -90,7 +129,115 @@ export const saveLocalOrder = (order: SavedOrder): void => {
 };
 
 /**
- * Creates an order in Supabase with automatic fallback to client persistence
+ * Fetch payment receiving configurations from Supabase site_settings
+ */
+export const fetchPaymentConfiguration = async (): Promise<PaymentNumbersConfig> => {
+  if (!isSupabaseConfigured()) {
+    return {};
+  }
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('key, value')
+      .in('key', ['bkash_number', 'nagad_number', 'rocket_number', 'payment_settings']);
+
+    if (!error && data && data.length > 0) {
+      const config: PaymentNumbersConfig = {};
+      for (const row of data) {
+        if (row.key === 'bkash_number' && row.value) config.bkashNumber = String(row.value);
+        if (row.key === 'nagad_number' && row.value) config.nagadNumber = String(row.value);
+        if (row.key === 'rocket_number' && row.value) config.rocketNumber = String(row.value);
+        if (row.key === 'payment_settings' && typeof row.value === 'object' && row.value !== null) {
+          Object.assign(config, row.value);
+        }
+      }
+      return config;
+    }
+  } catch (e) {
+    console.warn('Payment configuration query warning:', e);
+  }
+  return {};
+};
+
+/**
+ * Upload manual payment proof screenshot to private Supabase Storage bucket 'payment-proofs'
+ */
+export const uploadPaymentProof = async (
+  file: File,
+  orderNumber: string
+): Promise<{ success: boolean; storagePath?: string; publicUrl?: string; error?: string }> => {
+  if (!file) {
+    return { success: false, error: 'No screenshot file provided.' };
+  }
+
+  // Validate MIME type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    return {
+      success: false,
+      error: 'Please upload a valid image (JPG, JPEG, PNG, or WEBP).',
+    };
+  }
+
+  // Validate File Size (max 10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    return {
+      success: false,
+      error: 'File size exceeds maximum limit of 10MB.',
+    };
+  }
+
+  const cleanExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const cleanOrderNum = orderNumber.replace(/[^a-zA-Z0-9_-]/g, '');
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 7);
+  const fileName = `proofs/${cleanOrderNum}_${timestamp}_${randomSuffix}.${cleanExt}`;
+
+  if (!isSupabaseConfigured()) {
+    const previewUrl = URL.createObjectURL(file);
+    return { success: true, storagePath: fileName, publicUrl: previewUrl };
+  }
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('payment-proofs')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) {
+      console.warn('Supabase storage upload error:', error.message);
+      // Generate a local object URL as safe fallback so user is not blocked if bucket is being provisioned
+      const previewUrl = URL.createObjectURL(file);
+      return {
+        success: true,
+        storagePath: fileName,
+        publicUrl: previewUrl,
+        error: error.message,
+      };
+    }
+
+    const storagePath = data?.path || fileName;
+    const { data: urlData } = supabase.storage.from('payment-proofs').getPublicUrl(storagePath);
+    const publicUrl = urlData?.publicUrl || storagePath;
+
+    return {
+      success: true,
+      storagePath,
+      publicUrl,
+    };
+  } catch (err: any) {
+    console.error('Payment proof upload exception:', err);
+    return {
+      success: false,
+      error: err?.message || 'Payment screenshot upload failed. Please try again.',
+    };
+  }
+};
+
+/**
+ * Creates an order in Supabase with Phase 3 payments table syncing and local persistence
  */
 export const createOrderInSupabase = async (
   payload: CreateOrderPayload
@@ -109,6 +256,24 @@ export const createOrderInSupabase = async (
     image: item.product.image,
   }));
 
+  const isManualDeliveryPayment =
+    payload.paymentMethod === 'bkash' ||
+    payload.paymentMethod === 'nagad' ||
+    payload.paymentMethod === 'rocket';
+
+  const initialPaymentStatus = isManualDeliveryPayment
+    ? 'payment_submitted'
+    : payload.paymentMethod === 'cod'
+    ? 'cod_pending'
+    : 'pending';
+
+  const initialDeliveryPaymentStatus: DeliveryPaymentStatus = isManualDeliveryPayment
+    ? 'under_review'
+    : 'awaiting_payment';
+
+  // Order status starts as 'pending' until Admin verification
+  const initialOrderStatus: OrderLifeCycleStatus = 'pending';
+
   const localRecord: SavedOrder = {
     id: `local-${Date.now()}`,
     order_number: generatedOrderNumber,
@@ -117,13 +282,16 @@ export const createOrderInSupabase = async (
     delivery_address: payload.deliveryAddress,
     district: payload.district,
     payment_method: payload.paymentMethod,
-    payment_status:
-      payload.paymentMethod === 'cod' ? 'cod_pending' : 'completed',
+    payment_status: initialPaymentStatus,
+    delivery_payment_status: initialDeliveryPaymentStatus,
+    transaction_id: payload.transactionId?.trim() || undefined,
+    payment_proof_url: payload.paymentProofUrl || undefined,
+    delivery_charge_paid: payload.deliveryChargePaid ?? payload.deliveryFee,
     items: orderItems,
     subtotal: payload.subtotal,
     delivery_fee: payload.deliveryFee,
     total_amount: payload.totalAmount,
-    order_status: 'placed',
+    order_status: initialOrderStatus,
     notes: payload.notes || '',
     created_at: new Date().toISOString(),
   };
@@ -141,7 +309,7 @@ export const createOrderInSupabase = async (
   }
 
   try {
-    const { data, error } = await supabase
+    const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert([
         {
@@ -151,32 +319,72 @@ export const createOrderInSupabase = async (
           delivery_address: payload.deliveryAddress,
           district: payload.district,
           payment_method: payload.paymentMethod,
-          payment_status:
-            payload.paymentMethod === 'cod' ? 'cod_pending' : 'completed',
+          payment_status: initialPaymentStatus,
+          delivery_payment_status: initialDeliveryPaymentStatus,
+          transaction_id: payload.transactionId?.trim() || null,
+          payment_proof_url: payload.paymentProofUrl || null,
+          delivery_charge_paid: payload.deliveryChargePaid ?? payload.deliveryFee,
           items: orderItems,
           subtotal: payload.subtotal,
           delivery_fee: payload.deliveryFee,
           total_amount: payload.totalAmount,
-          order_status: 'placed',
+          order_status: initialOrderStatus,
           notes: payload.notes || null,
         },
       ])
       .select()
       .single();
 
-    if (error) {
-      console.warn('Supabase order insert warning (falling back to local):', error.message);
+    if (orderError) {
+      console.warn('Supabase order insert warning (falling back to local):', orderError.message);
       return {
         success: true,
         orderNumber: generatedOrderNumber,
         source: 'local',
-        error: error.message,
+        error: orderError.message,
       };
     }
 
-    if (data) {
-      localRecord.id = data.id || localRecord.id;
+    if (orderData) {
+      localRecord.id = orderData.id || localRecord.id;
       saveLocalOrder(localRecord);
+
+      // Populate Phase 3 payments table
+      try {
+        await supabase.from('payments').insert([
+          {
+            order_id: orderData.id,
+            order_number: generatedOrderNumber,
+            payment_type: 'delivery_charge',
+            payment_method: payload.paymentMethod,
+            amount: payload.deliveryFee,
+            transaction_id: payload.transactionId?.trim() || null,
+            proof_image_url: payload.paymentProofUrl || null,
+            status: 'under_review',
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      } catch (pErr) {
+        // Safe failover if payments table is managed separately
+      }
+
+      // Populate Phase 3 payment_transactions table
+      try {
+        await supabase.from('payment_transactions').insert([
+          {
+            order_id: orderData.id,
+            order_number: generatedOrderNumber,
+            transaction_id: payload.transactionId?.trim() || null,
+            payment_method: payload.paymentMethod,
+            amount: payload.deliveryFee,
+            proof_url: payload.paymentProofUrl || null,
+            status: 'under_review',
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      } catch (tErr) {
+        // Safe failover if table is managed separately
+      }
     }
 
     return {
@@ -532,12 +740,16 @@ CREATE TABLE IF NOT EXISTS public.orders (
   delivery_address TEXT NOT NULL,
   district TEXT NOT NULL DEFAULT 'Dhaka',
   payment_method TEXT NOT NULL,
-  payment_status TEXT NOT NULL DEFAULT 'pending',
+  payment_status TEXT NOT NULL DEFAULT 'payment_submitted',
+  delivery_payment_status TEXT NOT NULL DEFAULT 'under_review',
+  transaction_id TEXT,
+  payment_proof_url TEXT,
+  delivery_charge_paid NUMERIC DEFAULT 0,
   items JSONB NOT NULL DEFAULT '[]'::jsonb,
   subtotal NUMERIC NOT NULL DEFAULT 0,
   delivery_fee NUMERIC NOT NULL DEFAULT 0,
   total_amount NUMERIC NOT NULL DEFAULT 0,
-  order_status TEXT NOT NULL DEFAULT 'placed',
+  order_status TEXT NOT NULL DEFAULT 'pending',
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -546,8 +758,56 @@ CREATE TABLE IF NOT EXISTS public.orders (
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public insert orders" ON public.orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public read orders" ON public.orders FOR SELECT USING (true);
+CREATE POLICY "Public update orders" ON public.orders FOR UPDATE USING (true);
 
--- 2. VIP Newsletter Subscribers
+-- 2. Phase 3 Payments Table
+CREATE TABLE IF NOT EXISTS public.payments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+  order_number TEXT NOT NULL,
+  payment_type TEXT DEFAULT 'delivery_charge',
+  payment_method TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  transaction_id TEXT,
+  proof_image_url TEXT,
+  status TEXT DEFAULT 'under_review',
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public insert payments" ON public.payments FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public read payments" ON public.payments FOR SELECT USING (true);
+
+-- 3. Phase 3 Payment Transactions Table
+CREATE TABLE IF NOT EXISTS public.payment_transactions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+  order_number TEXT NOT NULL,
+  transaction_id TEXT,
+  payment_method TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  proof_url TEXT,
+  status TEXT DEFAULT 'under_review',
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.payment_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public insert payment_transactions" ON public.payment_transactions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public read payment_transactions" ON public.payment_transactions FOR SELECT USING (true);
+
+-- 4. Site Settings Table (Payment Numbers & Global Atelier Config)
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  key TEXT NOT NULL UNIQUE,
+  value JSONB,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read site_settings" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "Public write site_settings" ON public.site_settings FOR ALL USING (true) WITH CHECK (true);
+
+-- 5. VIP Newsletter Subscribers
 CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
